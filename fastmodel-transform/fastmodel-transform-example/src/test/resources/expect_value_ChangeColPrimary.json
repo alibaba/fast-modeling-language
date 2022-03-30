@@ -1,0 +1,34 @@
+{
+	"dialectName":"MAXCOMPUTE",
+	"entityLevel":"SQL",
+	"matchExpression":"NOTAPARTITIONTABLE",
+	"ruleModelList":[
+		{
+			"action":"ADD",
+			"blockType":"BLOCK_WEAK",
+			"expectValue":"0",
+			"oldProperty":"old_col",
+			"operator":"=",
+			"predictType":"NOT_DYNAMIC",
+			"property":"new_col",
+			"propertyType":"STRING",
+			"ruleName":"字段规则-唯一-(new_col)",
+			"ruleType":"TEMPLATE",
+			"ruleValue":"14"
+		},
+		{
+			"action":"ADD",
+			"blockType":"BLOCK_WEAK",
+			"expectValue":"0",
+			"oldProperty":"old_col",
+			"operator":"=",
+			"predictType":"NOT_DYNAMIC",
+			"property":"new_col",
+			"propertyType":"STRING",
+			"ruleName":"字段规则-非空-(new_col)",
+			"ruleType":"TEMPLATE",
+			"ruleValue":"11"
+		}
+	],
+	"tableName":"dim_shop"
+}

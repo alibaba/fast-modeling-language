@@ -1,0 +1,20 @@
+{
+	"dialectName":"MAXCOMPUTE",
+	"entityLevel":"SQL",
+	"matchExpression":"NOTAPARTITIONTABLE",
+	"ruleModelList":[
+		{
+			"action":"ADD",
+			"blockType":"BLOCK_WEAK",
+			"expectValue":"0",
+			"operator":"=",
+			"predictType":"NOT_DYNAMIC",
+			"property":"test_code13",
+			"propertyType":"STRING",
+			"ruleName":"字段规则-非空-(test_code13)",
+			"ruleType":"TEMPLATE",
+			"ruleValue":"11"
+		}
+	],
+	"tableName":"dim_shop_test25"
+}

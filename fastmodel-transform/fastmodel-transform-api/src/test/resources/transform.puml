@@ -1,0 +1,62 @@
+@startuml
+
+interface Transformer <S, T> {
+    T  transform(S source, TransformContext context)
+}
+
+
+interface TransformerFactory <<转换器工厂>> {
+    Transformer get(meta : EngineMeta) <<根据引擎元数据获取转换器>>
+}
+
+
+class EngineMeta <<引擎元数据>> {
+    name : String <<引擎名字>>
+    version : String <<引擎版本>>
+    description : String <<引擎描述>>
+    supportStreaming : Boolean <<是否支持流处理>>
+    supportBatch : Boolean <<是否支持批处理>>
+}
+
+interface TransformContext <<转换的上下文>>{
+    engineProp : EngineProperties
+}
+
+
+class EngineProperties <<引擎属性>>{
+    getValue(String key) : Object
+}
+
+class SQLNode {
+     sql : String
+}
+
+class DataxScript{
+    script : String
+}
+
+abstract class OdpsTransformer implements Transformer {
+    SQLNode transform(Statement statement, TransformContext context)
+}
+
+
+class CreateTableOdpsTransformer extends OdpsTransformer {
+
+}
+
+class DataxTransformer implements Transformer {
+    DataxScript transform(Statement statement, TransformContext context);
+}
+
+OdpsTransformer --> SQLNode
+
+TransformerFactory --> EngineMeta
+
+TransformerFactory --> Transformer
+
+Transformer - TransformContext
+
+
+TransformContext --> EngineProperties
+
+@enduml

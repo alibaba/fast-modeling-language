@@ -1,0 +1,11 @@
+{
+	"entityLevel":"SQL",
+	"matchExpression":"NOTAPARTITIONTABLE",
+	"ruleModelList":[
+		{
+			"action":"DELETE",
+			"property":"old_col"
+		}
+	],
+	"tableName":"dim_shop"
+}

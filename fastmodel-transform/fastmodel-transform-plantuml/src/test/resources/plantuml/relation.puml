@@ -1,0 +1,4 @@
+@startuml
+'https://plantuml.com/class-diagram
+t "comment"  -> "comment"  t1: abc
+@enduml

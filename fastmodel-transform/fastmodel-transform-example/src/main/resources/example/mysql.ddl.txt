@@ -1,0 +1,12 @@
+CREATE TABLE dim_demo
+(
+   c1 BIGINT NOT NULL COMMENT 'comment',
+   c2 VARCHAR(128) NOT NULL COMMENT 'string',
+   PRIMARY KEY(c1,c2)
+);
+ALTER TABLE dim_demo ADD
+(
+   c3 DATETIME COMMENT 'date time'
+);
+ALTER TABLE dim_demo DROP COLUMN c2;
+ALTER TABLE dim_demo ADD CONSTRAINT c1 PRIMARY KEY (c3)

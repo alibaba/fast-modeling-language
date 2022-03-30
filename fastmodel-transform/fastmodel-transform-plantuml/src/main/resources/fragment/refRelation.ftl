@@ -1,0 +1,3 @@
+<#list constraints as constraint>
+    ${constraint.left.table}<#if (constraint.left.column)??>::${constraint.left.column}</#if><#if (constraint.leftComment)??> "${constraint.leftComment}" </#if> ${constraint.direction}<#if (constraint.rightComment)??> "${constraint.rightComment}" </#if> ${constraint.right.table}<#if (constraint.right.column)??>::${constraint.right.column}</#if> <#if (constraint.constraintName)??>:${constraint.constraintName}</#if>
+</#list>

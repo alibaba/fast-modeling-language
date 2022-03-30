@@ -1,0 +1,4 @@
+import model.test_bu.dim_shop as shop;
+import model.test_bu.dim_shop_1 as shop1;
+
+shop -> shop1; 
