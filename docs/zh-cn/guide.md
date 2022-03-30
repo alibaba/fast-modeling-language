@@ -180,22 +180,6 @@ WITH (
 ,'type' = 'NONE'
 )
 ```
-### 派生指标
-我们可以通过批量的方式，创建派生指标，而不需要一个个定义。
-```fml
--- 批量创建派生指标-学生考勤
-create batch edu.batch_code (
-  need_clock_in_class_cnt_0000 comment '当前学期_学生_全部_排课次数' references need_clock_in_class_cnt as count(1)
-, clock_in_class_cnt_0000 comment '当前学期_学生_全部_出席次数' references clock_in_class_cnt as count(case when fact_student_clock_in_class.absent_tag = 0 then 1 else null end)
-, not_clock_in_class_cnt_0000 comment '当前学期_学生_旷课_缺席次数' adjunct(kuangke_tag) references not_clock_in_class_cnt as count(1)
-, not_clock_in_class_cnt_0001 comment '当前学期_学生_病假_缺席次数' adjunct(bingjia_tag) references not_clock_in_class_cnt as count(1)
-, time_period now_term_year
-, from table (fact_student_clock_in_class)
-, date_field (gmt_create, 'yyyy-MM-dd')
-, adjunct (all_tag)
-, dim table (dim_student)
-) with ('is_async'='false');
-```
 
 
 # 总结

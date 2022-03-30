@@ -141,11 +141,18 @@ IntelliJ IDE 支持以下插件
 * IntelliJ 下载地址: [https://www.jetbrains.com/idea/](https://www.jetbrains.com/idea/)
 * IntelliJ ANTLR
   插件地址: [https://plugins.jetbrains.com/plugin/7358-antlr-v4](https://plugins.jetbrains.com/plugin/7358-antlr-v4)
+* 代码样式模板文件：`docs/Alibaba_CodeStyle.xml`
 
 ## Documentation
 
 FML语法介绍可以在 `docs/` 目录查看源文件, docs编写使用了：`docsify` 进行文档管理，具体使用可以参考：
 [docsify quickstart](https://docsify.js.org/#/quickstart)
+- 本地执行：`docsify serve docs`
+- 访问：http://localhost:3000
+
+## Related Product
+* [DataWorks智能数据建模](https://help.aliyun.com/document_detail/276018.html)
+![DataWorks](https://help-static-aliyun-doc.aliyuncs.com/assets/img/zh-CN/8759336261/p295134.png)
 
 ## Notice
 fast-modeling-language is a modeling DSL developed by Alibaba and licensed under the Apache License (Version 2.0) This product contains various third-party components under other open source licenses.
