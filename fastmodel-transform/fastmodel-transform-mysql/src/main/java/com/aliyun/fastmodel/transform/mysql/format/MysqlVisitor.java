@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.transform.mysql.format;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.formatter.ExpressionFormatter;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
@@ -26,10 +27,12 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
+import com.aliyun.fastmodel.core.tree.statement.element.MultiComment;
 import com.aliyun.fastmodel.core.tree.statement.script.RefObject;
 import com.aliyun.fastmodel.core.tree.statement.script.RefRelation;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
@@ -49,12 +52,12 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstrain
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.transform.api.datatype.DataTypeConverter;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
+import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.mysql.context.MysqlTransformContext;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatName;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -70,9 +73,12 @@ public class MysqlVisitor extends FastModelVisitor {
     private final DataTypeConverter dataTypeTransformer;
 
     public MysqlVisitor(MysqlTransformContext mysqlTransformContext) {
-        this.mysqlTransformContext = mysqlTransformContext;
-        dataTypeTransformer = this.mysqlTransformContext != null ? mysqlTransformContext.getDataTypeTransformer()
-            : null;
+        if (mysqlTransformContext == null) {
+            this.mysqlTransformContext =  MysqlTransformContext.builder().build();
+        }else{
+            this.mysqlTransformContext = mysqlTransformContext;
+        }
+        dataTypeTransformer = this.mysqlTransformContext.getDataTypeTransformer();
     }
 
     @Override
@@ -110,9 +116,27 @@ public class MysqlVisitor extends FastModelVisitor {
                 }
             }
             builder.append("\n").append(")");
+        } else {
+            if (!node.isCommentElementEmpty()) {
+                builder.append(newLine("/*("));
+                String elementIndent = indentString(indent + 1);
+                builder.append(formatCommentElement(node.getColumnCommentElements(), elementIndent));
+                builder.append(newLine(")*/"));
+            }
         }
         builder.append(formatComment(node.getComment()));
         return executable;
+    }
+
+    @Override
+    protected String formatCommentElement(List<MultiComment> commentElements, String elementIndent) {
+        return commentElements.stream().map(
+            element -> {
+                MysqlVisitor visitor = new MysqlVisitor(this.mysqlTransformContext);
+                visitor.process(element.getNode(), 0);
+                String result = visitor.getBuilder().toString();
+                return elementIndent + result;
+            }).collect(Collectors.joining(",\n"));
     }
 
     private void appendConstraint(CreateTable node, Integer indent) {
@@ -245,7 +269,9 @@ public class MysqlVisitor extends FastModelVisitor {
 
     @Override
     protected String getCode(QualifiedName qualifiedName) {
-        return qualifiedName.getSuffix();
+        QualifiedName tableName = StringJoinUtil.join(this.mysqlTransformContext.getDatabase(),
+            this.mysqlTransformContext.getSchema(), qualifiedName.getSuffix());
+        return formatName(tableName);
     }
 
     @Override
@@ -280,7 +306,7 @@ public class MysqlVisitor extends FastModelVisitor {
         if (dataTypeTransformer != null) {
             return dataTypeTransformer.convert(dataType);
         }
-        DataTypeEnums typeName = dataType.getTypeName();
+        IDataTypeName typeName = dataType.getTypeName();
         if (typeName == DataTypeEnums.STRING) {
             return new GenericDataType(new Identifier(DataTypeEnums.VARCHAR.name()),
                 ImmutableList.of(new NumericParameter(mysqlTransformContext.getVarcharLength().toString())));
@@ -305,7 +331,7 @@ public class MysqlVisitor extends FastModelVisitor {
             return false;
         }
         //ALTER TABLE `a` ADD CONSTRAINT `name` FOREIGN KEY (`a`) REFERENCES `b` (`a`);
-        builder.append("ALTER TABLE ").append(formatName(left.getMainName()));
+        builder.append("ALTER TABLE ").append(getCode(left.getMainName()));
         builder.append(" ADD CONSTRAINT ").append(formatName(refEntityStatement.getQualifiedName()));
         String collect = columnList.stream().map(identifier -> {
             return formatExpression(identifier);

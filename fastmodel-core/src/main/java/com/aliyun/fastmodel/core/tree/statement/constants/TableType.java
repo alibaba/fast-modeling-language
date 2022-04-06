@@ -16,13 +16,17 @@
 
 package com.aliyun.fastmodel.core.tree.statement.constants;
 
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableType;
+import lombok.Getter;
+
 /**
  * 表类型
  *
  * @author panguanjing
  * @date 2020/9/4
  */
-public enum TableType {
+@Getter
+public enum TableType implements ITableType {
 
     /**
      * 维度表
@@ -44,7 +48,6 @@ public enum TableType {
      */
     DWS("dws", "Dws Table"),
 
-
     /**
      * 数据汇总表，用于指标中的dws表定义
      */
@@ -64,14 +67,6 @@ public enum TableType {
         this.description = description;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public static TableType getByCode(String code) {
         TableType[] tableTypes = TableType.values();
         for (TableType t : tableTypes) {
@@ -81,4 +76,5 @@ public enum TableType {
         }
         throw new IllegalArgumentException("can't find the tableType with code:" + code);
     }
+
 }

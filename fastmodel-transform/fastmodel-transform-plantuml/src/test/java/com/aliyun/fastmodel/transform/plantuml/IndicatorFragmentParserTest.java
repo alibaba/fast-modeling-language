@@ -54,7 +54,7 @@ public class IndicatorFragmentParserTest {
         FunctionCall baseExpression = new FunctionCall(QualifiedName.of("sum"), false, field1);
         CreateIndicator createIndicatorStatement = new CreateIndicator(
             CreateElement.builder().qualifiedName(QualifiedName.of("indicator")).build(),
-            new GenericDataType(new Identifier(DataTypeEnums.STRING.name())), baseExpression, IndicatorType.ATOMIC
+            DataTypeUtil.simpleType(DataTypeEnums.STRING), baseExpression, IndicatorType.ATOMIC
         );
         Fragment parse = indicatorFragmentParser.parse(createIndicatorStatement);
         String content = parse.content();

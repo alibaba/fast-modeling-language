@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.batch.element;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -31,7 +31,7 @@ import lombok.Getter;
  * @date 2021/2/4
  */
 @Getter
-public class TableList extends AbstractNode {
+public class TableList extends AbstractFmlNode {
 
     private final List<Identifier> tables;
 

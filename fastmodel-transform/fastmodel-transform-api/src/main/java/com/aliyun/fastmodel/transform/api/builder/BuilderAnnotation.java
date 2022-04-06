@@ -47,7 +47,7 @@ public @interface BuilderAnnotation {
      *
      * @return
      */
-    DialectName dialect();
+    String dialect();
 
     /**
      * dialect version

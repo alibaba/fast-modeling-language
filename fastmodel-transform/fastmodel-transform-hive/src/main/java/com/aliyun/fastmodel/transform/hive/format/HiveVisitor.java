@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.transform.hive.format;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.formatter.ExpressionFormatter;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
@@ -26,8 +27,10 @@ import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.statement.element.MultiComment;
 import com.aliyun.fastmodel.core.tree.statement.insert.Insert;
 import com.aliyun.fastmodel.core.tree.statement.table.AddConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.AddPartitionCol;
@@ -48,12 +51,13 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
+import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
 import com.aliyun.fastmodel.transform.hive.context.RowFormat;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatStringLiteral;
+import static com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums.DATETIME;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -107,6 +111,12 @@ public class HiveVisitor extends FastModelVisitor {
                 }
             }
             builder.append(newLine(")"));
+        } else {
+            if (!node.isCommentElementEmpty()) {
+                builder.append(newLine(COMMENT + "("));
+                builder.append(formatCommentElement(node.getColumnCommentElements(), elementIndent));
+                builder.append(newLine(COMMENT + ")"));
+            }
         }
         if (node.getComment() != null) {
             builder.append(formatComment(node.getComment(), isEndNewLine(builder.toString())));
@@ -153,6 +163,17 @@ public class HiveVisitor extends FastModelVisitor {
         builder.append(String.format("'%s'='%s'", "comment", setTableComment.getComment().getComment()));
         builder.append(")");
         return true;
+    }
+
+    @Override
+    protected String formatCommentElement(List<MultiComment> commentElements, String elementIndent) {
+        return commentElements.stream().map(
+            element -> {
+                HiveVisitor visitor = new HiveVisitor(this.context);
+                visitor.process(element.getNode(), 0);
+                String result = visitor.getBuilder().toString();
+                return COMMENT + elementIndent + result;
+            }).collect(Collectors.joining(",\n"));
     }
 
     /**
@@ -281,12 +302,9 @@ public class HiveVisitor extends FastModelVisitor {
      * @param typeName
      * @return
      */
-    private DataTypeEnums convert(DataTypeEnums typeName) {
-        switch (typeName) {
-            case DATETIME:
-                return DataTypeEnums.TIMESTAMP;
-            default:
-                break;
+    private IDataTypeName convert(IDataTypeName typeName) {
+        if (DATETIME.equals(typeName)) {
+            return DataTypeEnums.TIMESTAMP;
         }
         return typeName;
     }
@@ -294,8 +312,9 @@ public class HiveVisitor extends FastModelVisitor {
     @Override
     protected String formatColumnDefinition(ColumnDefinition column, Integer max) {
         BaseDataType dataType = column.getDataType();
-        DataTypeEnums typeName = dataType.getTypeName();
-        BaseDataType convert = DataTypeUtil.convert(dataType, convert(typeName));
+        IDataTypeName typeName = dataType.getTypeName();
+        IDataTypeName convert1 = convert(typeName);
+        BaseDataType convert = DataTypeUtil.convert(dataType, convert1);
         StringBuilder sb = new StringBuilder()
             .append(formatColName(column.getColName(), max))
             .append(" ").append(formatExpression(convert));
@@ -339,7 +358,8 @@ public class HiveVisitor extends FastModelVisitor {
 
     @Override
     protected String getCode(QualifiedName qualifiedName) {
-        return qualifiedName.getSuffix();
+        QualifiedName join = StringJoinUtil.join(context.getDatabase(), context.getSchema(), qualifiedName.getSuffix());
+        return formatName(join);
     }
 
     @Override

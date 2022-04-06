@@ -19,7 +19,7 @@ package com.aliyun.fastmodel.core.tree.expr.window;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
@@ -29,7 +29,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -57,7 +56,7 @@ public class FrameBound
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitFrameBound(this, context);
     }
 

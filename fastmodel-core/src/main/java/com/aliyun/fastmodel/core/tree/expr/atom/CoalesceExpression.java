@@ -18,13 +18,12 @@ package com.aliyun.fastmodel.core.tree.expr.atom;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Desc:
@@ -51,7 +50,7 @@ public class CoalesceExpression extends BaseExpression {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitCoalesceExpression(this, context);
     }
 

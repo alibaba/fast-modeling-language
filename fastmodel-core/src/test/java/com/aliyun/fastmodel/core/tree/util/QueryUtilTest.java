@@ -171,11 +171,9 @@ public class QueryUtilTest {
                 new LongLiteral("1"))
         );
     }
-   
+
     private QuerySpecification getFrom() {
-        return new QuerySpecification(QueryUtil.selectList(new StringLiteral("string")), null, null, null, null, null,
-            null,
-            null, null);
+        return new QuerySpecification(QueryUtil.selectList(new StringLiteral("string")), null);
     }
 
     @Test

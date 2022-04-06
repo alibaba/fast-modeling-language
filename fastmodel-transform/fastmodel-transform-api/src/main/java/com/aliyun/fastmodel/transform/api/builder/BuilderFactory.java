@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 
 /**
@@ -29,7 +30,7 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
  * @author panguanjing
  * @date 2020/10/16
  */
-public class BuilderFactory {
+public class BuilderFactory<T extends TransformContext> {
 
     public static final String FORMAT = "[%s]-[%s]";
 
@@ -44,10 +45,9 @@ public class BuilderFactory {
         for (StatementBuilder statementBuilder : load) {
             BuilderAnnotation annotation = statementBuilder.getClass().getDeclaredAnnotation(
                 BuilderAnnotation.class);
-            DialectMeta dialectMeta = new DialectMeta(annotation.dialect(), annotation.version());
             Class<?>[] values = annotation.values();
             for (Class<?> v : values) {
-                String key = String.format(FORMAT, dialectMeta, v.getName());
+                String key = String.format(FORMAT, annotation.dialect(), v.getName());
                 map.put(key, statementBuilder);
             }
         }
@@ -72,11 +72,11 @@ public class BuilderFactory {
      * @return StatementBuilder
      */
     public StatementBuilder getBuilder(BaseStatement source,
-                                       DialectMeta dialectMeta) {
+                                       DialectMeta dialectMeta, T context) {
         String key = String.format(FORMAT, dialectMeta.toString(),
             source.getClass().getName());
         StatementBuilder statementBuilder = map.get(key);
-        if (statementBuilder != null) {
+        if (statementBuilder != null && statementBuilder.isMatch(source, context)) {
             return statementBuilder;
         }
         key = String.format(FORMAT, dialectMeta, BaseStatement.class.getName());
@@ -84,7 +84,7 @@ public class BuilderFactory {
         if (statementBuilder != null) {
             return statementBuilder;
         }
-        key = String.format(FORMAT, DialectMeta.createDefault(dialectMeta.getName()), BaseStatement.class.getName());
+        key = String.format(FORMAT, DialectMeta.createDefault(dialectMeta.getDialectName()), BaseStatement.class.getName());
         return map.get(key);
     }
 }

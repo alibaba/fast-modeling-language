@@ -16,8 +16,12 @@
 
 package com.aliyun.fastmodel.compare.table.column;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.compare.impl.table.column.OrderColumn;
+import com.aliyun.fastmodel.compare.impl.table.column.OrderColumnManager;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -25,6 +29,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.SetColumnOrder;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -87,6 +92,24 @@ public class OrderColumnManagerTest {
     }
 
     @Test
+    public void testGetAfter() {
+        List<ColumnDefinition> list = initList("c", "b", "a");
+        SetColumnOrder compare = orderColumnManager.compare(new Identifier("b"), new OrderColumnManager(QualifiedName.of("abc"),
+            list));
+        assertEquals(compare.getBeforeColName(), new Identifier("c"));
+    }
+
+    @Test
+    public void testGetAfter2() {
+        List<ColumnDefinition> before = initList("h", "g", "f", "e", "d", "c", "b", "a");
+        orderColumnManager = new OrderColumnManager(QualifiedName.of("dim_shop"), before);
+        List<ColumnDefinition> after = initList("h", "g", "f", "d", "c", "e", "b", "a");
+        SetColumnOrder compare = orderColumnManager.compare(new Identifier("f"), new OrderColumnManager(QualifiedName.of("abc"),
+            after));
+        assertNull(compare);
+    }
+
+    @Test
     public void getOrder() {
         List<ColumnDefinition> list = initAfterList();
         OrderColumnManager afterColumnManager = new OrderColumnManager(QualifiedName.of("dim_shop"), list);
@@ -94,24 +117,36 @@ public class OrderColumnManagerTest {
         assertEquals(orderColumn.toString(), "ALTER TABLE dim_shop CHANGE COLUMN a a BIGINT AFTER b");
     }
 
+    @Test
+    public void testApply() {
+        List<ColumnDefinition> list = initAfterList();
+        QualifiedName dimShop = QualifiedName.of("dim_shop");
+        OrderColumnManager afterColumnManager = new OrderColumnManager(dimShop, list);
+        SetColumnOrder order = new SetColumnOrder(
+            dimShop, new Identifier("b"),new Identifier("b"), DataTypeUtil.simpleType(DataTypeEnums.BIGINT),
+            new Identifier("a"), false
+        );
+        afterColumnManager.apply(order);
+        List<ColumnDefinition> list1 = afterColumnManager.getList();
+        String collect = list1.stream().map(x -> {
+            return x.getColName().getValue();
+        }).collect(Collectors.joining(","));
+        assertEquals(collect, "c,a,b");
+    }
+
     private List<ColumnDefinition> initAfterList() {
         return initList("c", "b", "a");
     }
 
-    private List<ColumnDefinition> initList(String a, String b, String c) {
-        ColumnDefinition c1 = ColumnDefinition.builder()
-            .colName(new Identifier(a))
-            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
-            .build();
-
-        ColumnDefinition c2 = ColumnDefinition.builder()
-            .colName(new Identifier(b))
-            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
-            .build();
-        ColumnDefinition c3 = ColumnDefinition.builder()
-            .colName(new Identifier(c))
-            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
-            .build();
-        return ImmutableList.of(c1, c2, c3);
+    private List<ColumnDefinition> initList(String... b) {
+        List<ColumnDefinition> list = new ArrayList<>();
+        for (String bb : b) {
+            ColumnDefinition c1 = ColumnDefinition.builder()
+                .colName(new Identifier(bb))
+                .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+                .build();
+            list.add(c1);
+        }
+        return list;
     }
 }

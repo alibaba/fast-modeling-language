@@ -34,7 +34,7 @@ public class SqlConvertFactory {
 
     private static final SqlConvertFactory INSTANCE = new SqlConvertFactory();
 
-    private final Map<DialectMeta, SqlConverter> maps = new HashMap<>();
+    private final Map<String, SqlConverter> maps = new HashMap<>();
 
     /**
      * 私有构造函数，只在内容进行调用
@@ -44,8 +44,7 @@ public class SqlConvertFactory {
         for (SqlConverter transformer : load) {
             Dialect annotation = transformer.getClass().getAnnotation(Dialect.class);
             if (annotation != null) {
-                DialectMeta dialectMeta = new DialectMeta(annotation.value(), annotation.version());
-                maps.put(dialectMeta, transformer);
+                maps.put(annotation.value() + annotation.version(), transformer);
             }
         }
     }
@@ -64,10 +63,11 @@ public class SqlConvertFactory {
         if (dialectMeta == null) {
             throw new IllegalArgumentException("dialectMeta can't be null");
         }
-        SqlConverter statementTransformer = maps.get(dialectMeta);
+        SqlConverter statementTransformer = maps.get(dialectMeta.toString());
         if (statementTransformer != null) {
             return statementTransformer;
         }
-        return maps.get(DialectMeta.createDefault(dialectMeta.getName()));
+        DialectMeta key = DialectMeta.createDefault(dialectMeta.getDialectName());
+        return maps.get(key.toString());
     }
 }

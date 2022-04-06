@@ -17,12 +17,11 @@
 package com.aliyun.fastmodel.core.tree.expr.atom;
 
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
-import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Desc:
@@ -40,10 +39,11 @@ public class CastTest {
     @Test
     public void testEquals() {
         Cast cast = new Cast(null, null, new StringLiteral("1"),
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())));
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT));
         Cast cast1 =
             new Cast(null, null, new StringLiteral("1"),
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())));;
+                DataTypeUtil.simpleType(DataTypeEnums.BIGINT));
+        ;
         assertEquals(cast, cast1);
     }
 }

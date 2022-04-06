@@ -33,7 +33,7 @@ public class TransformerFactory {
 
     private static final TransformerFactory INSTANCE = new TransformerFactory();
 
-    private final Map<DialectMeta, Transformer> maps = new HashMap<>();
+    private final Map<String, Transformer> maps = new HashMap<>();
 
     /**
      * 私有构造函数，只在内容进行调用
@@ -42,9 +42,10 @@ public class TransformerFactory {
         ServiceLoader<Transformer> load = ServiceLoader.load(Transformer.class);
         for (Transformer transformer : load) {
             Dialect annotation = transformer.getClass().getAnnotation(Dialect.class);
-            if (annotation != null) {
-                DialectMeta dialectMeta = new DialectMeta(annotation.value(), annotation.version());
-                maps.put(dialectMeta, transformer);
+            if (annotation == null) {continue;}
+            maps.put(annotation.value() + annotation.version(), transformer);
+            if (annotation.defaultDialect()) {
+                maps.put(annotation.value(), transformer);
             }
         }
     }
@@ -63,10 +64,12 @@ public class TransformerFactory {
         if (dialectMeta == null) {
             throw new IllegalArgumentException("dialectMeta can't be null");
         }
-        Transformer statementTransformer = maps.get(dialectMeta);
+        String key = dialectMeta.toString();
+        Transformer statementTransformer = maps.get(key);
         if (statementTransformer != null) {
             return statementTransformer;
         }
-        return maps.get(DialectMeta.createDefault(dialectMeta.getName()));
+        DialectMeta meta = DialectMeta.createDefault(dialectMeta.getDialectName());
+        return maps.get(meta.toString());
     }
 }

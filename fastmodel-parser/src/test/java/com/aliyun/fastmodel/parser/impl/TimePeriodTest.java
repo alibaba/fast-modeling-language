@@ -20,8 +20,10 @@ import com.aliyun.fastmodel.core.parser.DomainLanguage;
 import com.aliyun.fastmodel.core.tree.AliasedName;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
+import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.similar.BetweenPredicate;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
+import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.timeperiod.CreateTimePeriod;
 import com.aliyun.fastmodel.core.tree.statement.timeperiod.DropTimePeriod;
 import com.aliyun.fastmodel.core.tree.statement.timeperiod.RenameTimePeriod;
@@ -166,6 +168,21 @@ public class TimePeriodTest {
             CreateTimePeriod createTimePeriod1 = nodeParser.parseStatement(fml1);
             assertEquals(createTimePeriod1.getIdentifier(), c);
         }
+    }
+
+    @Test
+    public void testTimePeriod() {
+        CreateTimePeriod createTimePeriod = new CreateTimePeriod(
+            CreateElement.builder()
+                .qualifiedName(QualifiedName.of("1"))
+                .comment(new Comment("abc"))
+                .build(),
+            null
+        );
+        String expected = createTimePeriod.toString();
+        assertEquals(expected, "CREATE TIME_PERIOD `1` COMMENT 'abc'");
+        CreateTimePeriod baseStatement = nodeParser.parseStatement(expected);
+        assertEquals(baseStatement.getIdentifier(), "1");
     }
 
     @Test

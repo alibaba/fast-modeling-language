@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.show;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.google.common.collect.ImmutableList;
@@ -38,7 +38,7 @@ public class WhereCondition extends ConditionElement {
     public WhereCondition(BaseExpression baseExpression) {this.baseExpression = baseExpression;}
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitWhereCondition(this, context);
     }
 

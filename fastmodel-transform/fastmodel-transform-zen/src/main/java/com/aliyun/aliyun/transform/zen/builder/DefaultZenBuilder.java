@@ -31,7 +31,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/7/24
  */
-@BuilderAnnotation(dialect = DialectName.ZEN, values = {BaseStatement.class})
+@BuilderAnnotation(dialect = DialectName.Constants.ZEN, values = {BaseStatement.class})
 @AutoService(StatementBuilder.class)
 public class DefaultZenBuilder implements StatementBuilder<TransformContext> {
 

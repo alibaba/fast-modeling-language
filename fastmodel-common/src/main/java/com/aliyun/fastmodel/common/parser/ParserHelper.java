@@ -1,17 +1,9 @@
 /*
- * Copyright 2021-2022 Alibaba Group Holding Ltd.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright (c)  2020. Aliyun.com All right reserved. This software is the
+ * confidential and proprietary information of Aliyun.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Aliyun.com.
  */
 
 package com.aliyun.fastmodel.common.parser;
@@ -19,6 +11,7 @@ package com.aliyun.fastmodel.common.parser;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.aliyun.fastmodel.core.tree.NodeLocation;
@@ -48,7 +41,8 @@ import static java.util.stream.Collectors.toList;
  */
 public class ParserHelper {
 
-    public static final String PREFIX = "`";
+    public static final String REGEX = "`";
+    public static final String DQUOTA = "\"";
 
     /**
      * 获取原始的文本
@@ -137,6 +131,7 @@ public class ParserHelper {
                                     Class<T> clazz) {
         return contexts.stream()
             .map(visitor::visit)
+            .filter(Objects::nonNull)
             .map(clazz::cast)
             .collect(toList());
     }
@@ -147,10 +142,17 @@ public class ParserHelper {
         }
         //大小写忽略处理
         String text = ctx.getText().toLowerCase(Locale.ROOT);
-        if (text.startsWith(PREFIX)) {
-            text = text.substring(1, text.length() - 1).replaceAll(PREFIX, StringUtils.EMPTY);
-            return new Identifier(getLocation(ctx), getOrigin(ctx), text, true);
+        if (text.startsWith(REGEX)) {
+            return getIdentifier(text, REGEX, ctx);
+        }
+        if (text.startsWith(DQUOTA)) {
+            return getIdentifier(text, DQUOTA, ctx);
         }
         return new Identifier(getLocation(ctx), getOrigin(ctx), text);
+    }
+
+    private static Identifier getIdentifier(String text, String regex, ParserRuleContext ctx) {
+        text = text.substring(1, text.length() - 1).replaceAll(regex, StringUtils.EMPTY);
+        return new Identifier(getLocation(ctx), getOrigin(ctx), text, true);
     }
 }

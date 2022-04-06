@@ -25,7 +25,6 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.transform.fml.context.FmlTransformContext;
 
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatStringLiteral;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -50,15 +49,9 @@ public class FmlVisitor extends FastModelVisitor {
         return super.convert(dataType);
     }
 
-    /**
-     * Get Code
-     *
-     * @param qualifiedName
-     * @return 返回的code内容
-     */
     @Override
     protected String getCode(QualifiedName qualifiedName) {
-        return qualifiedName.getSuffixPath();
+        return formatName(QualifiedName.of(qualifiedName.getSuffix()));
     }
 
     @Override

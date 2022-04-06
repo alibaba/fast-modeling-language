@@ -17,12 +17,8 @@
 package com.aliyun.fastmodel.core.tree.statement.select.item;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * 一个别名的statement
@@ -37,7 +33,7 @@ public abstract class SelectItem extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
-        return visitor.visitSelectItem(this,context);
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
+        return visitor.visitSelectItem(this, context);
     }
 }

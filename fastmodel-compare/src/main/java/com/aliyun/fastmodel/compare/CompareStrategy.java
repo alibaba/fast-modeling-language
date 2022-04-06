@@ -37,7 +37,7 @@ public enum CompareStrategy {
     ;
 
     @Getter
-    private String description;
+    private final String description;
 
     CompareStrategy(String description) {
         this.description = description;

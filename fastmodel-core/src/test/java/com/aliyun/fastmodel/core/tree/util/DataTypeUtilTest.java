@@ -40,8 +40,9 @@ public class DataTypeUtilTest {
         assertEquals(convert.getTypeName(), DataTypeEnums.DATETIME);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testConvertException() {
-        DataTypeUtil.convert(new RowDataType(ImmutableList.of()), DataTypeEnums.DATE);
+        BaseDataType convert = DataTypeUtil.convert(new RowDataType(ImmutableList.of()), DataTypeEnums.DATE);
+        assertEquals(convert.getClass(), RowDataType.class);
     }
 }

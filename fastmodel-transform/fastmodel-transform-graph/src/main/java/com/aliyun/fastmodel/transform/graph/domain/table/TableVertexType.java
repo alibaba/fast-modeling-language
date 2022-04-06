@@ -17,6 +17,7 @@
 package com.aliyun.fastmodel.transform.graph.domain.table;
 
 import com.aliyun.fastmodel.core.tree.statement.constants.TableType;
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableType;
 import com.aliyun.fastmodel.transform.graph.domain.VertexType;
 
 /**
@@ -49,7 +50,13 @@ public enum TableVertexType implements VertexType {
         return name();
     }
 
-    public static TableVertexType formTableType(TableType tableType) {
-        return TableVertexType.valueOf(tableType.name());
+    public static TableVertexType formTableType(ITableType tableType) {
+        TableVertexType[] tableVertexTypes = TableVertexType.values();
+        for (TableVertexType tableVertexType : tableVertexTypes) {
+            if (tableVertexType.getName().equalsIgnoreCase(tableType.getCode())) {
+                return tableVertexType;
+            }
+        }
+        return null;
     }
 }

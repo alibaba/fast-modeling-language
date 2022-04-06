@@ -37,7 +37,6 @@ import com.aliyun.fastmodel.core.tree.expr.atom.SearchedCaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.SimpleCaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.atom.WhenClause;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddStartExpression;
 import com.aliyun.fastmodel.core.tree.expr.enums.BitOperator;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.expr.enums.IntervalQualifiers;
@@ -445,17 +444,6 @@ public class ExpressionTest {
         List<BaseExpression> arguments = functionCall.getArguments();
         BaseExpression baseExpression1 = arguments.get(2);
         assertEquals(baseExpression1, new StringLiteral("MO"));
-    }
-
-    @Test
-    public void testDateTimeAdd() {
-        String date = "DATETIME_ADD_START(DATE \"2008-12-25\", INTERVAL -5 DAY)";
-        BaseExpression baseExpression = getBaseExpression(date);
-        DateTimeAddStartExpression functionCall = (DateTimeAddStartExpression)baseExpression;
-        IntervalExpression baseExpression1 = functionCall.getIntervalExpression();
-        IntervalQualifiers intervalQualifiers = baseExpression1.getIntervalQualifiers();
-        assertEquals(intervalQualifiers, IntervalQualifiers.DAY);
-        assertEquals(baseExpression1.getIntervalValue(), new LongLiteral("-5"));
     }
 
     @Test

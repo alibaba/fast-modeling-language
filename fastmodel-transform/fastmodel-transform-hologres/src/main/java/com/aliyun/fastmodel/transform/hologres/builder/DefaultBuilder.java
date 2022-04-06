@@ -31,7 +31,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/3/8
  */
-@BuilderAnnotation(dialect = DialectName.HOLOGRES, values = {BaseStatement.class})
+@BuilderAnnotation(dialect = DialectName.Constants.HOLOGRES, values = {BaseStatement.class})
 @AutoService(StatementBuilder.class)
 public class DefaultBuilder implements StatementBuilder<HologresTransformContext> {
 

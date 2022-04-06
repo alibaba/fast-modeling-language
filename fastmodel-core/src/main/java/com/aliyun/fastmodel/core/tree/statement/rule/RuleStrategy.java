@@ -16,7 +16,7 @@
 
 package com.aliyun.fastmodel.core.tree.statement.rule;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.statement.rule.function.BaseFunction;
@@ -27,7 +27,7 @@ import com.aliyun.fastmodel.core.tree.statement.rule.function.BaseFunction;
  * @author panguanjing
  * @date 2021/5/29
  */
-public abstract class RuleStrategy extends AbstractNode {
+public abstract class RuleStrategy extends AbstractFmlNode {
 
     /**
      * 返回策略中函数方式

@@ -6,10 +6,15 @@
 
 | 方言         | 方言->FML | FML->方言 |
 |------------|---------|---------|
+| MaxCompute | OK      | OK      |
 | Hive       | OK      | OK      |
 | Hologres   | NOT     | OK      |
 | Mysql      | OK      | OK      |
 | Oracle     | OK      | OK      |
+
+## Dialect定义
+
+具体可以参考：com.aliyun.fastmodel.transform.api.dialect.DialectName
 
 ## Maven依赖
 
@@ -34,6 +39,12 @@
             <artifactId>fastmodel-transform-api</artifactId>
         </dependency>
 
+        <!--支持MaxCompute转换, 未开源
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-maxcompute</artifactId>
+        </dependency>-->
+
         <!--支持hive转换-->
         <dependency>
             <groupId>com.aliyun.fastmodel</groupId>
@@ -46,6 +57,12 @@
             <artifactId>fastmodel-transform-mysql</artifactId>
         </dependency>
 
+        <!--支持hologres转换-->
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-hologres</artifactId>
+        </dependency>
+
 
     </dependencies>
 </project>
@@ -55,11 +72,11 @@
 ## APi调用
 
 ```java
-//Hive转为Mysql 
-public class HiveTransformerTest {
+//MaxCompute创建转为Mysql 
+public class MaxComputeTransformerTest {
     public static void main(String[] args) {
         TransformerFactory transformFactory = TransformerFactory.getInstance();
-        Transformer transformer = transformFactory.get(DialectMeta.DEFAULT_HIVE);
+        Transformer transformer = transformFactory.get(DialectMeta.DEFAULT_MAXCOMPUTE);
         DialectNode dialectNode = new DialectNode("create table a (test bigint) comment 'test';");
         Node baseStatement = transformer.reverse(dialectNode);
         Transformer mysqlTransformer = transformFactory.get(DialectMeta.DEFAULT_MYSQL);
@@ -72,53 +89,38 @@ public class HiveTransformerTest {
 ## 设计
 
 1. Transform支持按照SPI的方式进行处理，底层是API提供统一标准和规范。
-2. Transfrom提供：transform-api提供了接口支持， 不同的引擎的实现，是基于transform-api来进行处理。
+2. Transform提供：transform-api提供了接口支持， 不同的引擎的实现，是基于transform-api来进行处理。
 
 ## 架构图
 
 ```plantuml
    @startuml
 
-class TransformContext
-class ReverseContext
-class DialectMeta
+
 class DialectNode {
     String node
     boolean executeable
 }
 
-abstract class BaseStatement
 interface Transfomer {
     DialectNode transform(BaseStatement statment, TransformContext context)
     BaseStatement reverse(String node, ReverseContext reverse)
 }
-enum DialectName {
-    HIVE
-    MYSQL
-    HOLOGRES
-    ORACLE
-}
 
-class DialectTransform <<快捷调用>>{
-    DialectNode transform(DialectParam param)
-}
 
-DialectTransform -* Transfomer : transform
 
 
 Transfomer <|.. OracleTranformer
 Transfomer <|.. MysqlTransformer
+Transfomer <|.. HiveTranformer
+Transfomer <|.. ClickHouseTranformer
+Transfomer <|.. FmlTransformer
 
-TransformContext <|-- OracleTransformContext
 
-Transfomer --> BaseStatement
-DialectMeta -> DialectName
-Transfomer --> TransformContext
-Transfomer --> ReverseContext
+
+
 Transfomer -> DialectNode
 
-OracleTranformer --> DialectMeta
-MysqlTransformer --> DialectMeta
 
 @enduml
 ```

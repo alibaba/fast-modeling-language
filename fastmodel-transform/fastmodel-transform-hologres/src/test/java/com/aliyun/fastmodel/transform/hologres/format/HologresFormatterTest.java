@@ -75,7 +75,6 @@ public class HologresFormatterTest {
             + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE a IS 'comment';\n"
             + "COMMENT ON COLUMN a.a IS 'hello';\n"
-            + "\n"
             + "COMMIT;", format.getNode());
     }
 
@@ -94,9 +93,6 @@ public class HologresFormatterTest {
             + ");\n"
             + "CALL SET_TABLE_PROPERTY('a', 'orientation', 'column');\n"
             + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON TABLE a IS 'col_alias';\n"
-            + "COMMENT ON COLUMN a.co1 IS 'alias';\n"
-            + "\n"
             + "COMMIT;");
     }
 
@@ -125,8 +121,8 @@ public class HologresFormatterTest {
         DialectNode format = HologresFormatter.format(createDimTable, HologresTransformContext.builder().build());
         assertEquals(format.getNode(), "BEGIN;\n"
             + "CREATE TABLE a (\n"
-            + "   a TIMESTAMP,\n"
-            + "   b TEXT PRIMARY KEY,\n"
+            + "   a  TIMESTAMP,\n"
+            + "   b  TEXT PRIMARY KEY,\n"
             + "   p1 TIMESTAMP,\n"
             + "   PRIMARY KEY(a,b)\n"
             + ") PARTITION BY LIST(p1);\n"
@@ -134,7 +130,7 @@ public class HologresFormatterTest {
             + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE a IS 'comment';\n"
             + "COMMENT ON COLUMN a.a IS 'hello';\n"
-            + "\n"
+            + "COMMENT ON COLUMN a.p1 IS 'comment';\n"
             + "COMMIT;");
     }
 
@@ -159,7 +155,6 @@ public class HologresFormatterTest {
         assertEquals("BEGIN;\n"
             + "ALTER TABLE IF EXISTS b ADD COLUMN new_column TIMESTAMP, ADD COLUMN new_column2 BIGINT;\n"
             + "COMMENT ON COLUMN b.new_column IS 'comment';\n"
-            + "\n"
             + "COMMIT;", format.getNode());
     }
 
@@ -176,11 +171,8 @@ public class HologresFormatterTest {
             ImmutableList
                 .of(new Property("dictionary_encoding_columns", "a:on,b:auto"), new Property("comment", "abc")));
         DialectNode format = HologresFormatter.format(setTableProperties, HologresTransformContext.builder().build());
-        assertEquals(format.getNode(), "BEGIN;\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'dictionary_encoding_columns', 'a:on,b:auto');\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'comment', 'abc');\n"
-            + "\n"
-            + "COMMIT;");
+        assertEquals(format.getNode(),
+            "BEGIN;\nCALL SET_TABLE_PROPERTY('b', 'dictionary_encoding_columns', 'a:on,b:auto');\nCOMMIT;");
     }
 
     @Test

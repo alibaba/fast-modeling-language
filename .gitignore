@@ -32,7 +32,7 @@ target/
 /**/.flattened-pom.xml
 /parent.ipr
 /parent.iws
-/uploads/
+uploads/
 deploy.sh
 /fastmodel-parser/src/test/resources/lsp/gen/
 /**/package-lock.json

@@ -16,11 +16,16 @@
 
 package com.aliyun.fastmodel.core.formatter;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Desc:
@@ -40,10 +45,23 @@ public class ExpressionVisitorTest {
     @Test
     public void testCustom() {
         ExpressionVisitor expressionVisitor = new ExpressionVisitor();
-        GenericDataType g = new GenericDataType(
-            new Identifier("VARCHAR2")
-        );
+        GenericDataType g = new GenericDataType("VARCHAR2");
         String result = expressionVisitor.visitGenericDataType(g, null);
-        assertEquals(result, "CUSTOM('VARCHAR2')");
+        assertEquals(result, "VARCHAR2");
+    }
+
+    @Test
+    public void testIdentifier() {
+        Pattern pattern = Pattern.compile("[0-9]*");
+        Matcher matcher = pattern.matcher("1");
+        assertTrue(matcher.matches());
+        matcher = pattern.matcher("1a");
+        assertFalse(matcher.matches());
+    }
+
+    @Test
+    public void testDigit() {
+        Identifier identifier = new Identifier("1");
+        assertTrue(identifier.isDelimited());
     }
 }

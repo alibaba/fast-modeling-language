@@ -21,6 +21,7 @@ import com.aliyun.aliyun.transform.zen.parser.tree.AttributeZenExpression;
 import com.aliyun.aliyun.transform.zen.parser.tree.BaseZenExpression;
 import com.aliyun.aliyun.transform.zen.parser.tree.BaseZenNode;
 import com.aliyun.aliyun.transform.zen.parser.tree.BrotherZenExpression;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 
 /**
  * ZenAstVisitor
@@ -28,7 +29,7 @@ import com.aliyun.aliyun.transform.zen.parser.tree.BrotherZenExpression;
  * @author panguanjing
  * @date 2021/7/14
  */
-public abstract class BaseZenAstVisitor<R, C> {
+public abstract class BaseZenAstVisitor<R, C> implements IAstVisitor<R, C> {
 
     public R process(BaseZenNode node) {
         return process(node, null);

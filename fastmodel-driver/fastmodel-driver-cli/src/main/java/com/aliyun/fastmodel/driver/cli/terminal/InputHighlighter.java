@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.driver.cli.terminal;
 
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.driver.cli.command.Console;
 import com.aliyun.fastmodel.parser.StatementSplitter;
@@ -30,7 +31,6 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.Locale.ENGLISH;
 
 /**
@@ -54,7 +54,7 @@ public class InputHighlighter implements Highlighter {
 
     private static final Set<String> KEYWORDS = StatementSplitter.keywords().stream()
         .map(keyword -> keyword.toLowerCase(ENGLISH))
-        .collect(toImmutableSet());
+        .collect(Collectors.toSet());
 
     @Override
     public AttributedString highlight(LineReader reader, String buffer) {

@@ -58,6 +58,7 @@ import com.aliyun.fastmodel.core.tree.statement.BaseSetComment;
 import com.aliyun.fastmodel.core.tree.statement.BaseSetProperties;
 import com.aliyun.fastmodel.core.tree.statement.BaseUnSetProperties;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
+import com.aliyun.fastmodel.core.tree.statement.adjunct.CreateAdjunct;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnCategory;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
 import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
@@ -143,11 +144,13 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelDefine;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.RedundantConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.TimePeriodConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
 import com.aliyun.fastmodel.core.tree.statement.table.index.SortType;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.core.tree.util.RuleUtil;
 import com.google.common.base.Joiner;
@@ -158,15 +161,13 @@ import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatGroupingSet;
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatName;
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatStringLiteral;
 import static com.aliyun.fastmodel.core.tree.relation.join.JoinToken.CROSS;
 import static com.aliyun.fastmodel.core.tree.relation.join.JoinToken.IMPLICIT;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 /**
  * FML的visitor的信息
@@ -181,6 +182,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public static final String SUFFIX = ";";
     public static final String NEW_LINE = "\n";
     public static final String SUFFIX_NEW_LINE = ";\n";
+    public static final String COMMENT = "--";
 
     @Getter
     protected StringBuilder builder = new StringBuilder();
@@ -228,7 +230,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateAtomicIndicator(CreateAtomicIndicator createIndicator, Integer context) {
-        builder.append("CREATE ATOMIC INDICATOR ");
+        appendCreateOrReplace(createIndicator);
+        builder.append("ATOMIC INDICATOR ");
         appendIfNotExist(createIndicator.isNotExists());
         builder.append(getCode(createIndicator.getQualifiedName()));
         builder.append(formatAliasedName(createIndicator.getAliasedName()));
@@ -239,9 +242,17 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return true;
     }
 
+    private void appendCreateOrReplace(BaseCreate baseCreate) {
+        builder.append("CREATE ");
+        if (BooleanUtils.isTrue(baseCreate.getCreateElement().getCreateOrReplace())) {
+            builder.append("OR REPLACE ");
+        }
+    }
+
     @Override
     public Boolean createAtomicCompositeIndicator(CreateAtomicCompositeIndicator createIndicator, Integer context) {
-        builder.append("CREATE ATOMIC COMPOSITE INDICATOR ");
+        appendCreateOrReplace(createIndicator);
+        builder.append("ATOMIC COMPOSITE INDICATOR ");
         appendIfNotExist(createIndicator.isNotExists());
         builder.append(getCode(createIndicator.getQualifiedName()));
         builder.append(formatAliasedName(createIndicator.getAliasedName()));
@@ -265,7 +276,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitCreateDerivativeCompositeIndicator(
         CreateDerivativeCompositeIndicator createIndicator, Integer context) {
-        builder.append("CREATE DERIVATIVE COMPOSITE INDICATOR ");
+        appendCreateOrReplace(createIndicator);
+        builder.append("DERIVATIVE COMPOSITE INDICATOR ");
         appendIfNotExist(createIndicator.isNotExists());
         builder.append(getCode(createIndicator.getQualifiedName()));
         builder.append(formatAliasedName(createIndicator.getAliasedName()));
@@ -281,7 +293,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateDerivativeIndicator(CreateDerivativeIndicator createIndicator, Integer context) {
-        builder.append("CREATE DERIVATIVE INDICATOR ");
+        appendCreateOrReplace(createIndicator);
+        builder.append("DERIVATIVE INDICATOR ");
         appendIfNotExist(createIndicator.isNotExists());
         builder.append(getCode(createIndicator.getQualifiedName()));
         builder.append(formatAliasedName(createIndicator.getAliasedName()));
@@ -405,7 +418,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         if (node.getCreateOrReplace() != null && node.getCreateOrReplace()) {
             builder.append("OR REPLACE ");
         }
-        TableDetailType tableDetailType = node.getTableDetailType() == null ? TableDetailType.NORMAL_DIM
+        ITableDetailType tableDetailType = node.getTableDetailType() == null ? TableDetailType.NORMAL_DIM
             : node.getTableDetailType();
         boolean isNormalOrTransaction = tableDetailType == TableDetailType.NORMAL_DIM
             || tableDetailType == TableDetailType.TRANSACTION_FACT;
@@ -476,7 +489,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
      * @param elementIndent
      * @return
      */
-    private String formatCommentElement(List<MultiComment> commentElements, String elementIndent) {
+    protected String formatCommentElement(List<MultiComment> commentElements, String elementIndent) {
         return commentElements.stream().map(
             element -> {
                 FastModelVisitor visitor = new FastModelVisitor();
@@ -614,11 +627,32 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             builder.append(indentString(ident)).append("TIME_PERIOD KEY ");
         }
         builder.append("REFERENCES").append(" (");
-        builder.append(timePeriodConstraint.getTimePeriods().stream().map(x -> {
-            return formatExpression(x);
-        }).collect(joining(",")));
+        builder.append(timePeriodConstraint.getTimePeriods().stream().map(this::formatExpression).collect(joining(",")));
         builder.append(")");
         return true;
+    }
+
+    @Override
+    public Boolean visitRedundantConstraint(RedundantConstraint redundantConstraint, Integer ident) {
+        builder.append(indentString(ident));
+        Identifier name = redundantConstraint.getName();
+        String redunct = ConstraintType.REDUNDANT.getCode().toUpperCase();
+        if (!IdentifierUtil.isSysIdentifier(name)) {
+            builder.append(CONSTRAINT).append(formatExpression(name));
+            builder.append(" ").append(redunct).append(" ");
+        } else {
+            builder.append(indentString(ident)).append(redunct).append(" ");
+        }
+        builder.append(formatExpression(redundantConstraint.getColumn()));
+        builder.append(" REFERENCES ");
+        builder.append(formatName(redundantConstraint.getJoinColumn()));
+        List<Identifier> redundantColumns = redundantConstraint.getRedundantColumns();
+        if (redundantColumns != null && !redundantColumns.isEmpty()) {
+            builder.append("(");
+            builder.append(redundantColumns.stream().map(this::formatExpression).collect(joining(",")));
+            builder.append(")");
+        }
+        return false;
     }
 
     @Override
@@ -697,9 +731,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     protected String formatColumnList(List<ColumnDefinition> list,
                                       String elementIndent) {
         OptionalInt max = list.stream().map(ColumnDefinition::getColName).mapToInt(
-            x -> {
-                return formatExpression(x).length();
-            }
+            x -> formatExpression(x).length()
         ).max();
         String columnList = list.stream()
             .map(element -> elementIndent + formatColumnDefinition(element, max.getAsInt()))
@@ -709,8 +741,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     protected String formatColName(Identifier colName, Integer size) {
         String str = formatExpression(colName);
-        String rightPad = StringUtils.rightPad(str, size);
-        return rightPad;
+        return StringUtils.rightPad(str, size);
     }
 
     protected String formatColumnDefinition(ColumnDefinition column, Integer max) {
@@ -718,7 +749,9 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         String col = formatColName(column.getColName(), max);
         StringBuilder sb = new StringBuilder().append(col);
         sb.append(formatAliasedName(column.getAliasedName()));
-        sb.append(" ").append(formatExpression(convert(dataType)));
+        if (dataType != null) {
+            sb.append(" ").append(formatDataType(dataType));
+        }
 
         Optional.ofNullable(column.getCategory()).ifPresent(
             category -> {
@@ -742,6 +775,10 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         appendProperties(sb, column.getColumnProperties());
         appendReferenceObjects(sb, column);
         return sb.toString();
+    }
+
+    protected String formatDataType(BaseDataType dataType) {
+        return formatExpression(convert(dataType));
     }
 
     protected boolean isEndNewLine(String text) {
@@ -787,7 +824,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return dataType;
     }
 
-    private StringBuilder append(int indent, String value) {
+    protected StringBuilder append(int indent, String value) {
         return builder.append(indentString(indent))
             .append(value);
     }
@@ -1014,7 +1051,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public Boolean visitSingleColumn(SingleColumn node, Integer indent) {
         builder.append(formatExpression(node.getExpression()));
         if (node.getAlias() != null) {
-            builder.append(' ')
+            String as = node.isExistAs() ? " AS " : " ";
+            builder.append(as)
                 .append(formatExpression(node.getAlias()));
         }
         return true;
@@ -1028,10 +1066,12 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         builder.append("*");
 
         if (!node.getAliases().isEmpty()) {
-            builder.append(" AS (")
+            String as = node.isExistAs() ? " AS " : " ";
+            builder.append(as);
+            builder.append("(")
                 .append(Joiner.on(", ").join(node.getAliases().stream()
                     .map(this::formatExpression)
-                    .collect(toImmutableList())))
+                    .collect(toList())))
                 .append(")");
         }
 
@@ -1040,7 +1080,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitTable(Table node, Integer indent) {
-        builder.append(formatName(node.getName()));
+        String code = formatName(node.getName());
+        builder.append(code);
         return true;
     }
 
@@ -1111,10 +1152,10 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         builder.append(showObjects.getShowType().getCode());
         QualifiedName tableName = showObjects.getTableName();
         if (tableName != null) {
-            builder.append(" FROM ").append(ExpressionFormatter.formatName(tableName));
+            builder.append(" FROM ").append(formatName(tableName));
         } else {
             if (showObjects.getBaseUnit() != null) {
-                builder.append(" FROM ").append(ExpressionFormatter.formatExpression(showObjects.getBaseUnit()));
+                builder.append(" FROM ").append(formatExpression(showObjects.getBaseUnit()));
             }
         }
         if (showObjects.getConditionElement() != null) {
@@ -1247,10 +1288,21 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     }
 
     @Override
+    public Boolean visitCreateAdjunct(CreateAdjunct createAdjunct, Integer context) {
+        super.visitCreateAdjunct(createAdjunct, context);
+        if (createAdjunct.getExpression() != null) {
+            builder.append(" AS ");
+            String expression = formatExpression(createAdjunct.getExpression());
+            builder.append(expression);
+        }
+        return true;
+    }
+
+    @Override
     public Boolean visitBaseCreate(BaseCreate baseCreate, Integer context) {
-        builder.append("CREATE ").append(baseCreate.getStatementType().getCode().toUpperCase()).append(" ").append(
-            baseCreate.getQualifiedName()
-        );
+        appendCreateOrReplace(baseCreate);
+        builder.append(baseCreate.getStatementType().getCode().toUpperCase())
+            .append(" ").append(getCode(baseCreate.getQualifiedName()));
         if (baseCreate.getAliasedNameValue() != null) {
             builder.append(formatAliasedName(baseCreate.getAliasedName()));
         }
@@ -1283,7 +1335,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitRenameCol(RenameCol renameCol, Integer context) {
-        builder.append("ALTER TABLE ").append(formatName(renameCol.getQualifiedName()));
+        builder.append("ALTER TABLE ").append(getCode(renameCol.getQualifiedName()));
         builder.append(" CHANGE COLUMN ").append(renameCol.getOldColName());
         builder.append(" RENAME TO ").append(renameCol.getNewColName());
         return true;
@@ -1291,7 +1343,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitSetColComment(SetColComment setColComment, Integer context) {
-        builder.append("ALTER TABLE ").append(formatName(setColComment.getQualifiedName()));
+        builder.append("ALTER TABLE ").append(getCode(setColComment.getQualifiedName()));
         builder.append(" CHANGE COLUMN ").append(setColComment.getChangeColumn());
         builder.append(formatComment(setColComment.getComment(), false));
         return true;
@@ -1300,9 +1352,11 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitBaseUnSetProperties(BaseUnSetProperties baseUnSetProperties, Integer context) {
         builder.append("ALTER ").append(baseUnSetProperties.getStatementType().getCode().toUpperCase());
-        builder.append(" ").append(formatName(baseUnSetProperties.getQualifiedName()));
+        builder.append(" ").append(getCode(baseUnSetProperties.getQualifiedName()));
         builder.append(" UNSET PROPERTIES (").append(
-            baseUnSetProperties.getPropertyKeys().stream().map(ExpressionFormatter::formatStringLiteral)
+            baseUnSetProperties.getPropertyKeys().stream().map(x -> {
+                    return formatStringLiteral(x);
+                })
                 .collect(joining(",")));
         builder.append(")");
         return true;
@@ -1311,7 +1365,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitBaseSetProperties(BaseSetProperties baseSetProperties, Integer context) {
         builder.append("ALTER ").append(baseSetProperties.getStatementType().getCode().toUpperCase());
-        builder.append(" ").append(formatName(baseSetProperties.getQualifiedName()));
+        builder.append(" ").append(getCode(baseSetProperties.getQualifiedName()));
         builder.append(" SET PROPERTIES (").append(formatProperty(baseSetProperties.getProperties()));
         builder.append(")");
         return true;
@@ -1320,7 +1374,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitBaseRename(BaseRename baseRename, Integer context) {
         builder.append("ALTER ").append(baseRename.getStatementType().getCode().toUpperCase());
-        builder.append(" ").append(formatName(baseRename.getQualifiedName()));
+        builder.append(" ").append(getCode(baseRename.getQualifiedName()));
         builder.append(" RENAME TO ").append(formatName(baseRename.getTarget()));
         return true;
     }
@@ -1328,7 +1382,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitBaseSetAliasedName(BaseSetAliasedName baseSetAliasedName, Integer context) {
         builder.append("ALTER ").append(baseSetAliasedName.getStatementType().getCode().toUpperCase());
-        builder.append(" ").append(formatName(baseSetAliasedName.getQualifiedName()));
+        builder.append(" ").append(getCode(baseSetAliasedName.getQualifiedName()));
         builder.append(" SET ALIAS ").append(formatStringLiteral(baseSetAliasedName.getAliasedName().getName()));
         return true;
     }
@@ -1342,7 +1396,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
      */
     @Override
     public Boolean visitSetIndicatorProperties(SetIndicatorProperties setIndicatorProperties, Integer context) {
-        builder.append("ALTER INDICATOR ").append(formatName(setIndicatorProperties.getQualifiedName()));
+        builder.append("ALTER INDICATOR ").append(getCode(setIndicatorProperties.getQualifiedName()));
         if (setIndicatorProperties.getPrimaryTypeDataType() != null) {
             builder.append(" ").append(formatExpression(setIndicatorProperties.getPrimaryTypeDataType()));
         }
@@ -1360,8 +1414,9 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateDict(CreateDict createDict, Integer context) {
-        builder.append("CREATE DICT ");
-        builder.append(formatName(createDict.getQualifiedName()));
+        appendCreateOrReplace(createDict);
+        builder.append("DICT ");
+        builder.append(getCode(createDict.getQualifiedName()));
         builder.append(formatAliasedName(createDict.getAliasedName()));
         if (createDict.getBaseDataType() != null) {
             builder.append(" ").append(createDict.getBaseDataType());
@@ -1379,9 +1434,10 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateGroup(CreateGroup createGroup, Integer context) {
-        builder.append("CREATE GROUP ");
+        appendCreateOrReplace(createGroup);
+        builder.append("GROUP ");
         builder.append(createGroup.getGroupType().name()).append(" ");
-        builder.append(formatName(createGroup.getQualifiedName()));
+        builder.append(getCode(createGroup.getQualifiedName()));
         builder.append(formatAliasedName(createGroup.getAliasedName()));
         builder.append(formatComment(createGroup.getComment(), false));
         builder.append(formatWith(createGroup.getProperties(), isEndNewLine(builder.toString())));
@@ -1397,7 +1453,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             builder.append(" ");
         }
         builder.append("RULES ");
-        builder.append(formatName(createRules.getQualifiedName()));
+        builder.append(getCode(createRules.getQualifiedName()));
         builder.append(" REFERENCES ").append(formatName(createRules.getTableName()));
         appendPartition(builder, createRules.getPartitionSpecList(), ",");
         List<RuleDefinition> ruleDefinitions = createRules.getRuleDefinitions();
@@ -1420,7 +1476,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateDqcRule(CreateDqcRule createRules, Integer context) {
-        builder.append("CREATE DQC_RULE ");
+        appendCreateOrReplace(createRules);
+        builder.append("DQC_RULE ");
         builder.append(formatName(createRules.getQualifiedName()));
         builder.append(" ON TABLE ").append(formatName(createRules.getTableName()));
         appendPartition(builder, createRules.getPartitionSpecList(), ",");
@@ -1565,7 +1622,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public Boolean visitDropDqcRule(DropDqcRule dropRule, Integer context) {
         builder.append("ALTER DQC_RULE ");
         if (dropRule.getQualifiedName() != null && !RuleUtil.isSysGenerate(dropRule.getQualifiedName())) {
-            builder.append(formatName(dropRule.getQualifiedName()));
+            builder.append(getCode(dropRule.getQualifiedName()));
         } else {
             builder.append("ON TABLE ").append(formatName(dropRule.getTableName()));
             builder.append(formatePartitionSpec(dropRule.getPartitionSpecList()));
@@ -1578,7 +1635,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public Boolean visitAddRules(AddRules addRules, Integer context) {
         builder.append("ALTER RULES ");
         if (addRules.getQualifiedName() != null) {
-            builder.append(formatName(addRules.getQualifiedName()));
+            builder.append(getCode(addRules.getQualifiedName()));
         } else {
             builder.append("REFERENCES ").append(formatName(addRules.getTableName()));
             builder.append(formatePartitionSpec(addRules.getPartitionSpecList()));
@@ -1599,7 +1656,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public Boolean visitAddDqcRule(AddDqcRule addRules, Integer context) {
         builder.append("ALTER DQC_RULE ");
         if (addRules.getQualifiedName() != null && !RuleUtil.isSysGenerate(addRules.getQualifiedName())) {
-            builder.append(formatName(addRules.getQualifiedName()));
+            builder.append(getCode(addRules.getQualifiedName()));
         } else {
             builder.append("ON TABLE ").append(formatName(addRules.getTableName()));
             builder.append(formatePartitionSpec(addRules.getPartitionSpecList()));
@@ -1629,7 +1686,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public Boolean visitChangeRules(ChangeRules changeRules, Integer context) {
         builder.append("ALTER RULES ");
         if (changeRules.getQualifiedName() != null) {
-            builder.append(formatName(changeRules.getQualifiedName()));
+            builder.append(getCode(changeRules.getQualifiedName()));
         } else {
             builder.append("REFERENCES ").append(formatName(changeRules.getTableName()));
             builder.append(formatePartitionSpec(changeRules.getPartitionSpecList()));
@@ -1658,7 +1715,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         builder.append("ALTER DQC_RULE ");
         if (changeRules.getQualifiedName() != null &&
             !RuleUtil.isSysGenerate(changeRules.getQualifiedName())) {
-            builder.append(formatName(changeRules.getQualifiedName()));
+            builder.append(getCode(changeRules.getQualifiedName()));
         } else {
             builder.append("ON TABLE ").append(formatName(changeRules.getTableName()));
             builder.append(formatePartitionSpec(changeRules.getPartitionSpecList()));
@@ -1690,7 +1747,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         if (cloneTable.isNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
-        builder.append(formatName(cloneTable.getQualifiedName()));
+        builder.append(getCode(cloneTable.getQualifiedName()));
         builder.append(" LIKE ");
         builder.append(formatName(cloneTable.getSourceTable()));
         return true;
@@ -1711,7 +1768,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitImportEntityStatement(ImportObject importEntityStatement, Integer context) {
         builder.append("IMPORT ");
-        builder.append(formatName(importEntityStatement.getQualifiedName()));
+        builder.append(getCode(importEntityStatement.getQualifiedName()));
         if (importEntityStatement.getAlias() != null) {
             builder.append(" AS ");
             builder.append(formatExpression(importEntityStatement.getAlias()));
@@ -1737,7 +1794,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateDimension(CreateDimension createDimension, Integer context) {
-        builder.append("CREATE DIMENSION ");
+        appendCreateOrReplace(createDimension);
+        builder.append("DIMENSION ");
         if (createDimension.isNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
@@ -1780,7 +1838,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     public Boolean visitMoveReferences(MoveReferences moveReferences, Integer context) {
         builder.append("MOVE ").append(moveReferences.getShowType().name());
         builder.append(" REFERENCES ");
-        builder.append(formatName(moveReferences.getFrom()));
+        builder.append(getCode(moveReferences.getFrom()));
         builder.append(" TO ");
         builder.append(formatName(moveReferences.getTo()));
         builder.append(formatWith(moveReferences.getProperties(), false));
@@ -1818,7 +1876,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitAddDimensionField(AddDimensionAttribute addDimensionAttribute, Integer context) {
         builder.append("ALTER DIMENSION ");
-        builder.append(formatName(addDimensionAttribute.getQualifiedName()));
+        builder.append(getCode(addDimensionAttribute.getQualifiedName()));
         builder.append(" ADD ATTRIBUTES ");
         builder.append(newLine("("));
         String indent = indentString(context + 1);
@@ -1839,7 +1897,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitChangeDimensionField(ChangeDimensionAttribute changeDimensionAttribute, Integer context) {
         builder.append("ALTER DIMENSION ");
-        builder.append(formatName(changeDimensionAttribute.getQualifiedName()));
+        builder.append(getCode(changeDimensionAttribute.getQualifiedName()));
         builder.append(" CHANGE ATTRIBUTE ");
         builder.append(formatExpression(changeDimensionAttribute.getNeedChangeAttr()));
         builder.append(" ");
@@ -1887,7 +1945,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return Strings.repeat(INDENT, indent);
     }
 
-    private String formatGroupBy(List<GroupingElement> groupingElements) {
+    protected String formatGroupBy(List<GroupingElement> groupingElements) {
         ImmutableList.Builder<String> resultStrings = ImmutableList.builder();
 
         for (GroupingElement groupingElement : groupingElements) {
@@ -1902,7 +1960,9 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             } else if (groupingElement instanceof GroupingSets) {
                 result = String.format("GROUPING SETS (%s)", Joiner.on(", ").join(
                     ((GroupingSets)groupingElement).getSets().stream()
-                        .map(ExpressionFormatter::formatGroupingSet)
+                        .map(g -> {
+                            return formatGroupingSet(g);
+                        })
                         .iterator()));
             } else if (groupingElement instanceof Cube) {
                 result = String.format("CUBE %s", formatGroupingSet(groupingElement.getExpressions()));
@@ -1914,14 +1974,38 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return Joiner.on(", ").join(resultStrings.build());
     }
 
+    public String formatStringLiteral(String s) {
+        if (s == null) {
+            return null;
+        }
+        String result = s.replace("'", "''");
+        return "'" + result + "'";
+    }
+
+    public String formatName(QualifiedName name) {
+        return name.getOriginalParts().stream()
+            .map(e -> {
+                return formatExpression(e);
+            })
+            .collect(joining("."));
+    }
+
+    public String formatGroupingSet(List<BaseExpression> groupingSet) {
+        return format("(%s)", Joiner.on(", ").join(groupingSet.stream()
+            .map(ExpressionFormatter::formatExpression)
+            .iterator()));
+    }
+
     private String formatSimpleGroupBy(List<BaseExpression> columns) {
         return columns.stream().map(ExpressionFormatter::formatExpression).collect(joining(","));
     }
 
-    private void appendAliasColumns(StringBuilder builder, List<Identifier> columns) {
+    protected void appendAliasColumns(StringBuilder builder, List<Identifier> columns) {
         if ((columns != null) && (!columns.isEmpty())) {
             String formattedColumns = columns.stream()
-                .map(ExpressionFormatter::formatExpression)
+                .map(e -> {
+                    return formatExpression(e);
+                })
                 .collect(Collectors.joining(", "));
 
             builder.append(" (")

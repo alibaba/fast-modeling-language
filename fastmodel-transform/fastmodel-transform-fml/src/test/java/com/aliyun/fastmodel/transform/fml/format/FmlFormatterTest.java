@@ -26,9 +26,14 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
+import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.RedundantConstraint;
+import com.aliyun.fastmodel.core.tree.statement.timeperiod.CreateTimePeriod;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.parser.lexer.ReservedIdentifier;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
@@ -47,6 +52,18 @@ import static org.junit.Assert.assertNotNull;
  * @date 2021/8/22
  */
 public class FmlFormatterTest {
+
+    @Test
+    public void testFormat() {
+        CreateTimePeriod createTimePeriod = new CreateTimePeriod(
+            CreateElement.builder()
+                .qualifiedName(QualifiedName.of("1"))
+                .build(),
+            null
+        );
+        DialectNode dialectNode = FmlFormatter.formatNode(createTimePeriod, FmlTransformContext.builder().build());
+        assertEquals(dialectNode.getNode(), "CREATE TIME_PERIOD `1`");
+    }
 
     @Test
     public void testFmlVisitor() {
@@ -78,5 +95,34 @@ public class FmlFormatterTest {
             FmlTransformContext.builder().appendSemicolon(true).build());
         assertEquals(dialectNode.getNode(),
             "ALTER TABLE dim_shop SET COMMENT 'comment1';\n" + "ALTER TABLE dim_shop2 SET COMMENT 'comment2';");
+    }
+
+    @Test
+    public void testRedunct() {
+        List<ColumnDefinition> columns = Lists.newArrayList(
+            ColumnDefinition.builder()
+                .colName(new Identifier("c1"))
+                .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+                .build()
+        );
+        List<BaseConstraint> constraints = Lists.newArrayList(
+            new RedundantConstraint(
+                new Identifier("c2"),
+                new Identifier("c1"),
+                QualifiedName.of("p.t.c2"),
+                null
+            )
+        );
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("a.bc"))
+            .columns(columns)
+            .constraints(constraints)
+            .build();
+        DialectNode dialectNode = FmlFormatter.formatNode(createTable,FmlTransformContext.builder().appendSemicolon(true).build());
+        assertEquals(dialectNode.getNode(), "CREATE DIM TABLE bc \n"
+            + "(\n"
+            + "   c1 BIGINT,\n"
+            + "   CONSTRAINT c2 REDUNDANT c1 REFERENCES p.t.c2\n"
+            + ");");
     }
 }

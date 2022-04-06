@@ -37,7 +37,7 @@ public abstract class AbstractNode implements Node {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitNode(this, context);
     }
 
@@ -57,6 +57,5 @@ public abstract class AbstractNode implements Node {
     public NodeLocation getLocation() {
         return location;
     }
-
 
 }

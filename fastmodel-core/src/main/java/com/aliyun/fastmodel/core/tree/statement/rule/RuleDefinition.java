@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.rule;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AliasedName;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Comment;
@@ -36,7 +36,7 @@ import lombok.ToString;
  */
 @Getter
 @ToString
-public class RuleDefinition extends AbstractNode {
+public class RuleDefinition extends AbstractFmlNode {
     private final RuleGrade ruleGrade;
 
     private final Identifier ruleName;

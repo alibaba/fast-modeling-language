@@ -22,12 +22,13 @@ import com.aliyun.fastmodel.compare.CompareNodeExecute;
 import com.aliyun.fastmodel.compare.CompareStrategy;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDwsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
+import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ public class CreateDwsTableCompareNodeTest {
 
     @Test
     public void testRename() {
-        GenericDataType genericDataType = new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()));
+        BaseDataType genericDataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         ColumnDefinition a1 = ColumnDefinition.builder().colName(new Identifier("a")).dataType(genericDataType).build();
         ImmutableList<ColumnDefinition> a = ImmutableList
             .of(a1);

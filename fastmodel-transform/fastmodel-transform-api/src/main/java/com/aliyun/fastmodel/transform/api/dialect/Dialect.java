@@ -34,11 +34,18 @@ public @interface Dialect {
      *
      * @return engine的名字
      */
-    DialectName value();
+    String value();
 
     /**
+     * 方言的版本
+     *
      * @return
      */
     String version() default "";
+
+    /**
+     * 默认的方言
+     */
+    boolean defaultDialect() default false;
 
 }

@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.dimension.attribute;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AliasedName;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Comment;
@@ -36,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2021/10/1
  */
 @Getter
-public class DimensionAttribute extends AbstractNode {
+public class DimensionAttribute extends AbstractFmlNode {
 
     private final Identifier attrName;
 

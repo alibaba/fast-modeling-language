@@ -176,9 +176,9 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
     public Node visitCopyCreateTable(CopyCreateTableContext ctx) {
         return new CloneTable(
             CreateElement.builder()
-                         .qualifiedName(getQualifiedName(ctx.tableName(0)))
-                         .notExists(ctx.ifNotExists() != null)
-                         .build(),
+                .qualifiedName(getQualifiedName(ctx.tableName(0)))
+                .notExists(ctx.ifNotExists() != null)
+                .build(),
             reverseContext.getReverseTableType(),
             getQualifiedName(ctx.tableName(1))
         );
@@ -226,17 +226,17 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         Comment comment = commentProperties != null ? new Comment(commentProperties.getValue())
             : null;
         CreateTable createTable = CreateTable.builder()
-                                             .tableName(getQualifiedName(ctx.tableName()))
-                                             .detailType(reverseContext.getReverseTableType())
-                                             .columns(columnDefinitions)
-                                             .constraints(constraints)
-                                             .properties(otherProperty)
-                                             .partition(partitionedBy)
-                                             .comment(
-                                                 comment)
-                                             .tableIndex(tableIndexList)
-                                             .ifNotExist(ctx.ifNotExists() != null)
-                                             .build();
+            .tableName(getQualifiedName(ctx.tableName()))
+            .detailType(reverseContext.getReverseTableType())
+            .columns(columnDefinitions)
+            .constraints(constraints)
+            .properties(otherProperty)
+            .partition(partitionedBy)
+            .comment(
+                comment)
+            .tableIndex(tableIndexList)
+            .ifNotExist(ctx.ifNotExists() != null)
+            .build();
         return createTable;
     }
 
@@ -245,11 +245,11 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
             return null;
         }
         return properties.stream()
-                         .filter(property -> {
-                             return StringUtils.equalsIgnoreCase(property.getName(), COMMENT);
-                         })
-                         .findFirst()
-                         .orElse(null);
+            .filter(property -> {
+                return StringUtils.equalsIgnoreCase(property.getName(), COMMENT);
+            })
+            .findFirst()
+            .orElse(null);
     }
 
     @Override
@@ -282,13 +282,13 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         }
         BaseDataType baseDataType = (BaseDataType)visit(columnDefinitionContext.dataType());
         return ColumnDefinition.builder()
-                               .colName(identifier)
-                               .primary(primary)
-                               .notNull(notNull)
-                               .dataType(baseDataType)
-                               .comment(c)
-                               .defaultValue(defaultValue)
-                               .build();
+            .colName(identifier)
+            .primary(primary)
+            .notNull(notNull)
+            .dataType(baseDataType)
+            .comment(c)
+            .defaultValue(defaultValue)
+            .build();
     }
 
     @Override
@@ -301,7 +301,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.typeName.getText()),
+            ctx.typeName.getText(),
             arguments
         );
     }
@@ -333,7 +333,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.typeName.getText()),
+            ctx.typeName.getText(),
             list
         );
     }
@@ -374,7 +374,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(type),
+            type,
             ImmutableList.of()
         );
     }
@@ -384,7 +384,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier("LONG VARBINARY"),
+            "LONG VARBINARY",
             ImmutableList.of()
         );
     }
@@ -432,10 +432,10 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
             constraintName = IdentifierUtil.sysIdentifier();
         }
         List<Identifier> columnName = ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(),
-                                                      IndexColumnName.class)
-                                                  .stream()
-                                                  .map(IndexColumnName::getColumnName)
-                                                  .collect(Collectors.toList());
+                IndexColumnName.class)
+            .stream()
+            .map(IndexColumnName::getColumnName)
+            .collect(Collectors.toList());
         return new PrimaryConstraint(constraintName, columnName);
     }
 
@@ -473,9 +473,9 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         IndexColumnNamesContext indexColumnNamesContext = ctx.indexColumnNames();
         List<Identifier> columnName =
             ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(), IndexColumnName.class)
-                        .stream()
-                        .map(IndexColumnName::getColumnName)
-                        .collect(Collectors.toList());
+                .stream()
+                .map(IndexColumnName::getColumnName)
+                .collect(Collectors.toList());
         return new UniqueConstraint(constraintName, columnName, true);
     }
 

@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.transform.api.sqlconvert;
 
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.statement.rule.function.BaseFunction;
+import com.aliyun.fastmodel.transform.api.context.TransformContext;
 
 /**
  * SqlConverter
@@ -25,22 +26,23 @@ import com.aliyun.fastmodel.core.tree.statement.rule.function.BaseFunction;
  * @author panguanjing
  * @date 2021/6/1
  */
-public interface SqlConverter<T extends BaseFunction> {
+public interface SqlConverter<T extends BaseFunction, C extends TransformContext> {
     /**
      * 将函数转换为指定的内容
      *
-     * @param tableName       表名
-     * @param baseFunction    函数
-     * @param matchExpression 表达式
+     * @param tableName        表名
+     * @param baseFunction     函数
+     * @param matchExpression  表达式
+     * @param transformContext 转换的上下文
      * @return
      */
-    public String convert(QualifiedName tableName, T baseFunction, String matchExpression);
+    String convert(QualifiedName tableName, T baseFunction, String matchExpression, C transformContext);
 
     /**
      * 是否match
      *
-     * @param baseFunction
-     * @return
+     * @param baseFunction 基本函数类型
+     * @return true 如果命中
      */
     default boolean isMatch(T baseFunction) {
         return true;

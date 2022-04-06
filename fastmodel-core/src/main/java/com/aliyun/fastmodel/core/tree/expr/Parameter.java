@@ -16,7 +16,7 @@
 
 package com.aliyun.fastmodel.core.tree.expr;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -43,7 +43,7 @@ public class Parameter extends BaseExpression {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitParameter(this, context);
     }
 }

@@ -29,6 +29,11 @@ public enum ColumnPropertyDefaultKey {
     code_table,
 
     /**
+     * 分区表达式
+     */
+    partition_spec,
+
+    /**
      * uuid
      */
     uuid;

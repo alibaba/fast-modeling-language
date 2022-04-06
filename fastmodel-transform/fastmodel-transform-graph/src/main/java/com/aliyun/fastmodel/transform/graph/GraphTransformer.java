@@ -40,7 +40,7 @@ import com.google.common.collect.Lists;
  * @author panguanjing
  * @date 2021/12/12
  */
-@Dialect(DialectName.GRAPH)
+@Dialect(DialectName.Constants.GRAPH)
 @AutoService(Transformer.class)
 public class GraphTransformer implements Transformer<BaseStatement> {
 
@@ -55,7 +55,7 @@ public class GraphTransformer implements Transformer<BaseStatement> {
             compositeStatement = (CompositeStatement)source;
         }
         StatementBuilder builder = BuilderFactory.getInstance().getBuilder(compositeStatement,
-            DialectMeta.getByName(DialectName.GRAPH));
+            DialectMeta.getByName(DialectName.GRAPH), context);
         GenericDialectNode<FmlGraph> genericDialectNode = builder.buildGenericNode(compositeStatement, context);
         GraphTransformContext graphTransformContext = new GraphTransformContext(context);
         Exporter exporter = ExporterFactory.getInstance().getExporter(graphTransformContext.getExportName());

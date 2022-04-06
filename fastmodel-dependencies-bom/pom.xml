@@ -26,7 +26,7 @@
     <version>${revision}</version>
 
     <properties>
-        <revision>0.0.1-opensource-SNAPSHOT</revision>
+        <revision>0.5.3-preview1</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <dep.jline.version>3.17.1</dep.jline.version>
     </properties>
@@ -71,13 +71,13 @@
             <dependency>
                 <groupId>com.google.auto.service</groupId>
                 <artifactId>auto-service</artifactId>
-                <version>1.0-rc7</version>
+                <version>1.0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>28.2-jre</version>
+                <version>19.0</version>
             </dependency>
 
 
@@ -98,13 +98,6 @@
                 <artifactId>slf4j-jdk14</artifactId>
                 <version>1.7.30</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.reflections</groupId>
-                <artifactId>reflections</artifactId>
-                <version>0.9.11</version>
-            </dependency>
-
 
             <dependency>
                 <groupId>org.jline</groupId>
@@ -137,6 +130,7 @@
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>3.5.4</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -234,6 +228,19 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
                 <version>2.13.1</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>1.35</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>1.35</version>
+                <scope>provided</scope>
             </dependency>
 
 

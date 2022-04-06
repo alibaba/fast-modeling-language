@@ -30,6 +30,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.AddConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateFactTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
@@ -39,6 +40,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
+import com.aliyun.fastmodel.parser.NodeParser;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
@@ -93,7 +95,7 @@ public class HiveTransformerTest {
     @Test
     public void testTransformWithConstraint() {
         List<ColumnDefinition> columnDefines = ImmutableList.of(ColumnDefinition.builder().colName(
-            new Identifier("c1")).dataType(new GenericDataType(new Identifier(DataTypeEnums.DOUBLE.name()))
+            new Identifier("c1")).dataType(DataTypeUtil.simpleType(DataTypeEnums.DOUBLE)
         ).build());
         List<BaseConstraint> constraints = ImmutableList.of(new PrimaryConstraint(
             new Identifier("abc"),
@@ -158,7 +160,7 @@ public class HiveTransformerTest {
     public void testAddCols() {
         List<ColumnDefinition> columnLists =
             ImmutableList.of(ColumnDefinition.builder().colName(new Identifier("col1"))
-                .dataType(new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).build());
+                .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT)).build());
         AddCols addCols = new AddCols(
             QualifiedName.of("a.b"),
             columnLists
@@ -208,8 +210,8 @@ public class HiveTransformerTest {
         ChangeCol changeCol = new ChangeCol(
             QualifiedName.of("a.b"),
             new Identifier("old"),
-            ColumnDefinition.builder().colName(new Identifier("new_col")).dataType(new GenericDataType(
-                new Identifier(DataTypeEnums.BIGINT.name())
+            ColumnDefinition.builder().colName(new Identifier("new_col")).dataType(DataTypeUtil.simpleType(
+                DataTypeEnums.BIGINT
             )).comment(new Comment("abc")).build()
         );
         DialectNode transform = hiveTransformer.transform(changeCol);
@@ -247,6 +249,30 @@ public class HiveTransformerTest {
             + "(\n"
             + "   c BIGINT\n"
             + ")\nWITH('life_cycle'='10')");
+    }
+
+    @Test
+    public void testParse() {
+        String createTableSql = "CREATE FACT TABLE demo.fact_emp_change " +
+            "( change_id bigint primary key comment '事务变化Id', " +
+            "org_id struct<name:bigint> comment '企业Id', " +
+            "emp_id bigint not null comment '员工Id', " +
+            "test_01 varchar(15) comment 'test01'," +
+            "constraint org_constraint dim key (org_id) references dim_org(org_id), " +
+            "constraint emp_constraint dim key (emp_id) references dim_emp_info(emp_id) )COMMENT '员工档案变化事实表' " +
+            "WITH PROPERTIES('type' = 'tx_fact')";
+        NodeParser nodeParser = new NodeParser();
+        CreateFactTable createFactTable = nodeParser.parseNode(createTableSql);
+        DialectNode transform = hiveTransformer.transform(createFactTable);
+        assertEquals(transform.getNode(), "CREATE TABLE fact_emp_change\n"
+            + "(\n"
+            + "   change_id BIGINT COMMENT '事务变化Id',\n"
+            + "   org_id    STRUCT<name:BIGINT> COMMENT '企业Id',\n"
+            + "   emp_id    BIGINT COMMENT '员工Id',\n"
+            + "   test_01   VARCHAR(15) COMMENT 'test01'\n"
+            + ")\n"
+            + "COMMENT '员工档案变化事实表'\n"
+            + "TBLPROPERTIES ('type'='tx_fact')");
     }
 
     @Test(expected = NullPointerException.class)

@@ -19,7 +19,7 @@ package com.aliyun.fastmodel.core.tree.expr;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.google.common.base.Objects;
@@ -40,11 +40,12 @@ public class Identifier extends BaseExpression {
     private final boolean delimited;
 
     private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_0-9]([a-zA-Z0-9_:@])*");
+    private static final Pattern DIGIT_PATTERN = Pattern.compile("[0-9]*");
 
     public Identifier(NodeLocation location, String origin, String value) {
         super(location, origin);
         this.value = value;
-        delimited = !NAME_PATTERN.matcher(value).matches();
+        delimited = !NAME_PATTERN.matcher(value).matches() || DIGIT_PATTERN.matcher(value).matches();
     }
 
     public Identifier(String value) {
@@ -81,7 +82,7 @@ public class Identifier extends BaseExpression {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitIdentifier(this, context);
     }
 

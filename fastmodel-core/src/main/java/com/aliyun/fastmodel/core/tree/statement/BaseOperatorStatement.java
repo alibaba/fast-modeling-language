@@ -19,7 +19,7 @@ package com.aliyun.fastmodel.core.tree.statement;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AstVisitor;
-import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.BaseFmlStatement;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
@@ -41,7 +41,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
-public abstract class BaseOperatorStatement extends BaseStatement {
+public abstract class BaseOperatorStatement extends BaseFmlStatement {
 
     private QualifiedName qualifiedName;
 

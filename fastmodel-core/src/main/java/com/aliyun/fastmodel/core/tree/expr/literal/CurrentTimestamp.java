@@ -16,13 +16,13 @@
 
 package com.aliyun.fastmodel.core.tree.expr.literal;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import lombok.EqualsAndHashCode;
 
 /**
- * Desc:
+ * current_timestamp
  *
  * @author panguanjing
  * @date 2020/11/9
@@ -30,12 +30,16 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class CurrentTimestamp extends BaseExpression {
 
+    public CurrentTimestamp() {
+        this(null, null);
+    }
+
     public CurrentTimestamp(NodeLocation location, String origin) {
         super(location, origin);
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitCurrentTimestamp(this, context);
     }
 }

@@ -16,11 +16,10 @@
 
 package com.aliyun.fastmodel.core.tree.expr.literal;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author panguanjing
@@ -29,12 +28,17 @@ import lombok.Setter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class NullLiteral extends BaseLiteral {
+
+    public NullLiteral() {
+        this(null, null);
+    }
+
     public NullLiteral(NodeLocation location, String origin) {
         super(location, origin);
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitNullLiteral(this, context);
     }
 }

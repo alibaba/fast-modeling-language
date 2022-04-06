@@ -41,7 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Component
 public class FileStorageServiceImpl implements StorageService {
-    private final Path root = Paths.get("uploads");
+    private final Path root = Paths.get(System.getProperty("java.io.tmpdir"));
 
     @Override
     @PostConstruct

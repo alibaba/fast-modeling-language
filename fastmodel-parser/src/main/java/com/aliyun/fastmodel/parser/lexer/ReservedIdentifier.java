@@ -17,11 +17,11 @@
 package com.aliyun.fastmodel.parser.lexer;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.parser.StatementSplitter;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.Locale.ENGLISH;
 
 /**
@@ -36,7 +36,7 @@ public class ReservedIdentifier {
 
     private static final Set<String> KEYWORDS = StatementSplitter.keywords().stream()
         .map(keyword -> keyword.toLowerCase(ENGLISH))
-        .collect(toImmutableSet());
+        .collect(Collectors.toSet());
 
     /**
      * 判断一个文本单词是否为关键字

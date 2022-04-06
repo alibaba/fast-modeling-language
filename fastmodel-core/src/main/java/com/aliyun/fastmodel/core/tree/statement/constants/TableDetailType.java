@@ -16,15 +16,16 @@
 
 package com.aliyun.fastmodel.core.tree.statement.constants;
 
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import lombok.Getter;
 
 /**
- * 表格的详细的类型
+ * 表的详细的类型
  *
  * @author panguanjing
  * @date 2020/9/15
  */
-public enum TableDetailType {
+public enum TableDetailType implements ITableDetailType {
     /**
      * 普通维度
      */
@@ -92,9 +93,7 @@ public enum TableDetailType {
     /**
      * ADS table
      */
-    ADS(TableType.ADS, "ADS", "普通应用表")
-
-    ;
+    ADS(TableType.ADS, "ADS", "普通应用表");
 
     @Getter
     private final TableType parent;
@@ -109,10 +108,6 @@ public enum TableDetailType {
         this.parent = parent;
         this.code = code;
         this.comment = comment;
-    }
-
-    public boolean isSingle() {
-        return getCode().equalsIgnoreCase(getParent().getCode());
     }
 
     public static TableDetailType getByCode(String code, TableType tableType) {
@@ -143,5 +138,10 @@ public enum TableDetailType {
             }
         }
         throw new IllegalArgumentException("can't find the table type with comment:" + comment);
+    }
+
+    @Override
+    public String getDescription() {
+        return this.getComment();
     }
 }

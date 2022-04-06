@@ -23,6 +23,7 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
 import com.google.common.collect.ImmutableList;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -32,8 +33,7 @@ import lombok.Getter;
  * @author panguanjing
  * @date 2020/9/4
  */
-@Getter
-@EqualsAndHashCode(callSuper = false)
+@Data
 public class PrimaryConstraint extends BaseConstraint {
 
     /**

@@ -41,7 +41,7 @@ import com.google.common.collect.ImmutableList;
  * @date 2021/9/3
  */
 @AutoService(NodeCompare.class)
-@Dialect(DialectName.ZEN)
+@Dialect(DialectName.Constants.ZEN)
 public class ZenNodeCompare implements NodeCompare {
 
     private ZenTransformer zenTransformer = new ZenTransformer();

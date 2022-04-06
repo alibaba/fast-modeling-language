@@ -20,6 +20,7 @@ import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import static com.aliyun.fastmodel.transform.api.context.TransformContext.SEMICOLON;
 
@@ -36,7 +37,10 @@ public final class HiveFormatter {
         Boolean process = hiveVisitor.process(source, 0);
         Boolean append = context.isAppendSemicolon();
         String result = hiveVisitor.getBuilder().toString();
-        if (BooleanUtils.isTrue(append)) {
+        if (StringUtils.isBlank(result)) {
+            return new DialectNode(result, process);
+        }
+        if (BooleanUtils.isTrue(append)  && !StringUtils.endsWith(result, SEMICOLON)) {
             result = result + SEMICOLON;
         }
         return new DialectNode(result, process);

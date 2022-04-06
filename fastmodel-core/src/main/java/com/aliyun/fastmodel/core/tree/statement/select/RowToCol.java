@@ -18,8 +18,8 @@ package com.aliyun.fastmodel.core.tree.statement.select;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -53,7 +53,7 @@ public class RowToCol extends BaseStatement {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitRowToCol(this, context);
     }
 }

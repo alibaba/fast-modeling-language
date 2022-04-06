@@ -64,7 +64,7 @@ public class TableDomainFactoryTest {
         List<ColumnDefinition> columnDefinitions = ImmutableList.of(
             ColumnDefinition.builder()
                 .colName(new Identifier("c1"))
-                .dataType(new GenericDataType(new Identifier("col1")))
+                .dataType(new GenericDataType("col1"))
                 .build()
         );
         CreateTable statement = CreateTable.builder()

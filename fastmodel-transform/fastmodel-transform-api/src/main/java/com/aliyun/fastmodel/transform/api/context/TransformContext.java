@@ -16,6 +16,8 @@
 
 package com.aliyun.fastmodel.transform.api.context;
 
+import com.aliyun.fastmodel.transform.api.context.setting.QuerySetting;
+import com.aliyun.fastmodel.transform.api.context.setting.ViewSetting;
 import com.aliyun.fastmodel.transform.api.datatype.DataTypeConverter;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
@@ -41,9 +43,29 @@ public class TransformContext {
     private boolean appendSemicolon;
 
     /**
+     * database
+     */
+    private String database;
+
+    /**
+     * schema
+     */
+    private String schema;
+
+    /**
      * dataTypeTransformer, 类型转换器处理
      */
     private DataTypeConverter dataTypeTransformer;
+
+    /**
+     * 转换view处理内容
+     */
+    private ViewSetting viewSetting = new ViewSetting();
+
+    /**
+     * query语句转换配置
+     */
+    private QuerySetting querySetting = new QuerySetting();
 
     /**
      * 支持从另外一个context直接进行赋值
@@ -56,6 +78,10 @@ public class TransformContext {
         }
         appendSemicolon = context.isAppendSemicolon();
         dataTypeTransformer = context.getDataTypeTransformer();
+        this.viewSetting = context.getViewSetting();
+        this.database = context.getDatabase();
+        this.schema = context.getSchema();
+        this.querySetting = context.getQuerySetting();
     }
 
     /**
@@ -68,6 +94,10 @@ public class TransformContext {
         Preconditions.checkNotNull(tBuilder);
         appendSemicolon = tBuilder.appendSemicolon;
         dataTypeTransformer = tBuilder.dataTypeTransformer;
+        viewSetting = tBuilder.viewSetting;
+        this.querySetting = tBuilder.querySetting;
+        this.database = tBuilder.database;
+        this.schema = tBuilder.schema;
     }
 
     /**
@@ -84,11 +114,29 @@ public class TransformContext {
         private boolean appendSemicolon;
 
         /**
-         * 是否做语法校验
+         * database
          */
-        private boolean parseValid;
+        private String database;
 
+        /**
+         * schema
+         */
+        private String schema;
+
+        /**
+         * 数据类型转换
+         */
         private DataTypeConverter dataTypeTransformer;
+
+        /**
+         * view转换设置
+         */
+        private ViewSetting viewSetting = new ViewSetting();
+
+        /**
+         * query语句转换配置
+         */
+        private QuerySetting querySetting = new QuerySetting();
 
         public T dataTypeTransformer(DataTypeConverter dataTypeTransformer) {
             this.dataTypeTransformer = dataTypeTransformer;
@@ -100,8 +148,23 @@ public class TransformContext {
             return (T)this;
         }
 
-        public T parseValid(boolean valid) {
-            parseValid = valid;
+        public T transformToView(ViewSetting transformViewContext) {
+            this.viewSetting = transformViewContext;
+            return (T)this;
+        }
+
+        public T querySetting(QuerySetting querySetting) {
+            this.querySetting = querySetting;
+            return (T)this;
+        }
+
+        public T database(String database) {
+            this.database = database;
+            return (T)this;
+        }
+
+        public T schema(String schema) {
+            this.schema = schema;
             return (T)this;
         }
 

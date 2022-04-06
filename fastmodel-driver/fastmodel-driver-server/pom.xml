@@ -64,10 +64,6 @@
             <artifactId>fastmodel-driver-client</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-        </dependency>
         <!--主要适用演示mybatis与driver的结合处理-->
         <dependency>
             <groupId>org.mybatis</groupId>

@@ -24,6 +24,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -84,17 +85,16 @@ public class Oracle2MysqlDataTypeConverter implements DataTypeConverter {
 
     @Override
     public BaseDataType convert(BaseDataType baseDataType) {
-        DataTypeEnums typeName = baseDataType.getTypeName();
+        IDataTypeName typeName = baseDataType.getTypeName();
         if (baseDataType instanceof RowDataType) {
             throw new UnsupportedOperationException("unsupported row dataType");
         }
         String value = null;
         if (typeName == DataTypeEnums.CUSTOM) {
             GenericDataType genericDataType = (GenericDataType)baseDataType;
-            Identifier name = genericDataType.getName();
-            value = name.getValue();
+            value = genericDataType.getName();
         } else {
-            value = typeName.name();
+            value = typeName.getValue();
         }
         value = value.toUpperCase();
         BaseDataType dataType = ORACLE_2_MYSQL_DATA_TYPE_MAP.get(value);
@@ -145,7 +145,7 @@ public class Oracle2MysqlDataTypeConverter implements DataTypeConverter {
         List<DataTypeParameter> arguments = genericDataType.getArguments();
         NumericParameter n = (NumericParameter)arguments.get(0);
         if (isBetween(n, 1, 256)) {
-            return DataTypeUtil.simpleType(genericDataType.getName().getValue(), genericDataType.getArguments());
+            return DataTypeUtil.simpleType(genericDataType.getName(), genericDataType.getArguments());
         }
         if (isBetween(n, 256, 2001)) {
             return DataTypeUtil.simpleType(DataTypeEnums.VARCHAR, n);

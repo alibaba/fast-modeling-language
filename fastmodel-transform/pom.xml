@@ -41,6 +41,7 @@
         <module>fastmodel-transform-oracle</module>
         <module>fastmodel-transform-zen</module>
         <module>fastmodel-transform-graph</module>
+        <module>fastmodel-transform-clickhouse</module>
     </modules>
 
 

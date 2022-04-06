@@ -38,15 +38,17 @@ import com.google.common.base.Preconditions;
  * @date 2021/6/23
  */
 @AutoService(StatementConverter.class)
-public class DropTableConverter extends BaseDqcStatementConverter<DropTable> {
+public class DropTableConverter extends BaseDqcStatementConverter<DropTable, AddDqcRule> {
 
     @Override
-    public BaseStatement convert(DropTable dropTable, ConvertContext context) {
+    public AddDqcRule convert(DropTable dropTable, ConvertContext context) {
+        if (context == null || context.getBeforeStatement() == null) {
+            return null;
+        }
         BaseStatement beforeStatement = context.getBeforeStatement();
-        Preconditions.checkNotNull(beforeStatement);
         CreateTable createTable = (CreateTable)beforeStatement;
         List<PartitionSpec> partitionSpecList = getPartitionSpec(createTable);
-        List<RuleDefinition> list = toRuleDefinition(createTable, false);
+        List<RuleDefinition> list = toRuleDefinition(createTable, false, context);
         if (list.isEmpty()) {
             return null;
         }

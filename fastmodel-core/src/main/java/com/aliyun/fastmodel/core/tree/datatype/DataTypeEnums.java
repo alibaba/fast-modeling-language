@@ -16,127 +16,149 @@
 
 package com.aliyun.fastmodel.core.tree.datatype;
 
+import lombok.Getter;
+
 /**
  * 内建的列数据类型
  *
  * @author panguanjing
  * @date 2020/9/14
  */
-public enum DataTypeEnums {
+public enum DataTypeEnums implements IDataTypeName {
     /**
      * tinyInt
      */
-    TINYINT,
+    TINYINT(Dimension.ZERO),
     /**
      * smallInt
      */
-    SMALLINT,
+    SMALLINT(Dimension.ZERO),
 
     /**
      * MEDIUMINT
      */
-    MEDIUMINT,
+    MEDIUMINT(Dimension.ZERO),
     /**
      * int
      */
-    INT,
+    INT(Dimension.ZERO),
     /**
      * bigint
      */
-    BIGINT,
+    BIGINT(Dimension.ZERO),
 
     /**
      * float
      */
-    FLOAT,
+    FLOAT(Dimension.ZERO),
     /**
      * double
      */
-    DOUBLE,
+    DOUBLE(Dimension.ZERO),
     /**
      * decimal
      */
-    DECIMAL,
+    DECIMAL(Dimension.TWO),
     /**
      * char
      */
-    CHAR,
+    CHAR(Dimension.ONE),
     /**
      * varchar
      */
-    VARCHAR,
+    VARCHAR(Dimension.ONE),
     /**
      * string
      */
-    STRING,
+    STRING(Dimension.ZERO),
 
     /**
      * Text
      */
-    TEXT,
+    TEXT(Dimension.ZERO),
     /**
      * binary
      */
-    BINARY,
+    BINARY(Dimension.ZERO),
     /**
      * date
      */
-    DATE,
+    DATE(Dimension.ZERO),
     /**
      * datetime
      */
-    DATETIME,
+    DATETIME(Dimension.ZERO),
     /**
      * timestamp
      */
-    TIMESTAMP,
+    TIMESTAMP(Dimension.ZERO),
     /**
      * boolean
      */
-    BOOLEAN,
+    BOOLEAN(Dimension.ZERO),
     /**
      * array
      */
-    ARRAY,
+    ARRAY(Dimension.MULTIPLE),
     /**
      * map
      */
-    MAP,
+    MAP(Dimension.MULTIPLE),
     /**
      * struct
      */
-    STRUCT,
+    STRUCT(Dimension.MULTIPLE),
 
     /**
      * json
      */
-    JSON,
+    JSON(Dimension.ZERO),
 
     /**
      * 自定义
      */
-    CUSTOM;
+    CUSTOM(Dimension.ZERO);
+
+    private final Dimension dimension;
+
+    DataTypeEnums(Dimension dimension) {this.dimension = dimension;}
 
     /**
      * 根据类型获取字段类型
      *
-     * @param name 名称
+     * @param value 名称
      * @return {@link DataTypeEnums}
      * @throws IllegalArgumentException if can't find the columnDataType
      */
-    public static DataTypeEnums getDataType(String name) {
+    public static DataTypeEnums getDataType(String value) {
         DataTypeEnums[] dataTypeEnums = DataTypeEnums.values();
         for (DataTypeEnums type : dataTypeEnums) {
-            if (type.name().equalsIgnoreCase(name)) {
+            if (type.name().equalsIgnoreCase(value)) {
                 return type;
             }
         }
         return DataTypeEnums.CUSTOM;
     }
 
-    public static boolean isIntDataType(DataTypeEnums dataTypeEnums) {
+    public static boolean isIntDataType(IDataTypeName dataTypeEnums) {
         return dataTypeEnums == DataTypeEnums.BIGINT || dataTypeEnums == DataTypeEnums.INT
             || dataTypeEnums == DataTypeEnums.SMALLINT || dataTypeEnums == DataTypeEnums.TINYINT
             || dataTypeEnums == DataTypeEnums.MEDIUMINT;
     }
+
+    @Override
+    public String getName() {
+        return this.name();
+    }
+
+    @Override
+    public String getValue() {
+        return this.name();
+    }
+
+    @Override
+    public Dimension getDimension() {
+        return dimension;
+    }
+
 }

@@ -1569,9 +1569,25 @@ with
 queryNoWith:
       queryTerm
       (KW_ORDER KW_BY sortItem (COMMA sortItem)*)?
+      clusterByClause?
+      distributeByClause?
+      sortByClause?
       (KW_OFFSET offset=rowCount (KW_ROW | KW_ROWS)?)?
       ((KW_LIMIT limit=limitRowCount) | (KW_FETCH (KW_FIRST | KW_NEXT) (fetchFirst=rowCount)? (KW_ROW | KW_ROWS) (KW_ONLY | KW_WITH KW_TIES)))?
       ;
+
+clusterByClause:
+    KW_CLUSTER KW_BY expression (COMMA expression)*
+    ;
+
+distributeByClause:
+    KW_DISTRIBUTE KW_BY sortItem (COMMA sortItem)*
+    ;
+
+sortByClause:
+    KW_SORT KW_BY sortItem (COMMA sortItem)*
+    ;
+
 limitRowCount
     : KW_ALL
     | rowCount

@@ -30,13 +30,19 @@ public class DialectMetaTest {
 
     @Test
     public void testGetByName() {
-        DialectMeta hive = DialectMeta.getByNameAndVersion("hive", "");
+        DialectMeta hive = DialectMeta.getByNameAndVersion("hive", IVersion.getDefault());
         assertNotNull(hive);
     }
 
     @Test
     public void testGetByNameMc() {
-        DialectMeta dialectMeta = DialectMeta.getByNameAndVersion("maxcompute", "");
+        DialectMeta dialectMeta = DialectMeta.getByNameAndVersion("maxcompute", IVersion.getDefault());
+        assertNotNull(dialectMeta);
+    }
+
+    @Test
+    public void testGetByNameHologres() {
+        DialectMeta dialectMeta = DialectMeta.getByNameAndVersion("hologres", IVersion.getDefault());
         assertNotNull(dialectMeta);
     }
 

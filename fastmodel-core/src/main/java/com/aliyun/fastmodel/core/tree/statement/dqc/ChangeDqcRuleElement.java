@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.dqc;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -33,7 +33,7 @@ import lombok.Getter;
  * @date 2021/6/27
  */
 @Getter
-public class ChangeDqcRuleElement extends AbstractNode {
+public class ChangeDqcRuleElement extends AbstractFmlNode {
 
     private final Identifier oldRuleName;
 

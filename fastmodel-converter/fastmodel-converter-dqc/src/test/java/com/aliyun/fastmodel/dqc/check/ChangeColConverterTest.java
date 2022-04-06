@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.conveter.dqc.DefaultConvertContext;
 import com.aliyun.fastmodel.conveter.dqc.check.ChangeColConverter;
 import com.aliyun.fastmodel.core.formatter.FastModelFormatter;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -32,6 +33,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -133,5 +135,68 @@ public class ChangeColConverterTest {
         assertEquals(ruleElements.size(), 1);
         ChangeDqcRuleElement ruleElement = ruleElements.get(0);
         assertEquals(ruleElement.getBaseCheckElement().isEnable(), false);
+    }
+
+    @Test
+    public void testConverterCodeTable() {
+        ChangeCol changeCol = new ChangeCol(
+            QualifiedName.of("dim_shop"),
+            new Identifier("c1"),
+            ColumnDefinition.builder().colName(new Identifier("c1")).properties(
+                ImmutableList.of(new Property("code_table", ""))
+            ).build()
+        );
+        ChangeDqcRule changeRules = (ChangeDqcRule)changeColConverter.convert(changeCol, context);
+        List<ChangeDqcRuleElement> changeDqcRuleElement = changeRules.getChangeDqcRuleElement();
+        assertEquals(changeRules.toString(), "ALTER DQC_RULE ON TABLE dim_shop\n"
+            + "CHANGE (\n"
+            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, ``, code) = 0) NOT ENFORCED DISABLE\n"
+            + ")");
+    }
+
+    @Test
+    public void testConverterCodeTableWithOld() {
+        QualifiedName dimShop = QualifiedName.of("dim_shop");
+        Identifier c1 = new Identifier("c1");
+        ImmutableList<Property> properties1 = ImmutableList.of(new Property("code_table", "abc"));
+        ChangeCol changeCol = new ChangeCol(
+            dimShop,
+            c1,
+            ColumnDefinition.builder().colName(c1).properties(
+                properties1
+            ).build()
+        );
+        ImmutableList<Property> properties = ImmutableList.of(new Property("code_table", "dce"));
+        List<ColumnDefinition> columnDefinitions = ImmutableList.of(
+            ColumnDefinition.builder()
+                .colName(c1)
+                .properties(properties)
+                .build()
+        );
+        context.setBeforeStatement(CreateTable.builder().tableName(dimShop).columns(columnDefinitions).build());
+        ChangeDqcRule changeRules = (ChangeDqcRule)changeColConverter.convert(changeCol, context);
+        List<ChangeDqcRuleElement> changeDqcRuleElement = changeRules.getChangeDqcRuleElement();
+        assertEquals(changeRules.toString(), "ALTER DQC_RULE ON TABLE dim_shop\n"
+            + "CHANGE (\n"
+            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, dce, code) = 0) NOT ENFORCED DISABLE,\n"
+            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, abc, code) = 0) NOT ENFORCED\n"
+            + ")");
+    }
+
+    @Test
+    public void testConverterCodeTableExist() {
+        ChangeCol changeCol = new ChangeCol(
+            QualifiedName.of("dim_shop"),
+            new Identifier("c1"),
+            ColumnDefinition.builder().colName(new Identifier("c1")).properties(
+                ImmutableList.of(new Property("code_table", "t1"))
+            ).build()
+        );
+        ChangeDqcRule changeRules = (ChangeDqcRule)changeColConverter.convert(changeCol, context);
+        List<ChangeDqcRuleElement> changeDqcRuleElement = changeRules.getChangeDqcRuleElement();
+        assertEquals(changeRules.toString(), "ALTER DQC_RULE ON TABLE dim_shop\n"
+            + "CHANGE (\n"
+            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, t1, code) = 0) NOT ENFORCED\n"
+            + ")");
     }
 }

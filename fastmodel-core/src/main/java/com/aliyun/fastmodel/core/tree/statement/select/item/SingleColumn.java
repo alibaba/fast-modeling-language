@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.select.item;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
@@ -41,26 +41,29 @@ public class SingleColumn extends SelectItem {
 
     private final Identifier alias;
 
+    private final boolean existAs;
+
     public SingleColumn(BaseExpression expression) {
         this(null, expression);
     }
 
-    public SingleColumn(BaseExpression identifier, Identifier alias) {
-        this(null, identifier, alias);
+    public SingleColumn(BaseExpression expression, Identifier alias) {
+        this(null, expression, alias, false);
     }
 
     public SingleColumn(NodeLocation location, BaseExpression expression) {
-        this(location, expression, null);
+        this(location, expression, null, false);
     }
 
     public SingleColumn(NodeLocation location, Identifier alias) {
-        this(location, null, alias);
+        this(location, null, alias, false);
     }
 
-    public SingleColumn(NodeLocation location, BaseExpression expression, Identifier alias) {
+    public SingleColumn(NodeLocation location, BaseExpression expression, Identifier alias, boolean existAs) {
         super(location);
         this.alias = alias;
         this.expression = expression;
+        this.existAs = existAs;
     }
 
     @Override
@@ -69,14 +72,15 @@ public class SingleColumn extends SelectItem {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitSingleColumn(this, context);
     }
 
     @Override
     public String toString() {
         if (alias != null) {
-            return expression.toString() + " " + alias;
+            String separator = existAs ? " AS " : " ";
+            return expression.toString() + separator + alias;
         }
         return expression.toString();
     }

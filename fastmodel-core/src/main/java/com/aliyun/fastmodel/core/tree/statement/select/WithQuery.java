@@ -19,16 +19,15 @@ package com.aliyun.fastmodel.core.tree.statement.select;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
- * Desc:
+ * WithQuery
  *
  * @author panguanjing
  * @date 2020/11/3
@@ -53,7 +52,7 @@ public class WithQuery extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
-        return super.accept(visitor, context);
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
+        return visitor.visitWithQuery(this, context);
     }
 }

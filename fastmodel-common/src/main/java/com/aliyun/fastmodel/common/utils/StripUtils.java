@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 public class StripUtils {
 
     public static final String SUFFIX = ";";
+    public static final String SINGLE = "'";
 
     /**
      * 将字符串坐下strip
@@ -35,16 +36,29 @@ public class StripUtils {
      * @return 处理后的字符串
      */
     public static String strip(String src) {
-        String prefix = "'";
+        String prefix = SINGLE;
         if (src.startsWith(prefix)) {
             return StringUtils.strip(src, prefix);
-        } else {
-            String prefix1 = "\"";
-            if (src.startsWith(prefix1)) {
-                return StringUtils.strip(src, prefix1);
-            }
+        }
+        prefix = "\"";
+        if (src.startsWith(prefix)) {
+            return StringUtils.strip(src, prefix);
+        }
+        prefix = "`";
+        if (src.startsWith(prefix)) {
+            return StringUtils.strip(src, prefix);
         }
         return src;
+    }
+
+    /**
+     * 给string增加单引号
+     *
+     * @param src
+     * @return
+     */
+    public static String addStrip(String src) {
+        return SINGLE + src + SINGLE;
     }
 
     /**

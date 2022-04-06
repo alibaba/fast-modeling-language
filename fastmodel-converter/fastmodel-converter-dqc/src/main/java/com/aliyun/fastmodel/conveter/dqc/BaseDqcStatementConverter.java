@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.converter.spi.BaseStatementConverter;
 import com.aliyun.fastmodel.converter.spi.ConvertContext;
-import com.aliyun.fastmodel.converter.util.FmlTableUtil;
+import com.aliyun.fastmodel.conveter.dqc.util.FmlTableUtil;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
@@ -54,6 +54,8 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstrai
 import com.aliyun.fastmodel.core.tree.util.RuleUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 提供一些公用的方法内容处理
@@ -61,10 +63,11 @@ import com.google.common.collect.ImmutableList;
  * @author panguanjing
  * @date 2021/6/2
  */
-public abstract class BaseDqcStatementConverter<T extends BaseStatement>
-    extends BaseStatementConverter<T, ConvertContext> {
+public abstract class BaseDqcStatementConverter<T extends BaseStatement, R extends BaseStatement>
+    extends BaseStatementConverter<T, R, ConvertContext> {
 
     public static final String EXPECT_ZERO = "0";
+    public static final String COLON = ":";
 
     /**
      * 重复的内容去重
@@ -78,7 +81,7 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
         return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
-    public List<RuleDefinition> toRuleDefinition(CreateTable source, boolean enable) {
+    public List<RuleDefinition> toRuleDefinition(CreateTable source, boolean enable, ConvertContext context) {
         List<RuleDefinition> ruleDefinitions = new ArrayList<>();
         /**
          * 列上的约束，主要根据是否主键，以及数据字典的约束
@@ -90,14 +93,20 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
             for (ColumnDefinition c : columnDefines) {
                 map.put(c.getColName(), c);
             }
-            fillColumnRule(ruleDefinitions, columnDefines, enable);
+            List<RuleDefinition> list = toRuleDefinition(columnDefines, enable, context);
+            if (list != null) {
+                ruleDefinitions.addAll(list);
+            }
         }
         if (!source.isPartitionEmpty()) {
             List<ColumnDefinition> columnDefinitions = source.getPartitionedBy().getColumnDefinitions();
             for (ColumnDefinition c : columnDefinitions) {
                 map.put(c.getColName(), c);
             }
-            fillColumnRule(ruleDefinitions, columnDefinitions, enable);
+            List<RuleDefinition> list = toRuleDefinition(columnDefinitions, enable, context);
+            if (list != null) {
+                ruleDefinitions.addAll(list);
+            }
         }
         if (!source.isConstraintEmpty()) {
             List<BaseConstraint> constraintStatements = source.getConstraintStatements();
@@ -126,23 +135,16 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
         return ruleDefinitions;
     }
 
-    private void fillColumnRule(List<RuleDefinition> ruleDefinitions, List<ColumnDefinition> columnDefines,
-                                boolean enable) {
-        List<RuleDefinition> list = toRuleDefinition(columnDefines, enable);
-        if (list != null) {
-            ruleDefinitions.addAll(list);
-        }
-    }
-
     /**
      * 将列信息，转换为规则定义信息内容
      *
      * @param oldColumnName
      * @param columnDefines
      * @param enable
+     * @param context
      * @return
      */
-    public List<RuleDefinition> toRuleDefinition(List<ColumnDefinition> columnDefines, Boolean enable) {
+    public List<RuleDefinition> toRuleDefinition(List<ColumnDefinition> columnDefines, Boolean enable, ConvertContext context) {
         List<RuleDefinition> ruleDefinitions = new ArrayList<>();
         for (ColumnDefinition c : columnDefines) {
             Boolean primary = c.getPrimary();
@@ -165,14 +167,54 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
                     ruleDefinitions.add(definitions);
                 }
             }
-            if (codeFound(c)) {
-                RuleDefinition definition = toCodeRule(c, enable);
-                if (definition != null) {
-                    ruleDefinitions.add(definition);
-                }
-            }
+            List<RuleDefinition> codeTableRules = codeTableRule(c, context, enable);
+            ruleDefinitions.addAll(codeTableRules);
         }
-        return ruleDefinitions.stream().filter(distinctByKey(RuleDefinition::getRuleName)).collect(Collectors.toList());
+        return ruleDefinitions.stream().filter(distinctByKey(definition -> {
+            return getDistinctKey(definition);
+        })).collect(Collectors.toList());
+    }
+
+    protected String getDistinctKey(RuleDefinition definition) {
+        return definition.getRuleName() + COLON + definition.isEnable();
+    }
+
+    private List<RuleDefinition> codeTableRule(ColumnDefinition c, ConvertContext context, boolean enable) {
+        List<RuleDefinition> ruleDefinitions = Lists.newArrayList();
+        Optional<Property> property = codeFound(c);
+        if (!property.isPresent()) {return ruleDefinitions;}
+        boolean codeEnable = StringUtils.isNotBlank(property.get().getValue());
+
+        //如果codeEnable, 那么还要看之前的是否存在，存在的话，生成一个删除的规则定义, 顺序是先删除，后添加
+        RuleDefinition deleteRule = generatorDeleteRule(c, context, codeEnable);
+        if (deleteRule != null) {
+            ruleDefinitions.add(deleteRule);
+        }
+        //如果不是enable，只生成删除的规则的操作
+        if (!enable) {
+            return ruleDefinitions;
+        }
+        RuleDefinition definition = toCodeRule(c, codeEnable);
+        if (definition != null) {
+            ruleDefinitions.add(definition);
+        }
+        return ruleDefinitions;
+    }
+
+    private RuleDefinition generatorDeleteRule(ColumnDefinition c, ConvertContext context, boolean codeEnable) {
+        if (!codeEnable) {
+            return null;
+        }
+        boolean createTable = context != null && context.getBeforeStatement() instanceof CreateTable;
+        if (!createTable) {
+            return null;
+        }
+        CreateTable beforeStatement = (CreateTable)context.getBeforeStatement();
+        ColumnDefinition sourceColumn = beforeStatement.getColumn(c.getColName());
+        if (!codeFound(sourceColumn).isPresent()) {
+            return null;
+        }
+        return toCodeRule(sourceColumn, false);
     }
 
     protected BaseCheckElement toSingleCheckElement(RuleDefinition build) {
@@ -211,9 +253,16 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
      * @param c
      * @return
      */
-    protected boolean codeFound(ColumnDefinition c) {
-        return !c.isPropertyEmpty() && c.getColumnProperties().stream().filter(x -> x.getName().equals(
-            ColumnPropertyDefaultKey.code_table.name())).findFirst().isPresent();
+    protected Optional<Property> codeFound(ColumnDefinition c) {
+        if (c == null) {
+            return Optional.empty();
+        }
+        boolean propertyEmpty = c.isPropertyEmpty();
+        if (propertyEmpty) {
+            return Optional.empty();
+        }
+        return c.getColumnProperties().stream().filter(x -> x.getName().equals(
+            ColumnPropertyDefaultKey.code_table.name())).findFirst();
     }
 
     /**
@@ -228,9 +277,10 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
         TableOrColumn tableOrColumn = new TableOrColumn(of);
         Optional<Property> first = c.getColumnProperties().stream().filter(x -> x.getName().equals(
             ColumnPropertyDefaultKey.code_table.name())).findFirst();
+        String value = first.get().getValue();
         InTableFunction inTableFunction = new InTableFunction(
             of,
-            QualifiedName.of(first.get().getValue()),
+            QualifiedName.of(value),
             null
         );
         FixedStrategy fixedStrategy = new FixedStrategy(inTableFunction, ComparisonOperator.EQUAL,
@@ -272,9 +322,9 @@ public abstract class BaseDqcStatementConverter<T extends BaseStatement>
         LongLiteral expectValue = new LongLiteral(EXPECT_ZERO);
         FixedStrategy fixedStrategy = new FixedStrategy(columnFunction, ComparisonOperator.EQUAL, expectValue);
         RuleDefinition duplicateCountZero = RuleDefinition.builder().enable(enable).ruleStrategy(
-            fixedStrategy
-        ).ruleGrade(RuleGrade.WEAK).ruleName(
-            RuleUtil.generateRuleNameByFunction(BaseFunctionName.DUPLICATE_COUNT, c.getColName()))
+                fixedStrategy
+            ).ruleGrade(RuleGrade.WEAK).ruleName(
+                RuleUtil.generateRuleNameByFunction(BaseFunctionName.DUPLICATE_COUNT, c.getColName()))
             .build();
         ;
         list.add(duplicateCountZero);

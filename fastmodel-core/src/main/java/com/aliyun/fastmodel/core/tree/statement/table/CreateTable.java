@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.table;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.aliyun.fastmodel.core.semantic.table.CreateTableSemanticCheck;
 import com.aliyun.fastmodel.core.tree.AliasedName;
@@ -26,6 +27,7 @@ import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.BaseCreate;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
 import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
@@ -33,6 +35,7 @@ import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.element.MultiComment;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -44,7 +47,7 @@ import lombok.Getter;
  * @date 2020/9/3
  */
 @Getter
-@EqualsAndHashCode(callSuper = true )
+@EqualsAndHashCode(callSuper = true)
 public class CreateTable extends BaseCreate {
 
     /**
@@ -65,7 +68,7 @@ public class CreateTable extends BaseCreate {
     /**
      * 表的详细类型
      */
-    private final TableDetailType tableDetailType;
+    private final ITableDetailType tableDetailType;
 
     /**
      * 分区内容
@@ -84,8 +87,13 @@ public class CreateTable extends BaseCreate {
     private final List<MultiComment> columnCommentElements;
 
     protected CreateTable(TableBuilder tableBuilder) {
-        super(CreateElement.builder().qualifiedName(tableBuilder.tableName).notExists(tableBuilder.ifNotExist)
-            .comment(tableBuilder.comment).properties(tableBuilder.properties).aliasedName(tableBuilder.aliasedName)
+        super(CreateElement.builder()
+            .qualifiedName(tableBuilder.tableName)
+            .notExists(tableBuilder.ifNotExist)
+            .comment(tableBuilder.comment)
+            .properties(tableBuilder.properties)
+            .aliasedName(tableBuilder.aliasedName)
+            .createOrReplace(tableBuilder.createOrReplace)
             .build());
         columnDefines = tableBuilder.columnDefines;
         constraintStatements = tableBuilder.constraints;
@@ -157,6 +165,24 @@ public class CreateTable extends BaseCreate {
         return tableIndexList == null || tableIndexList.isEmpty();
     }
 
+    public ColumnDefinition getColumn(Identifier colName) {
+        if (!isColumnEmpty()) {
+            for (ColumnDefinition c : getColumnDefines()) {
+                if (!Objects.equals(c.getColName(), colName)) {continue;}
+                return c;
+            }
+        }
+        if (!isPartitionEmpty()) {
+            for (ColumnDefinition c : getPartitionedBy().getColumnDefinitions()) {
+                if (!Objects.equals(c.getColName(), colName)) {
+                    continue;
+                }
+                return c;
+            }
+        }
+        return null;
+    }
+
     @Override
     public List<? extends Node> getChildren() {
         ImmutableList.Builder<Node> builder = ImmutableList.builder();
@@ -177,7 +203,7 @@ public class CreateTable extends BaseCreate {
         protected Comment comment;
         protected boolean ifNotExist;
         protected List<BaseConstraint> constraints;
-        protected TableDetailType detailType;
+        protected ITableDetailType detailType;
         protected PartitionedBy partition;
         protected Boolean createOrReplace;
         protected List<MultiComment> commentElements;
@@ -214,7 +240,7 @@ public class CreateTable extends BaseCreate {
             return (T)this;
         }
 
-        public T detailType(TableDetailType detailType) {
+        public T detailType(ITableDetailType detailType) {
             this.detailType = detailType;
             return (T)this;
         }

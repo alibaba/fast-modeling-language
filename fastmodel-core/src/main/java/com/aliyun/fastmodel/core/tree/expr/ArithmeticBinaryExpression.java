@@ -18,14 +18,13 @@ package com.aliyun.fastmodel.core.tree.expr;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.enums.ArithmeticOperator;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Desc:
@@ -63,7 +62,7 @@ public class ArithmeticBinaryExpression extends BaseExpression {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitArithmeticBinaryExpression(this, context);
     }
 

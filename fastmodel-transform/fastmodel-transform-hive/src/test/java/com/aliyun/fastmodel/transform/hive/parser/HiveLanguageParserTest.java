@@ -16,7 +16,9 @@
 
 package com.aliyun.fastmodel.transform.hive.parser;
 
+import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -57,5 +59,31 @@ public class HiveLanguageParserTest {
             + "(\n"
             + "   b BIGINT COMMENT 'comment abc'\n"
             + ")");
+    }
+
+
+    @Test
+    public void parseComplex() {
+        CreateTable o = hiveLanguageParser.parseNode("create table a (b bigint comment 'comment abc', abc struct<course:string,score:int>, abc1 map<string,string>, bcd array<string>)");
+        assertEquals(o.toString(), "CREATE DIM TABLE a \n"
+            + "(\n"
+            + "   b    BIGINT COMMENT 'comment abc',\n"
+            + "   abc  STRUCT<course:STRING,score:INT>,\n"
+            + "   abc1 MAP<STRING,STRING>,\n"
+            + "   bcd  ARRAY<STRING>\n"
+            + ")");
+    }
+
+    @Test
+    public void parseWithProperty() {
+        ReverseContext build = ReverseContext.builder()
+            .property(new Property("business_process", "default"))
+            .build();
+        CreateTable o = (CreateTable)hiveLanguageParser.parseNode("create table a (b bigint comment 'comment abc')", build);
+        assertEquals(o.toString(), "CREATE DIM TABLE a \n"
+            + "(\n"
+            + "   b BIGINT COMMENT 'comment abc'\n"
+            + ")\n"
+            + "WITH('business_process'='default')");
     }
 }

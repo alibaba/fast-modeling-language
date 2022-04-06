@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.compare.table;
 
 import java.util.List;
 
+import com.aliyun.fastmodel.compare.impl.table.ConstraintCompare;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;

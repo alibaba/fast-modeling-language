@@ -24,7 +24,7 @@ import com.aliyun.fastmodel.core.tree.BaseStatement;
  * @author panguanjing
  * @date 2021/6/2
  */
-public abstract class BaseStatementConverter<T extends BaseStatement, C extends ConvertContext>
-    implements StatementConverter<T, C> {
+public abstract class BaseStatementConverter<T extends BaseStatement, R extends BaseStatement, C extends ConvertContext>
+    implements StatementConverter<T, R, C> {
 
 }

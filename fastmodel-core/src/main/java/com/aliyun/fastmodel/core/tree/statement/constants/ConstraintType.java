@@ -28,51 +28,55 @@ public enum ConstraintType {
     /**
      * 主键约束
      */
-    PRIMARY_KEY("primary", ConstraintScope.COLUMN, "Primary Key Constraint"),
+    PRIMARY_KEY(Constants.PRIMARY, ConstraintScope.COLUMN, "Primary Key Constraint"),
     /**
      * 维度约束
      */
-    DIM_KEY("dim", ConstraintScope.COLUMN, "Dim Constraint"),
+    DIM_KEY(Constants.DIM, ConstraintScope.COLUMN, "Dim Constraint"),
 
     /**
      * 层级约束
      */
-    LEVEL_KEY("level", ConstraintScope.COLUMN, "Level Constraint"),
+    LEVEL_KEY(Constants.LEVEL, ConstraintScope.COLUMN, "Level Constraint"),
 
     /**
      * 不为空
      */
-    NOT_NULL("notNull", ConstraintScope.COLUMN, "notNull constraint"),
+    NOT_NULL(Constants.NOT_NULL1, ConstraintScope.COLUMN, "notNull constraint"),
 
     /**
      * 列组的约束
      */
-    COLUMN_GROUP("column_group", ConstraintScope.COLUMN, "column Group constraint"),
+    COLUMN_GROUP(Constants.COLUMN_GROUP1, ConstraintScope.COLUMN, "column Group constraint"),
 
     /**
      * 时间周期类型
      */
-    TIME_PERIOD("time_period", ConstraintScope.TABLE, "time period"),
+    TIME_PERIOD(Constants.TIME_PERIOD1, ConstraintScope.TABLE, "time period"),
 
     /**
      * UNIQUE
      */
-    UNIQUE("unique", ConstraintScope.COLUMN, "唯一值约束"),
+    UNIQUE(Constants.UNIQUE1, ConstraintScope.COLUMN, "唯一值约束"),
 
     /**
      * Redundant冗余约束
      */
-    REDUNDANT("redundant", ConstraintScope.COLUMN, "冗余约束"),
+    REDUNDANT(Constants.REDUNDANT1, ConstraintScope.COLUMN, "冗余约束"),
 
     /**
      * 默认值约束
      */
-    DEFAULT_VALUE("default_value", ConstraintScope.COLUMN, "默认值"),
+    DEFAULT_VALUE(Constants.DEFAULT_VALUE1, ConstraintScope.COLUMN, "默认值"),
 
     /**
      * 自定义约束信息
      */
-    CUSTOM_CONSTRAINT("custom_constraint", ConstraintScope.UNDEFIND, "自定义约束"),
+    CHECK(Constants.CHECK, ConstraintScope.UNDEFIND, "自定义约束"),
+    /**
+     * index
+     */
+    INDEX(Constants.INDEX, ConstraintScope.UNDEFIND, "index"),
 
     ;
 
@@ -91,6 +95,20 @@ public enum ConstraintType {
      */
     @Getter
     private final String description;
+
+    public static class Constants {
+        public static final String PRIMARY = "primary";
+        public static final String DIM = "dim";
+        public static final String LEVEL = "level";
+        public static final String NOT_NULL1 = "notNull";
+        public static final String COLUMN_GROUP1 = "column_group";
+        public static final String TIME_PERIOD1 = "time_period";
+        public static final String UNIQUE1 = "unique";
+        public static final String REDUNDANT1 = "redundant";
+        public static final String DEFAULT_VALUE1 = "default_value";
+        public static final String CHECK = "check";
+        public static final String INDEX = "index";
+    }
 
     ConstraintType(String code, ConstraintScope scope, String description) {
         this.code = code;

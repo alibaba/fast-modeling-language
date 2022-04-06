@@ -16,80 +16,7 @@
 
 package com.aliyun.fastmodel.core.tree;
 
-import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
-import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
-import com.aliyun.fastmodel.core.tree.datatype.Field;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
-import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
-import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
-import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
-import com.aliyun.fastmodel.core.tree.expr.AllRows;
-import com.aliyun.fastmodel.core.tree.expr.ArithmeticBinaryExpression;
-import com.aliyun.fastmodel.core.tree.expr.ArithmeticUnaryExpression;
-import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
-import com.aliyun.fastmodel.core.tree.expr.BitOperationExpression;
-import com.aliyun.fastmodel.core.tree.expr.ComparisonExpression;
-import com.aliyun.fastmodel.core.tree.expr.CustomExpression;
-import com.aliyun.fastmodel.core.tree.expr.DereferenceExpression;
-import com.aliyun.fastmodel.core.tree.expr.Identifier;
-import com.aliyun.fastmodel.core.tree.expr.IsConditionExpression;
-import com.aliyun.fastmodel.core.tree.expr.LogicalBinaryExpression;
-import com.aliyun.fastmodel.core.tree.expr.Parameter;
-import com.aliyun.fastmodel.core.tree.expr.Row;
-import com.aliyun.fastmodel.core.tree.expr.atom.Cast;
-import com.aliyun.fastmodel.core.tree.expr.atom.CoalesceExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.ExistsPredicate;
-import com.aliyun.fastmodel.core.tree.expr.atom.Extract;
-import com.aliyun.fastmodel.core.tree.expr.atom.Floor;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
-import com.aliyun.fastmodel.core.tree.expr.atom.GroupingOperation;
-import com.aliyun.fastmodel.core.tree.expr.atom.IfExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.InPredicate;
-import com.aliyun.fastmodel.core.tree.expr.atom.IntervalExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.ListExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.SearchedCaseExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.SimpleCaseExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.SubQueryExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
-import com.aliyun.fastmodel.core.tree.expr.atom.WhenClause;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.BaseDateTimeExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddEndExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddStartExpression;
-import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.CurrentDate;
-import com.aliyun.fastmodel.core.tree.expr.literal.CurrentTimestamp;
-import com.aliyun.fastmodel.core.tree.expr.literal.DateLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.DecimalLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.DoubleLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.IntervalLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.ListStringLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.NullLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
-import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLocalTzLiteral;
-import com.aliyun.fastmodel.core.tree.expr.similar.BetweenPredicate;
-import com.aliyun.fastmodel.core.tree.expr.similar.InListExpression;
-import com.aliyun.fastmodel.core.tree.expr.similar.LikePredicate;
-import com.aliyun.fastmodel.core.tree.expr.similar.NotExpression;
-import com.aliyun.fastmodel.core.tree.expr.window.FrameBound;
-import com.aliyun.fastmodel.core.tree.expr.window.Window;
-import com.aliyun.fastmodel.core.tree.expr.window.WindowFrame;
-import com.aliyun.fastmodel.core.tree.relation.AliasedRelation;
-import com.aliyun.fastmodel.core.tree.relation.Join;
-import com.aliyun.fastmodel.core.tree.relation.Lateral;
-import com.aliyun.fastmodel.core.tree.relation.SampledRelation;
-import com.aliyun.fastmodel.core.tree.relation.querybody.BaseQueryBody;
-import com.aliyun.fastmodel.core.tree.relation.querybody.Except;
-import com.aliyun.fastmodel.core.tree.relation.querybody.Intersect;
-import com.aliyun.fastmodel.core.tree.relation.querybody.QuerySpecification;
-import com.aliyun.fastmodel.core.tree.relation.querybody.SetOperation;
-import com.aliyun.fastmodel.core.tree.relation.querybody.Table;
-import com.aliyun.fastmodel.core.tree.relation.querybody.TableSubQuery;
-import com.aliyun.fastmodel.core.tree.relation.querybody.Union;
-import com.aliyun.fastmodel.core.tree.relation.querybody.Values;
 import com.aliyun.fastmodel.core.tree.statement.BaseCommandStatement;
 import com.aliyun.fastmodel.core.tree.statement.BaseCreate;
 import com.aliyun.fastmodel.core.tree.statement.BaseDrop;
@@ -100,7 +27,6 @@ import com.aliyun.fastmodel.core.tree.statement.BaseSetAliasedName;
 import com.aliyun.fastmodel.core.tree.statement.BaseSetComment;
 import com.aliyun.fastmodel.core.tree.statement.BaseSetProperties;
 import com.aliyun.fastmodel.core.tree.statement.BaseUnSetProperties;
-import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.adjunct.CreateAdjunct;
 import com.aliyun.fastmodel.core.tree.statement.adjunct.DropAdjunct;
 import com.aliyun.fastmodel.core.tree.statement.adjunct.RenameAdjunct;
@@ -184,9 +110,6 @@ import com.aliyun.fastmodel.core.tree.statement.measure.unit.DropMeasureUnit;
 import com.aliyun.fastmodel.core.tree.statement.measure.unit.RenameMeasureUnit;
 import com.aliyun.fastmodel.core.tree.statement.measure.unit.SetMeasureUnitComment;
 import com.aliyun.fastmodel.core.tree.statement.measure.unit.SetMeasureUnitProperties;
-import com.aliyun.fastmodel.core.tree.statement.misc.Call;
-import com.aliyun.fastmodel.core.tree.statement.misc.EmptyStatement;
-import com.aliyun.fastmodel.core.tree.statement.misc.Use;
 import com.aliyun.fastmodel.core.tree.statement.pipe.CreatePipe;
 import com.aliyun.fastmodel.core.tree.statement.references.MoveReferences;
 import com.aliyun.fastmodel.core.tree.statement.references.ShowReferences;
@@ -206,28 +129,7 @@ import com.aliyun.fastmodel.core.tree.statement.rule.strategy.VolInterval;
 import com.aliyun.fastmodel.core.tree.statement.rule.strategy.VolStrategy;
 import com.aliyun.fastmodel.core.tree.statement.script.ImportObject;
 import com.aliyun.fastmodel.core.tree.statement.script.RefRelation;
-import com.aliyun.fastmodel.core.tree.statement.select.Hint;
-import com.aliyun.fastmodel.core.tree.statement.select.Limit;
-import com.aliyun.fastmodel.core.tree.statement.select.Offset;
-import com.aliyun.fastmodel.core.tree.statement.select.Query;
-import com.aliyun.fastmodel.core.tree.statement.select.RowToCol;
-import com.aliyun.fastmodel.core.tree.statement.select.Select;
-import com.aliyun.fastmodel.core.tree.statement.select.With;
-import com.aliyun.fastmodel.core.tree.statement.select.groupby.Cube;
-import com.aliyun.fastmodel.core.tree.statement.select.groupby.GroupBy;
-import com.aliyun.fastmodel.core.tree.statement.select.groupby.GroupingElement;
-import com.aliyun.fastmodel.core.tree.statement.select.groupby.GroupingSets;
-import com.aliyun.fastmodel.core.tree.statement.select.groupby.Rollup;
-import com.aliyun.fastmodel.core.tree.statement.select.groupby.SimpleGroupBy;
-import com.aliyun.fastmodel.core.tree.statement.select.item.AllColumns;
-import com.aliyun.fastmodel.core.tree.statement.select.item.SelectItem;
-import com.aliyun.fastmodel.core.tree.statement.select.item.SingleColumn;
-import com.aliyun.fastmodel.core.tree.statement.select.order.OrderBy;
-import com.aliyun.fastmodel.core.tree.statement.select.order.SortItem;
-import com.aliyun.fastmodel.core.tree.statement.show.ConditionElement;
-import com.aliyun.fastmodel.core.tree.statement.show.LikeCondition;
 import com.aliyun.fastmodel.core.tree.statement.show.ShowObjects;
-import com.aliyun.fastmodel.core.tree.statement.show.WhereCondition;
 import com.aliyun.fastmodel.core.tree.statement.showcreate.Output;
 import com.aliyun.fastmodel.core.tree.statement.showcreate.ShowCreate;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
@@ -280,26 +182,7 @@ import com.aliyun.fastmodel.core.tree.statement.timeperiod.SetTimePeriodProperti
  * @author panguanjing
  * @date 2020/10/29
  */
-public abstract class AstVisitor<R, C> {
-
-    public R process(Node node) {
-        return process(node, null);
-    }
-
-    public R process(Node node, C context) {
-        return node.accept(this, context);
-    }
-
-    /**
-     * visit Node
-     *
-     * @param node    Node
-     * @param context context
-     * @return R
-     */
-    public R visitNode(Node node, C context) {
-        return null;
-    }
+public abstract class AstVisitor<R, C> implements IAstVisitor<R, C> {
 
     /**
      * visit statement
@@ -310,446 +193,6 @@ public abstract class AstVisitor<R, C> {
      */
     public R visitStatement(BaseStatement statement, C context) {
         return visitNode(statement, context);
-    }
-
-    /**
-     * visit expression
-     *
-     * @param expression expression
-     * @param context    context
-     * @return R
-     */
-    public R visitExpression(BaseExpression expression, C context) {
-        return visitNode(expression, context);
-    }
-
-    /**
-     * visit dataTypeParameter
-     *
-     * @param dataTypeParameter dataTypeParameter
-     * @param context           context
-     * @return R
-     */
-    public R visitDataTypeParameter(DataTypeParameter dataTypeParameter, C context) {
-        return visitNode(dataTypeParameter, context);
-    }
-
-    /**
-     * visit identifier
-     *
-     * @param identifier 标识符
-     * @param context    context
-     * @return R
-     */
-    public R visitIdentifier(Identifier identifier, C context) {
-        return visitExpression(identifier, context);
-    }
-
-    /**
-     * visit genericDataType
-     *
-     * @param genericDataType genericDataType
-     * @param context         Context
-     * @return R
-     */
-    public R visitGenericDataType(GenericDataType genericDataType, C context) {
-        return visitDataType(genericDataType, context);
-    }
-
-    /**
-     * visit type Parameter
-     *
-     * @param typeParameter 类型参数
-     * @param context       上下文
-     * @return R
-     */
-    public R visitTypeParameter(TypeParameter typeParameter, C context) {
-        return visitDataTypeParameter(typeParameter, context);
-    }
-
-    /**
-     * visit Num
-     *
-     * @param numericParameter 数字参数
-     * @param context          上下文
-     * @return R
-     */
-    public R visitNumericTypeParameter(NumericParameter numericParameter, C context) {
-        return visitDataTypeParameter(numericParameter, context);
-    }
-
-    /**
-     * visit Row data Type
-     *
-     * @param rowDataType 行类型
-     * @param context     上下文
-     * @return R
-     */
-    public R visitRowDataType(RowDataType rowDataType, C context) {
-        return visitDataType(rowDataType, context);
-    }
-
-    /**
-     * visit Row Field
-     *
-     * @param field   字段
-     * @param context 上下文
-     * @return R
-     */
-    public R visitRowField(Field field, C context) {
-        return visitNode(field, context);
-    }
-
-    /**
-     * visitRelation
-     *
-     * @param baseRelation 关系对象
-     * @param context      上下文
-     * @return R
-     */
-    public R visitRelation(BaseRelation baseRelation, C context) {
-        return visitNode(baseRelation, context);
-    }
-
-    /**
-     * visit QueryBody
-     *
-     * @param queryBody 查询对象
-     * @param context   上下文
-     * @return R
-     */
-    public R visitQueryBody(BaseQueryBody queryBody, C context) {
-        return visitRelation(queryBody, context);
-    }
-
-    /**
-     * visitSetOperation
-     *
-     * @param setOperation 设置操作
-     * @param context      上下文
-     * @return R
-     */
-    public R visitSetOperation(SetOperation setOperation, C context) {
-        return visitQueryBody(setOperation, context);
-    }
-
-    /**
-     * visit Sort Item
-     *
-     * @param sortItem 排序
-     * @param context  上下文
-     * @return R
-     */
-    public R visitSortItem(SortItem sortItem, C context) {
-        return visitNode(sortItem, context);
-    }
-
-    /**
-     * visit OrderBy
-     *
-     * @param orderBy 排序
-     * @param context 上下文
-     * @return R
-     */
-    public R visitOrderBy(OrderBy orderBy, C context) {
-        return visitNode(orderBy, context);
-    }
-
-    /**
-     * visit Grouping Element
-     *
-     * @param groupingElement 排序元素
-     * @param context         上下文
-     * @return R
-     */
-    public R visitGroupingElement(GroupingElement groupingElement, C context) {
-        return visitNode(groupingElement, context);
-    }
-
-    /**
-     * visit limit
-     *
-     * @param limit   限制内容
-     * @param context 上下文
-     * @return R
-     */
-    public R visitLimit(Limit limit, C context) {
-        return visitNode(limit, context);
-    }
-
-    /**
-     * 偏移量
-     *
-     * @param offset  偏移量
-     * @param context 上下文
-     * @return R
-     */
-    public R visitOffset(Offset offset, C context) {
-        return visitNode(offset, context);
-    }
-
-    /**
-     * 字面量
-     *
-     * @param baseLiteral 字面量
-     * @param context     上下文
-     * @return R
-     */
-    public R visitLiteral(BaseLiteral baseLiteral, C context) {
-        return visitExpression(baseLiteral, context);
-    }
-
-    /**
-     * 布尔字面量
-     *
-     * @param booleanLiteral 布尔字面量
-     * @param context        上下文
-     * @return R
-     */
-    public R visitBooleanLiteral(BooleanLiteral booleanLiteral, C context) {
-        return visitLiteral(booleanLiteral, context);
-    }
-
-    /**
-     * visit long literal
-     *
-     * @param longLiteral LongLiteral
-     * @param context     context
-     * @return R
-     */
-    public R visitLongLiteral(LongLiteral longLiteral, C context) {
-        return visitLiteral(longLiteral, context);
-    }
-
-    /**
-     * visit string literal
-     *
-     * @param stringLiteral 字符串
-     * @param context       上下文
-     * @return R
-     */
-    public R visitStringLiteral(StringLiteral stringLiteral, C context) {
-        return visitLiteral(stringLiteral, context);
-    }
-
-    /**
-     * visit double literal
-     *
-     * @param doubleLiteral 双精度浮点型
-     * @param context       上下文天
-     * @return R
-     */
-    public R visitDoubleLiteral(DoubleLiteral doubleLiteral, C context) {
-        return visitLiteral(doubleLiteral, context);
-    }
-
-    /**
-     * visit date 字变量
-     *
-     * @param dateLiteral date
-     * @param context     context
-     * @return R
-     */
-    public R visitDateLiteral(DateLiteral dateLiteral, C context) {
-        return visitLiteral(dateLiteral, context);
-    }
-
-    /**
-     * visit interval literal
-     *
-     * @param intervalLiteral interval literal
-     * @param context         context
-     * @return R
-     */
-    public R visitIntervalLiteral(IntervalLiteral intervalLiteral, C context) {
-        return visitLiteral(intervalLiteral, context);
-    }
-
-    /**
-     * visit null literal
-     *
-     * @param nullLiteral null literal
-     * @param context     context
-     * @return R
-     */
-    public R visitNullLiteral(NullLiteral nullLiteral, C context) {
-        return visitLiteral(nullLiteral, context);
-    }
-
-    /**
-     * visit number literal
-     *
-     * @param decimalLiteral number literal
-     * @param context        context
-     * @return R
-     */
-    public R visitDecimalLiteral(DecimalLiteral decimalLiteral, C context) {
-        return visitLiteral(decimalLiteral, context);
-    }
-
-    /**
-     * visit list string literal
-     *
-     * @param listStringLiteral list string literal
-     * @param context           context
-     * @return R
-     */
-    public R visitListStringLiteral(ListStringLiteral listStringLiteral, C context) {
-        return visitLiteral(listStringLiteral, context);
-    }
-
-    /**
-     * visit between predicate
-     *
-     * @param betweenPredicate between predicate
-     * @param context          context
-     * @return R
-     */
-    public R visitBetweenPredicate(BetweenPredicate betweenPredicate, C context) {
-        return visitExpression(betweenPredicate, context);
-    }
-
-    /**
-     * visit in List Expression
-     *
-     * @param inListExpression 在列表中
-     * @param context          上下文
-     * @return R
-     */
-    public R visitInListExpression(InListExpression inListExpression, C context) {
-        return visitExpression(inListExpression, context);
-    }
-
-    /**
-     * visit not expression
-     *
-     * @param notExpression not expression
-     * @param context       context
-     * @return R
-     */
-    public R visitNotExpression(NotExpression notExpression, C context) {
-        return visitExpression(notExpression, context);
-    }
-
-    /**
-     * visit comparison expression
-     *
-     * @param comparisonExpression comparison expression
-     * @param context              context
-     * @return R
-     */
-    public R visitComparisonExpression(ComparisonExpression comparisonExpression, C context) {
-        return visitExpression(comparisonExpression, context);
-    }
-
-    /**
-     * visit arithmeticBinaryExpression expression
-     *
-     * @param arithmeticBinaryExpression arithmeticBinaryExpression
-     * @param context                    context
-     * @return R
-     */
-    public R visitArithmeticBinaryExpression(ArithmeticBinaryExpression arithmeticBinaryExpression, C context) {
-        return visitExpression(arithmeticBinaryExpression, context);
-    }
-
-    /**
-     * visit arithmeticUnaryExpression
-     *
-     * @param arithmeticUnaryExpression arithmeticUnaryExpression
-     * @param context                   context
-     * @return R
-     */
-    public R visitArithmeticUnaryExpression(ArithmeticUnaryExpression arithmeticUnaryExpression, C context) {
-        return visitExpression(arithmeticUnaryExpression, context);
-    }
-
-    /**
-     * visit cast
-     *
-     * @param cast    cast
-     * @param context context
-     * @return R
-     */
-    public R visitCast(Cast cast, C context) {
-        return visitExpression(cast, context);
-    }
-
-    /**
-     * visit extract
-     *
-     * @param extract extract
-     * @param context context
-     * @return R
-     */
-    public R visitExtract(Extract extract, C context) {
-        return visitExpression(extract, context);
-    }
-
-    /**
-     * visit function call
-     *
-     * @param functionCall functionCall
-     * @param context      context
-     * @return R
-     */
-    public R visitFunctionCall(FunctionCall functionCall, C context) {
-        return visitExpression(functionCall, context);
-    }
-
-    public R visitListExpr(ListExpression listExpression, C context) {
-        return visitExpression(listExpression, context);
-    }
-
-    public R visitIntervalExpr(IntervalExpression intervalExpression, C context) {
-        return visitExpression(intervalExpression, context);
-    }
-
-    public R visitFloorExpr(Floor floor, C context) {
-        return visitExpression(floor, context);
-    }
-
-    public R visitWhenClause(WhenClause whenClause, C context) {
-        return visitExpression(whenClause, context);
-    }
-
-    public R visitSimpleCaseExpression(SimpleCaseExpression simpleCaseExpression, C context) {
-        return visitExpression(simpleCaseExpression, context);
-    }
-
-    public R visitQuery(Query query, C context) {
-        return visitBaseQueryStatement(query, context);
-    }
-
-    public R visitUnion(Union union, C context) {
-        return visitSetOperation(union, context);
-    }
-
-    public R visitJoin(Join join, C context) {
-        return visitRelation(join, context);
-    }
-
-    public R visitTable(Table table, C context) {
-        return visitQueryBody(table, context);
-    }
-
-    public R visitValues(Values values, C context) {
-        return visitQueryBody(values, context);
-    }
-
-    public R visitSingleColumn(SingleColumn singleColumn, C context) {
-        return visitSelectItem(singleColumn, context);
-    }
-
-    /**
-     * visit all columns
-     *
-     * @param allColumns all columns expr
-     * @param context    context
-     * @return R
-     */
-    public R visitAllColumns(AllColumns allColumns, C context) {
-        return visitSelectItem(allColumns, context);
     }
 
     /**
@@ -764,149 +207,6 @@ public abstract class AstVisitor<R, C> {
     }
 
     /**
-     * visit table sub query
-     *
-     * @param tableSubQuery table sub query
-     * @param context       context
-     * @return R
-     */
-    public R visitTableSubQuery(TableSubQuery tableSubQuery, C context) {
-        return visitQueryBody(tableSubQuery, context);
-    }
-
-    /**
-     * visit alias relation
-     *
-     * @param aliasedRelation alias relation
-     * @param context         context
-     * @return R
-     */
-    public R visitAliasedRelation(AliasedRelation aliasedRelation, C context) {
-        return visitRelation(aliasedRelation, context);
-    }
-
-    /**
-     * visit with
-     *
-     * @param with    with expr
-     * @param context context
-     * @return R
-     */
-    public R visitWith(With with, C context) {
-        return visitNode(with, context);
-    }
-
-    /**
-     * visit query spec
-     *
-     * @param querySpecification query spec
-     * @param context            context
-     * @return R
-     */
-    public R visitQuerySpecification(QuerySpecification querySpecification, C context) {
-        return visitQueryBody(querySpecification, context);
-    }
-
-    /**
-     * visit logical binary expr
-     *
-     * @param logicalBinaryExpression logical expr
-     * @param context                 context
-     * @return R
-     */
-    public R visitLogicalBinaryExpression(LogicalBinaryExpression logicalBinaryExpression, C context) {
-        return visitExpression(logicalBinaryExpression, context);
-    }
-
-    /**
-     * visit searched case expr
-     *
-     * @param searchedCaseExpression searched case expr
-     * @param context                context
-     * @return R
-     */
-    public R visitSearchedCaseExpression(SearchedCaseExpression searchedCaseExpression, C context) {
-        return visitExpression(searchedCaseExpression, context);
-    }
-
-    /**
-     * visit simple group by
-     *
-     * @param simpleGroupBy expr
-     * @param context       context
-     * @return R
-     */
-    public R visitSimpleGroupBy(SimpleGroupBy simpleGroupBy, C context) {
-        return visitGroupingElement(simpleGroupBy, context);
-    }
-
-    /**
-     * visit group by
-     *
-     * @param groupBy expr
-     * @param context context
-     * @return R
-     */
-    public R visitGroupBy(GroupBy groupBy, C context) {
-        return visitNode(groupBy, context);
-    }
-
-    /**
-     * visit dereference expression
-     *
-     * @param dereferenceExpression expr
-     * @param context               context
-     * @return R
-     */
-    public R visitDereferenceExpression(DereferenceExpression dereferenceExpression, C context) {
-        return visitExpression(dereferenceExpression, context);
-    }
-
-    /**
-     * visit if expression
-     *
-     * @param ifExpression if
-     * @param context      context
-     * @return R
-     */
-    public R visitIfExpression(IfExpression ifExpression, C context) {
-        return visitExpression(ifExpression, context);
-    }
-
-    /**
-     * visit coalesce expr
-     *
-     * @param coalesceExpression expr
-     * @param context            context
-     * @return R
-     */
-    public R visitCoalesceExpression(CoalesceExpression coalesceExpression, C context) {
-        return visitExpression(coalesceExpression, context);
-    }
-
-    /**
-     * visit except
-     *
-     * @param except  except
-     * @param context 上下文
-     * @return R
-     */
-    public R visitExcept(Except except, C context) {
-        return visitSetOperation(except, context);
-    }
-
-    /**
-     * visit intersect
-     *
-     * @param intersect intersect
-     * @param context   context
-     * @return R
-     */
-    public R visitIntersect(Intersect intersect, C context) {
-        return visitSetOperation(intersect, context);
-    }
-
-    /**
      * visit createTable
      *
      * @param createTable 创建表
@@ -915,6 +215,28 @@ public abstract class AstVisitor<R, C> {
      */
     public R visitCreateTable(CreateTable createTable, C context) {
         return visitStatement(createTable, context);
+    }
+
+    /**
+     * visit constraints
+     *
+     * @param baseConstraint
+     * @param context
+     * @return
+     */
+    public R visitConstraint(BaseConstraint baseConstraint, C context) {
+        return visitTableElement(baseConstraint, context);
+    }
+
+    /**
+     * visit Table Element
+     *
+     * @param tableElement tableElement
+     * @param context      context
+     * @return R
+     */
+    public R visitTableElement(TableElement tableElement, C context) {
+        return visitNode(tableElement, context);
     }
 
     /**
@@ -948,28 +270,6 @@ public abstract class AstVisitor<R, C> {
      */
     public R visitLevelConstraint(LevelConstraint levelConstraint, C context) {
         return visitConstraint(levelConstraint, context);
-    }
-
-    /**
-     * visit lateral
-     *
-     * @param lateral lateral
-     * @param context context
-     * @return R
-     */
-    public R visitLateral(Lateral lateral, C context) {
-        return visitRelation(lateral, context);
-    }
-
-    /**
-     * visit composite Statement
-     *
-     * @param compositeStatement composite
-     * @param context            context
-     * @return R
-     */
-    public R visitCompositeStatement(CompositeStatement compositeStatement, C context) {
-        return visitStatement(compositeStatement, context);
     }
 
     /**
@@ -1208,45 +508,6 @@ public abstract class AstVisitor<R, C> {
     }
 
     /**
-     * visit tableOrColumn
-     *
-     * @param tableOrColumn table Or Column
-     * @param context       context
-     * @return R
-     */
-    public R visitTableOrColumn(TableOrColumn tableOrColumn, C context) {
-        return visitExpression(tableOrColumn, context);
-    }
-
-    /**
-     * @param baseDataType baseDataType
-     * @param context      context
-     * @return R
-     */
-    public R visitDataType(BaseDataType baseDataType, C context) {
-        return visitExpression(baseDataType, context);
-    }
-
-    /**
-     * visit selectItem
-     *
-     * @param selectItem selectItem
-     * @param context    context
-     * @return R
-     */
-    public R visitSelectItem(SelectItem selectItem, C context) {
-        return visitNode(selectItem, context);
-    }
-
-    public R visitConstraint(BaseConstraint baseConstraint, C context) {
-        return visitTableElement(baseConstraint, context);
-    }
-
-    public R visitEmptyStatement(EmptyStatement emptyStatement, C context) {
-        return visitStatement(emptyStatement, context);
-    }
-
-    /**
      * visit create domain
      *
      * @param createDomain 创建领域
@@ -1255,39 +516,6 @@ public abstract class AstVisitor<R, C> {
      */
     public R visitCreateDomain(CreateDomain createDomain, C context) {
         return visitBaseCreate(createDomain, context);
-    }
-
-    /**
-     * visit comment
-     *
-     * @param comment comment
-     * @param context context
-     * @return R
-     */
-    public R visitComment(Comment comment, C context) {
-        return visitNode(comment, context);
-    }
-
-    /**
-     * visit property
-     *
-     * @param property property
-     * @param context  context
-     * @return R
-     */
-    public R visitProperty(Property property, C context) {
-        return visitNode(property, context);
-    }
-
-    /**
-     * visit Table Element
-     *
-     * @param tableElement tableElement
-     * @param context      context
-     * @return R
-     */
-    public R visitTableElement(TableElement tableElement, C context) {
-        return visitNode(tableElement, context);
     }
 
     /**
@@ -1311,10 +539,6 @@ public abstract class AstVisitor<R, C> {
         return visitBaseUnSetProperties(unSetDomainProperties, context);
     }
 
-    public R visitQualifiedName(QualifiedName qualifiedName, C context) {
-        return visitNode(qualifiedName, context);
-    }
-
     /**
      * visit not Null constraint
      *
@@ -1325,133 +549,6 @@ public abstract class AstVisitor<R, C> {
     public R visitNotNullConstraint(
         NotNullConstraint notNullConstraint, C context) {
         return visitConstraint(notNullConstraint, context);
-    }
-
-    /**
-     * visit row
-     *
-     * @param row     Row
-     * @param context context
-     * @return R
-     */
-    public R visitRow(Row row, C context) {
-        return visitExpression(row, context);
-    }
-
-    /**
-     * visit current date
-     *
-     * @param currentDate currentDate
-     * @param context     context
-     * @return R
-     */
-    public R visitCurrentDate(CurrentDate currentDate, C context) {
-        return visitExpression(currentDate, context);
-    }
-
-    /**
-     * visit current timestamps
-     *
-     * @param currentTimestamp currentTimeStamp
-     * @param context          context
-     * @return R
-     */
-    public R visitCurrentTimestamp(CurrentTimestamp currentTimestamp, C context) {
-        return visitExpression(currentTimestamp, context);
-    }
-
-    /**
-     * visit Bit Operation Expression
-     *
-     * @param bitOperationExpression bitOperationExpression
-     * @param context                context
-     * @return R
-     */
-    public R visitBitOperationExpression(BitOperationExpression bitOperationExpression,
-                                         C context) {
-        return visitExpression(bitOperationExpression, context);
-    }
-
-    /**
-     * visit cube
-     *
-     * @param cube    cube
-     * @param context context
-     * @return R
-     */
-    public R visitCube(Cube cube, C context) {
-        return visitGroupingElement(cube, context);
-    }
-
-    /**
-     * visit rollup
-     *
-     * @param rollup  rollup
-     * @param context context
-     * @return R
-     */
-    public R visitRollup(Rollup rollup, C context) {
-        return visitGroupingElement(rollup, context);
-    }
-
-    /**
-     * visit groupingSets
-     *
-     * @param groupingSets group
-     * @param context      context
-     * @return R
-     */
-    public R visitGroupingSets(GroupingSets groupingSets, C context) {
-        return visitGroupingElement(groupingSets, context);
-    }
-
-    /**
-     * visit sample Relation
-     *
-     * @param sampledRelation sampleRelation
-     * @param context         context
-     * @return R
-     */
-    public R visitSampledRelation(SampledRelation sampledRelation, C context) {
-        return visitRelation(sampledRelation, context);
-    }
-
-    /**
-     * visit Parameter
-     *
-     * @param parameter parameter
-     * @param context   context
-     * @return R
-     */
-    public R visitParameter(Parameter parameter, C context) {
-        return visitExpression(parameter, context);
-    }
-
-    /**
-     * visit allRows
-     *
-     * @param allRows allRows
-     * @param context context
-     * @return R
-     */
-    public R visitAllRows(AllRows allRows, C context) {
-        return visitExpression(allRows, context);
-    }
-
-    public R visitTimestampLiteral(TimestampLiteral timestampLiteral, C context) {
-        return visitLiteral(timestampLiteral, context);
-    }
-
-    public R visitIsConditionExpression(IsConditionExpression isConditionExpression, C context) {
-        return visitExpression(isConditionExpression, context);
-    }
-
-    public R visitLikePredicate(LikePredicate likePredicate, C context) {
-        return visitExpression(likePredicate, context);
-    }
-
-    public R visitCustomExpression(CustomExpression customExpression, C context) {
-        return visitExpression(customExpression, context);
     }
 
     public R visitRenameTable(RenameTable renameTable, C context) {
@@ -1517,10 +614,6 @@ public abstract class AstVisitor<R, C> {
 
     public R visitDropIndicator(DropIndicator dropIndicator, C context) {
         return visitBaseDrop(dropIndicator, context);
-    }
-
-    public R visitSelect(Select select, C context) {
-        return visitNode(select, context);
     }
 
     /**
@@ -1620,40 +713,6 @@ public abstract class AstVisitor<R, C> {
         return visitBaseSetComment(setDictComment, context);
     }
 
-    public R visitRowToCol(RowToCol rowToCol, C context) {
-        return visitStatement(rowToCol, context);
-    }
-
-    public R visitTimestampLocalTzLiteral(TimestampLocalTzLiteral timestampLocalTzLiteral,
-                                          C context) {
-        return visitExpression(timestampLocalTzLiteral, context);
-    }
-
-    public R visitSubQueryExpression(SubQueryExpression subQueryExpression, C context) {
-        return visitExpression(subQueryExpression, context);
-    }
-
-    public R visitExistsPredicate(ExistsPredicate existsPredicate, C context) {
-        return visitExpression(existsPredicate, context);
-    }
-
-    public R visitWindow(Window window, C context) {
-        return visitNode(window, context);
-    }
-
-    public R visitWindowFrame(WindowFrame windowFrame, C context) {
-        return visitNode(windowFrame, context);
-    }
-
-    public R visitFrameBound(FrameBound frameBound, C context) {
-        return visitNode(frameBound, context);
-    }
-
-    public R visitGroupingOperation(GroupingOperation groupingOperation, C context) {
-        return visitExpression(groupingOperation, context);
-
-    }
-
     public R visitDimConstraint(DimConstraint dimConstraint, C context) {
         return visitConstraint(dimConstraint, context);
     }
@@ -1712,14 +771,6 @@ public abstract class AstVisitor<R, C> {
         return visitBaseQueryStatement(showObjects, context);
     }
 
-    public R visitConditionElement(ConditionElement conditionElement, C context) {
-        return visitNode(conditionElement, context);
-    }
-
-    public R visitLikeCondition(LikeCondition likeCondition, C context) {
-        return visitConditionElement(likeCondition, context);
-    }
-
     public R visitChecker(Checker checker, C context) {
         return visitNode(checker, context);
     }
@@ -1733,23 +784,8 @@ public abstract class AstVisitor<R, C> {
         return visitConstraint(columnGroupConstraint, context);
     }
 
-    public R visitWhereCondition(WhereCondition whereCondition, C context) {
-        return visitConditionElement(whereCondition, context);
-    }
-
     public R visitBaseQueryStatement(BaseQueryStatement baseQueryStatement, C context) {
         return visitStatement(baseQueryStatement, context);
-    }
-
-    /**
-     * visit hint
-     *
-     * @param hint    Hint
-     * @param context Context
-     * @return R
-     */
-    public R visitHint(Hint hint, C context) {
-        return visitNode(hint, context);
     }
 
     public R visitCreateGroup(CreateGroup createGroup, C context) {
@@ -1778,10 +814,6 @@ public abstract class AstVisitor<R, C> {
 
     public R visitOutput(Output output, C context) {
         return visitNode(output, context);
-    }
-
-    public R visitUse(Use use, C context) {
-        return visitStatement(use, context);
     }
 
     public R visitDropCol(DropCol dropCol, C context) {
@@ -1853,10 +885,6 @@ public abstract class AstVisitor<R, C> {
         return visitBaseUnSetProperties(unSetColProperties, context);
     }
 
-    public R visitCall(Call call, C context) {
-        return visitStatement(call, context);
-    }
-
     public R visitSetDomainComment(SetDomainComment setDomainComment, C context) {
         return visitBaseSetComment(setDomainComment, context);
     }
@@ -1869,32 +897,8 @@ public abstract class AstVisitor<R, C> {
         return visitBaseCreate(createPipe, context);
     }
 
-    public R visitDateTimeAddExpression(DateTimeAddExpression dateTimeAddExpression,
-                                        C context) {
-        return visitDateTimeExpression(dateTimeAddExpression, context);
-    }
-
-    public R visitDateTimeExpression(BaseDateTimeExpression dateTimeExpression,
-                                     C context) {
-        return visitExpression(dateTimeExpression, context);
-    }
-
-    public R visitDateTimeAddEndExpression(
-        DateTimeAddEndExpression dateTimeAddEndExpression, C context) {
-        return visitDateTimeAddExpression(dateTimeAddEndExpression, context);
-    }
-
-    public R visitDateTimeAddStartException(
-        DateTimeAddStartExpression dateTimeAddStartExpression, C context) {
-        return visitDateTimeAddExpression(dateTimeAddStartExpression, context);
-    }
-
     public R visitMultiComment(MultiComment multiComment, C context) {
         return visitNode(multiComment, context);
-    }
-
-    public R visitAliasedName(AliasedName aliasedName, C context) {
-        return visitNode(aliasedName, context);
     }
 
     public R visitBaseSetAliasedName(BaseSetAliasedName baseSetAliasedName, C context) {
@@ -1941,10 +945,6 @@ public abstract class AstVisitor<R, C> {
 
     public R visitDropRule(DropRule dropRule, C context) {
         return visitBaseOperatorStatement(dropRule, context);
-    }
-
-    public R visitInPredicate(InPredicate inPredicate, C context) {
-        return visitExpression(inPredicate, context);
     }
 
     public R visitCreateRules(CreateRules createRules, C context) {
@@ -2021,10 +1021,6 @@ public abstract class AstVisitor<R, C> {
 
     public R visitCloneTable(CloneTable cloneTable, C context) {
         return visitBaseCreate(cloneTable, context);
-    }
-
-    public R visitListNode(ListNode listNode, C context) {
-        return visitNode(listNode, context);
     }
 
     public R visitIndexColumnName(IndexColumnName indexColumnName,

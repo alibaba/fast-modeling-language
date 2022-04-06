@@ -32,6 +32,7 @@ import com.aliyun.fastmodel.core.tree.relation.AliasedRelation;
 import com.aliyun.fastmodel.core.tree.relation.Join;
 import com.aliyun.fastmodel.core.tree.relation.join.JoinOn;
 import com.aliyun.fastmodel.core.tree.relation.join.JoinToken;
+import com.aliyun.fastmodel.core.tree.relation.querybody.BaseQueryBody;
 import com.aliyun.fastmodel.core.tree.relation.querybody.QuerySpecification;
 import com.aliyun.fastmodel.core.tree.relation.querybody.Table;
 import com.aliyun.fastmodel.core.tree.statement.select.Hint;
@@ -322,7 +323,7 @@ public class QueryTest {
             + "  t1 AS (\n"
             + "   SELECT\n"
             + "     a\n"
-            + "   , max(b) b\n"
+            + "   , max(b) AS b\n"
             + "   FROM\n"
             + "     x\n"
             + "   GROUP BY a\n"
@@ -351,9 +352,23 @@ public class QueryTest {
 
     @Test
     public void testQueryWithoutFrom() {
-        String fml = "select dim_shop.xx, dim_shop.shop_name, \n"
+        String query = "select dim_shop.xx, dim_shop.shop_name, \n"
             + " ind_a, ind_b,ind_c  where xxx order by xxx";
-        BaseStatement statement = nodeParser.parseStatement(fml);
+        BaseStatement statement = nodeParser.parseStatement(query);
         assertEquals(statement.getClass(), Query.class);
+    }
+
+    @Test
+    public void testClusterBy() {
+        String query = "SELECT  b\n"
+            + "FROM    public.test\n"
+            + "DISTRIBUTE BY b\n"
+            + "SORT BY b\n"
+            + ";";
+        BaseStatement baseStatement = nodeParser.parseStatement(query);
+        Query query1 = (Query)baseStatement;
+        QuerySpecification queryBody = (QuerySpecification)query1.getQueryBody();
+        assertNotNull(queryBody.getDistributeBy());
+        assertNotNull(queryBody.getSortBy());
     }
 }

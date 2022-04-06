@@ -25,6 +25,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.TableElement;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 限制的语句, 定义下基本的约束名称和类型
@@ -38,7 +39,8 @@ public abstract class BaseConstraint extends TableElement {
     /**
      * 约束名称
      */
-    private final Identifier name;
+    @Setter
+    private Identifier name;
 
     /**
      * 约束类型
@@ -51,6 +53,10 @@ public abstract class BaseConstraint extends TableElement {
      */
     private final Boolean enable;
 
+    public BaseConstraint(Identifier constraintName, ConstraintType constraintType) {
+        this(constraintName, constraintType, true);
+    }
+
     public BaseConstraint(Identifier constraintName, ConstraintType constraintType, Boolean enable) {
         Preconditions.checkNotNull(constraintName);
         name = constraintName;
@@ -60,8 +66,8 @@ public abstract class BaseConstraint extends TableElement {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         BaseConstraint that = (BaseConstraint)o;
         boolean equalName = Objects.equals(name, that.name);
         if (!equalName) {

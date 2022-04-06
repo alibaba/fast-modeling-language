@@ -17,8 +17,9 @@
 package com.aliyun.fastmodel.core.tree.datatype;
 
 import java.util.List;
+import java.util.Locale;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -37,40 +38,64 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 public class GenericDataType extends BaseDataType {
 
-    private final Identifier name;
+    private final String name;
 
     private final List<DataTypeParameter> arguments;
 
-    public GenericDataType(Identifier dataTypeName) {
-        this(dataTypeName, ImmutableList.of());
+    public GenericDataType(Identifier name) {
+        this(null, null, name.getValue(), ImmutableList.of());
     }
 
-    public GenericDataType(NodeLocation location, String origin,
-                           Identifier dataTypeName,
-                           List<DataTypeParameter> arguments) {
+    public GenericDataType(String name) {
+        this(null, null, name, ImmutableList.of());
+    }
+
+    public GenericDataType(NodeLocation location, String origin, String dataTypeName, List<DataTypeParameter> arguments) {
         super(location, origin);
         Preconditions.checkNotNull(dataTypeName);
         name = dataTypeName;
         this.arguments = arguments;
     }
 
-    public GenericDataType(Identifier dataTypeName, List<DataTypeParameter> arguments) {
+    public String getName() {
+        return name.toUpperCase(Locale.ROOT);
+    }
+
+    public GenericDataType(Identifier name, List<DataTypeParameter> arguments) {
+        this(name.getValue(), arguments);
+    }
+
+    public GenericDataType(String dataTypeName, List<DataTypeParameter> arguments) {
         this(null, null, dataTypeName, arguments);
     }
 
     @Override
     public List<? extends Node> getChildren() {
-        return ImmutableList.<Node>builder().add(name).addAll(arguments).build();
+        return ImmutableList.of();
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitGenericDataType(this, context);
     }
 
     @Override
-    public DataTypeEnums getTypeName() {
-        return DataTypeEnums.getDataType(name.getValue());
+    public IDataTypeName getTypeName() {
+        DataTypeEnums dataType = DataTypeEnums.getDataType(name);
+        if (dataType != DataTypeEnums.CUSTOM) {
+            return dataType;
+        }
+        return new IDataTypeName() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public String getValue() {
+                return name;
+            }
+        };
     }
 
 }

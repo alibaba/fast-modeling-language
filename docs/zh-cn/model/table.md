@@ -45,7 +45,7 @@
       --定义备注
       COMMENT 'comment'
       --定义分区
-      PARTITION BY (col DATATYPE COMMENT 'comment' WITH ('key'='value',...), ...)
+      PARTITIONED BY (col DATATYPE COMMENT 'comment' WITH ('key'='value',...), ...)
       --定义属性
       WITH ('key'='value', 'key1'='value1', ...)
       ;

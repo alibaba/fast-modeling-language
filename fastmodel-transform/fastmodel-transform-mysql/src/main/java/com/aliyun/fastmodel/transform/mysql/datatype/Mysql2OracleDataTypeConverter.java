@@ -23,6 +23,7 @@ import java.util.Map;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -104,17 +105,16 @@ public class Mysql2OracleDataTypeConverter implements DataTypeConverter {
 
     @Override
     public BaseDataType convert(BaseDataType baseDataType) {
-        DataTypeEnums typeName = baseDataType.getTypeName();
+        IDataTypeName typeName = baseDataType.getTypeName();
         if (baseDataType instanceof RowDataType) {
             throw new UnsupportedOperationException("unsupported row dataType");
         }
         String value = null;
         if (typeName == DataTypeEnums.CUSTOM) {
             GenericDataType genericDataType = (GenericDataType)baseDataType;
-            Identifier name = genericDataType.getName();
-            value = name.getValue();
+            value = genericDataType.getName();
         } else {
-            value = typeName.name();
+            value = typeName.getValue();
         }
         value = value.toUpperCase(Locale.ROOT);
         BaseDataType dataType = MYSQL_2_ORACLE_DATA_TYPE_MAP.get(value);

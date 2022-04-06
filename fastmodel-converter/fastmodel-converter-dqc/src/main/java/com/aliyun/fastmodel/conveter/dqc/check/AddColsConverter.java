@@ -39,12 +39,12 @@ import com.google.auto.service.AutoService;
  * @date 2021/6/2
  */
 @AutoService(StatementConverter.class)
-public class AddColsConverter extends BaseDqcStatementConverter<AddCols> {
+public class AddColsConverter extends BaseDqcStatementConverter<AddCols,AddDqcRule> {
     @Override
-    public BaseStatement convert(AddCols source, ConvertContext context) {
+    public AddDqcRule convert(AddCols source, ConvertContext context) {
         QualifiedName tableName = source.getQualifiedName();
         List<PartitionSpec> partitionSpecList = getPartitionSpec(context);
-        List<RuleDefinition> list = toRuleDefinition(source.getColumnDefineList(), true)
+        List<RuleDefinition> list = toRuleDefinition(source.getColumnDefineList(), true, context)
             .stream()
             .collect(Collectors.toList());
         List<BaseCheckElement> checkElements = toCheckElement(list);

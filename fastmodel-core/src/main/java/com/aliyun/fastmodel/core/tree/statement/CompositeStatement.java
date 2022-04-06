@@ -18,10 +18,9 @@ package com.aliyun.fastmodel.core.tree.statement;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
-import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -43,7 +42,6 @@ public class CompositeStatement extends BaseStatement {
     public CompositeStatement(NodeLocation nodeLocation, String origin, List<BaseStatement> statements) {
         super(nodeLocation, origin);
         this.statements = statements;
-        setStatementType(StatementType.COMPOSITE);
     }
 
     @Override
@@ -52,7 +50,7 @@ public class CompositeStatement extends BaseStatement {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitCompositeStatement(this, context);
     }
 

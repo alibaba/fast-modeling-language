@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.layer;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -37,7 +37,7 @@ import lombok.Getter;
  */
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class Checker extends AbstractNode {
+public class Checker extends AbstractFmlNode {
 
     /**
      * 检查器类型

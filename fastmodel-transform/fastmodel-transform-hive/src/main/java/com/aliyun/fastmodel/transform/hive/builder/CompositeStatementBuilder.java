@@ -32,7 +32,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/3/8
  */
-@BuilderAnnotation(dialect = DialectName.HIVE, values = {CompositeStatement.class})
+@BuilderAnnotation(dialect = DialectName.Constants.HIVE, values = {CompositeStatement.class})
 @AutoService(StatementBuilder.class)
 public class CompositeStatementBuilder extends BaseCompositeStatementBuilder<HiveTransformContext> {
 

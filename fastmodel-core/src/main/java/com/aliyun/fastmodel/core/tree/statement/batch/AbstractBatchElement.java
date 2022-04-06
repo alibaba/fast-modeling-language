@@ -16,7 +16,7 @@
 
 package com.aliyun.fastmodel.core.tree.statement.batch;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 
 /**
@@ -25,7 +25,7 @@ import com.aliyun.fastmodel.core.tree.AstVisitor;
  * @author panguanjing
  * @date 2021/2/4
  */
-public abstract class AbstractBatchElement extends AbstractNode {
+public abstract class AbstractBatchElement extends AbstractFmlNode {
 
     @Override
     public <R, C> R accept(AstVisitor<R, C> visitor, C context) {

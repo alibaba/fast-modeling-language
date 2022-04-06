@@ -47,7 +47,7 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2020/9/18
  */
 @AutoService(Transformer.class)
-@Dialect(DialectName.PLANTUML)
+@Dialect(DialectName.Constants.PLANTUML)
 public class PlantUmlTransformer implements Transformer<CompositeStatement> {
 
     public static final String START_TAG = "@startuml";

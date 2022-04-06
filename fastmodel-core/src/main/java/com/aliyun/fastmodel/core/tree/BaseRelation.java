@@ -28,7 +28,7 @@ public abstract class BaseRelation extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitRelation(this, context);
     }
 }

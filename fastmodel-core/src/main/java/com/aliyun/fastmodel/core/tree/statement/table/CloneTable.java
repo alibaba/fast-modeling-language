@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.core.tree.statement.BaseCreate;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
 import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import lombok.Getter;
 
 /**
@@ -36,10 +37,10 @@ public class CloneTable extends BaseCreate {
 
     private final QualifiedName sourceTable;
 
-    private final TableDetailType tableDetailType;
+    private final ITableDetailType tableDetailType;
 
     public CloneTable(CreateElement createElement,
-                      TableDetailType tableDetailType,
+                      ITableDetailType tableDetailType,
                       QualifiedName sourceTable) {
         super(createElement);
         this.tableDetailType = tableDetailType;

@@ -24,6 +24,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.parser.NodeParser;
 import org.junit.Test;
@@ -85,7 +86,25 @@ public class DataTypeTest {
         String expr = "custom('varchar2')(1)";
         BaseDataType baseDataType = nodeParser.parseDataType(new DomainLanguage(expr));
         GenericDataType genericDataType = (GenericDataType)baseDataType;
-        DataTypeEnums typeName = genericDataType.getTypeName();
-        assertEquals(genericDataType.toString(), "CUSTOM('varchar2')(1)");
+        IDataTypeName typeName = genericDataType.getTypeName();
+        assertEquals(genericDataType.toString(), "varchar2(1)");
+    }
+
+    @Test
+    public void testMap() {
+        BaseDataType baseDataType = nodeParser.parseDataType(new DomainLanguage("map<String,string>"));
+        assertEquals(baseDataType.toString(), "MAP<STRING,STRING>");
+    }
+
+    @Test
+    public void testStruct() {
+        BaseDataType baseDataType = nodeParser.parseDataType(new DomainLanguage("struct<a:String,b:string>"));
+        assertEquals(baseDataType.toString(), "STRUCT<a:STRING,b:STRING>");
+    }
+
+    @Test
+    public void testArray() {
+        BaseDataType baseDataType = nodeParser.parseDataType(new DomainLanguage("array<string>"));
+        assertEquals(baseDataType.toString(), "ARRAY<STRING>");
     }
 }

@@ -18,9 +18,8 @@ package com.aliyun.fastmodel.core.tree.statement.indicator;
 
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
-import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
+import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -50,7 +49,7 @@ public class CreateAtomicIndicatorTest {
         CreateAtomicIndicator createAtomicIndicator
             = new CreateAtomicIndicator(
             CreateElement.builder().qualifiedName(QualifiedName.of("a.b")).build(),
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())),
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT),
             null,
             null
         );

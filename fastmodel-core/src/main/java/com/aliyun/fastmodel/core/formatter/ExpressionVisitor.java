@@ -29,6 +29,7 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.Field;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
@@ -58,13 +59,12 @@ import com.aliyun.fastmodel.core.tree.expr.atom.SimpleCaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.SubQueryExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.atom.WhenClause;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddEndExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddStartExpression;
 import com.aliyun.fastmodel.core.tree.expr.enums.LikeCondition;
 import com.aliyun.fastmodel.core.tree.expr.enums.NullTreatment;
 import com.aliyun.fastmodel.core.tree.expr.enums.VarType;
 import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.CurrentDate;
+import com.aliyun.fastmodel.core.tree.expr.literal.CurrentTimestamp;
 import com.aliyun.fastmodel.core.tree.expr.literal.DateLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.DecimalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.DoubleLiteral;
@@ -84,10 +84,10 @@ import com.aliyun.fastmodel.core.tree.expr.window.WindowFrame;
 import com.aliyun.fastmodel.core.tree.statement.rule.strategy.VolInterval;
 import com.aliyun.fastmodel.core.tree.statement.select.item.AllColumns;
 import com.aliyun.fastmodel.core.tree.statement.select.order.OrderBy;
+import com.aliyun.fastmodel.core.tree.statement.select.order.Ordering;
 import com.aliyun.fastmodel.core.tree.statement.select.order.SortItem;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.StringUtils;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -268,12 +268,12 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
     @Override
     public String visitGenericDataType(GenericDataType node, Void context) {
         StringBuilder result = new StringBuilder();
-        DataTypeEnums typeName = node.getTypeName();
+        IDataTypeName typeName = node.getTypeName();
         if (typeName == DataTypeEnums.CUSTOM) {
             String format = getCustomDataTypeFormat(node);
             result.append(format);
         } else {
-            result.append(StringUtils.upperCase(node.getName().getValue()));
+            result.append(typeName.getValue());
         }
         boolean argNotEmpty = node.getArguments() != null && !node.getArguments().isEmpty();
         if (typeName == DataTypeEnums.ARRAY || typeName == DataTypeEnums.MAP
@@ -281,13 +281,13 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
             if (argNotEmpty) {
                 result.append(node.getArguments().stream()
                     .map(this::process)
-                    .collect(Collectors.joining(", ", "<", ">")));
+                    .collect(Collectors.joining(",", "<", ">")));
             }
         } else {
             if (argNotEmpty) {
                 result.append(node.getArguments().stream()
                     .map(this::process)
-                    .collect(Collectors.joining(", ", "(", ")")));
+                    .collect(Collectors.joining(",", "(", ")")));
             }
         }
         return result.toString();
@@ -295,11 +295,12 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
 
     /**
      * 提供自定义样式的格式的展示格式化处理
+     *
      * @param node
      * @return
      */
     protected String getCustomDataTypeFormat(GenericDataType node) {
-        return format("%s('%s')", DataTypeEnums.CUSTOM.name(), node.getName().getValue());
+        return format("%s('%s')", DataTypeEnums.CUSTOM.name(), node.getName().toString());
     }
 
     @Override
@@ -674,44 +675,18 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
     }
 
     @Override
-    public String visitDateTimeAddExpression(DateTimeAddExpression dateTimeAddExpression, Void context) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("DATETIME_ADD(");
-        append(dateTimeAddExpression, stringBuilder);
-        stringBuilder.append(")");
-        return stringBuilder.toString();
+    public String visitCurrentDate(CurrentDate currentDate, Void context) {
+        return "CURRENT_DATE";
+    }
+
+    @Override
+    public String visitCurrentTimestamp(CurrentTimestamp currentTimestamp, Void context) {
+        return "CURRENT_TIMESTAMP";
     }
 
     @Override
     public String visitVolInterval(VolInterval volInterval, Void context) {
         return "[" + volInterval.getStart() + "," + volInterval.getEnd() + "]";
-    }
-
-    private void append(DateTimeAddExpression dateTimeAddExpression, StringBuilder stringBuilder) {
-        stringBuilder.append(process(dateTimeAddExpression.getDateTimeExpression()));
-        stringBuilder.append(",");
-        stringBuilder.append(" ").append(process(dateTimeAddExpression.getIntervalExpression()));
-        if (dateTimeAddExpression.getStartDate() != null) {
-            stringBuilder.append(",").append(process(dateTimeAddExpression.getStartDate()));
-        }
-    }
-
-    @Override
-    public String visitDateTimeAddEndExpression(DateTimeAddEndExpression dateTimeAddEndExpression, Void context) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("DATETIME_ADD_END(");
-        append(dateTimeAddEndExpression, stringBuilder);
-        stringBuilder.append(")");
-        return stringBuilder.toString();
-    }
-
-    @Override
-    public String visitDateTimeAddStartException(DateTimeAddStartExpression dateTimeAddStartExpression, Void context) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("DATETIME_ADD_START(");
-        append(dateTimeAddStartExpression, stringBuilder);
-        stringBuilder.append(")");
-        return stringBuilder.toString();
     }
 
     public String formatStringLiteral(String s) {
@@ -738,17 +713,19 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
 
             builder.append(process(input.getSortKey()));
 
-            switch (input.getOrdering()) {
-                case ASC:
-                    builder.append(" ASC");
-                    break;
-                case DESC:
-                    builder.append(" DESC");
-                    break;
-                default:
-                    throw new UnsupportedOperationException("unknown ordering: " + input.getOrdering());
+            Ordering ordering = input.getOrdering();
+            if (ordering != null) {
+                switch (ordering) {
+                    case ASC:
+                        builder.append(" ASC");
+                        break;
+                    case DESC:
+                        builder.append(" DESC");
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("unknown ordering: " + ordering);
+                }
             }
-
             switch (input.getNullOrdering()) {
                 case FIRST:
                     builder.append(" NULLS FIRST");

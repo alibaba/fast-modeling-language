@@ -28,6 +28,6 @@ import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 public class DefaultExpressionVisitor extends ExpressionVisitor {
     @Override
     protected String getCustomDataTypeFormat(GenericDataType node) {
-        return node.getName().getValue().toUpperCase();
+        return node.getName().toUpperCase();
     }
 }

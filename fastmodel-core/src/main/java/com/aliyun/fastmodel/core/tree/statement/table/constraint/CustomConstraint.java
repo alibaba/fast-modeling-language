@@ -38,7 +38,7 @@ public class CustomConstraint extends BaseConstraint {
     private final String customType;
 
     public CustomConstraint(Identifier constraintName, Boolean enable, String customType) {
-        super(constraintName, ConstraintType.CUSTOM_CONSTRAINT, enable);
+        super(constraintName, ConstraintType.CHECK, enable);
         this.customType = customType;
     }
 

@@ -23,11 +23,15 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.show.ShowObjects;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
+import com.aliyun.fastmodel.core.tree.statement.timeperiod.CreateTimePeriod;
+import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.fml.context.FmlTransformContext;
+import com.aliyun.fastmodel.transform.fml.format.FmlFormatter;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
@@ -61,9 +65,7 @@ public class FmlTransformerTest {
     public void testFilter() {
         ImmutableList<ColumnDefinition> col1 = ImmutableList.of(ColumnDefinition.builder().colName(
             new Identifier("col1")).dataType(
-            new GenericDataType(new Identifier(
-                DataTypeEnums.BIGINT.name()
-            ))).properties(ImmutableList.of(new Property("uuid", "key"))).build()
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT)).properties(ImmutableList.of(new Property("uuid", "key"))).build()
         );
         CreateDimTable createDimTable = CreateDimTable.builder().tableName(
             QualifiedName.of("a.b")).columns(
@@ -87,5 +89,13 @@ public class FmlTransformerTest {
             + "   col1 BIGINT WITH ('uuid'='key')\n"
             + ")\n"
             + "COMMENT 'comment'");
+    }
+
+    @Test
+    public void testFormat() {
+        DialectNode dialectNode = FmlFormatter.formatNode(new CreateTimePeriod(CreateElement.builder()
+            .qualifiedName(QualifiedName.of("1"))
+            .build(), null), FmlTransformContext.builder().build());
+        assertEquals(dialectNode.getNode(), "CREATE TIME_PERIOD `1`");
     }
 }

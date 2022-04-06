@@ -16,12 +16,14 @@
 
 package com.aliyun.fastmodel.core.tree.statement.constants;
 
+import com.aliyun.fastmodel.core.tree.IStatementType;
+
 /**
  * @author panguanjing
  * @date 2020/9/3
  */
 
-public enum StatementType {
+public enum StatementType implements IStatementType {
 
     /**
      * 业务板块

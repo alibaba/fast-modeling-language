@@ -17,7 +17,7 @@
 package com.aliyun.fastmodel.core.tree.statement.show;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 
 /**
  * Desc:
@@ -28,7 +28,7 @@ import com.aliyun.fastmodel.core.tree.AstVisitor;
 public abstract class ConditionElement extends AbstractNode {
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitConditionElement(this, context);
     }
 }

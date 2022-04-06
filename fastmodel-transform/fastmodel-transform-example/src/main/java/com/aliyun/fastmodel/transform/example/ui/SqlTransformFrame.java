@@ -24,6 +24,7 @@ import javax.swing.*;
 
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import com.aliyun.fastmodel.transform.api.dialect.transform.DialectTransform;
 import com.aliyun.fastmodel.transform.api.dialect.transform.DialectTransformParam;
 import jsyntaxpane.DefaultSyntaxKit;
@@ -118,9 +119,9 @@ public class SqlTransformFrame extends JFrame implements ActionListener {
         Object selectedItem = leftCombox.getSelectedItem();
         Object rightSelectItem = rightCombox.getSelectedItem();
         DialectTransformParam build = DialectTransformParam.builder()
-            .sourceMeta(DialectMeta.getByNameAndVersion(selectedItem.toString(), DialectMeta.DEFAULT_VERSION))
+            .sourceMeta(DialectMeta.getByNameAndVersion(selectedItem.toString(), IVersion.getDefault()))
             .sourceNode(new DialectNode(text))
-            .targetMeta(DialectMeta.getByNameAndVersion(rightSelectItem.toString(), DialectMeta.DEFAULT_VERSION))
+            .targetMeta(DialectMeta.getByNameAndVersion(rightSelectItem.toString(), IVersion.getDefault()))
             .build();
         DialectNode transform = DialectTransform.transform(build);
         rightTextPanel.setText(transform.getNode());
