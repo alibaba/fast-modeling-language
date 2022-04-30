@@ -80,13 +80,13 @@ Developer’s IDE need to support at least:
 
 IntelliJ IDEA IntelliJ IDEA Plugins
 
-- IntelliJ地址: https://www.jetbrains.com/idea/
+- IntelliJ: https://www.jetbrains.com/idea/
 - IntelliJ ANTLR: https://plugins.jetbrains.com/plugin/7358-antlr-v4
 - Code style template: docs/Alibaba_CodeStyle.xml
 
 ## Documentation
 
-FML文档可The introduction and guide of the FML can be found under the `doc/` directory, the docs is managed with the Docsify, to learn more about it: docsify quickstart
+The introduction and guide of the FML can be found under the `doc/` directory, the docs is managed with the Docsify, to learn more about it: docsify quickstart
 
 - Run locally: `docsify serve docs`
 - Then visit http://localhost:3000
