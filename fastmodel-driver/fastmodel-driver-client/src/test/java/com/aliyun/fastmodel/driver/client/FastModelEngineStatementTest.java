@@ -22,10 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Properties;
 
 import com.aliyun.fastmodel.driver.client.command.ExecuteCommand;
-import com.aliyun.fastmodel.driver.client.command.tenant.TenantProperties;
 import com.aliyun.fastmodel.driver.client.request.FastModelWrapperResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -59,8 +57,6 @@ public class FastModelEngineStatementTest {
     @Mock
     private FastModelEngineConnection connection;
 
-    @Mock
-    private TenantProperties properties;
 
     @Before
     public void before() throws SQLException {
@@ -82,7 +78,6 @@ public class FastModelEngineStatementTest {
     @Test
     public void testExecuteUpdate() throws SQLException, IOException {
         prepareConnection();
-        given(properties.getHost()).willReturn("http://www.alibaba.com");
         int row = fastModelEngineStatement.executeUpdate("update a set b = 'col'");
         assertEquals(1, row);
     }
@@ -95,7 +90,6 @@ public class FastModelEngineStatementTest {
     @Test
     public void testExecuteQuery() throws SQLException, IOException {
         prepareConnection();
-        given(properties.getHost()).willReturn("http://www.alibaba.com");
         ResultSet resultSet = fastModelEngineStatement.executeQuery("select a from b;");
         assertNotNull(resultSet);
     }
@@ -115,6 +109,5 @@ public class FastModelEngineStatementTest {
         String input = "{'success' : true}";
         InputStream inputStream = IOUtils.toInputStream(input, StandardCharsets.UTF_8);
         given(entity.getContent()).willReturn(inputStream);
-        given(properties.asProperty()).willReturn(new Properties());
     }
 }

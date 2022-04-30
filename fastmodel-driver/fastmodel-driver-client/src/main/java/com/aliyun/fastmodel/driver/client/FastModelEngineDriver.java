@@ -16,7 +16,6 @@
 
 package com.aliyun.fastmodel.driver.client;
 
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -24,17 +23,18 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.logging.Logger;
 
 import com.aliyun.fastmodel.driver.client.command.CommandFactory;
-import com.aliyun.fastmodel.driver.client.command.CommandType;
 import com.aliyun.fastmodel.driver.client.command.ExecuteCommand;
+import com.aliyun.fastmodel.driver.client.exception.CommandException;
 import com.aliyun.fastmodel.driver.client.exception.IllegalConfigException;
 import com.aliyun.fastmodel.driver.client.utils.Version;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import static com.aliyun.fastmodel.driver.client.FastModelUrlParser.JDBC_FASTMODEL_PREFIX;
 
@@ -67,18 +67,19 @@ public class FastModelEngineDriver implements Driver {
         String mode = FastModelUrlParser.getMode(url);
         try {
             Properties properties = FastModelUrlParser.parse(url, info == null ? new Properties() : info);
-            ExecuteCommand command = null;
-            if (StringUtils.isBlank(mode)) {
-                command = CommandFactory.createStrategy(CommandType.TENANT, properties);
-            } else {
-                CommandType commandType = CommandType.valueOf(mode.toUpperCase());
-                command = CommandFactory.createStrategy(commandType, properties);
-            }
+            ExecuteCommand command = getCommandFactory().createStrategy(mode, properties);
             return new FastModelEngineConnection(url, command);
-        } catch (URISyntaxException e) {
-            throw new IllegalConfigException("properties is illegal", e, url).addContextValue(
-                "info", info
-            );
+        } catch (Exception e) {
+            throw new SQLException(e);
+        }
+    }
+
+    private CommandFactory getCommandFactory() {
+        Iterator<CommandFactory> iterator = ServiceLoader.load(CommandFactory.class).iterator();
+        try {
+            return iterator.next();
+        } catch (Exception e) {
+            throw new CommandException("can't find the commandFactory, please first implements", e, null);
         }
     }
 

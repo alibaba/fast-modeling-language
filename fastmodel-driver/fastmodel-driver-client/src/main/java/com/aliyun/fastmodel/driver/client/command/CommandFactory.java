@@ -18,26 +18,20 @@ package com.aliyun.fastmodel.driver.client.command;
 
 import java.util.Properties;
 
-import com.aliyun.fastmodel.driver.client.command.tenant.TenantExecuteCommand;
-import com.aliyun.fastmodel.driver.client.command.tenant.TenantProperties;
-
 /**
  * 用于Command的工厂类
  *
  * @author panguanjing
  * @date 2021/3/25
  */
-public class CommandFactory {
+public interface CommandFactory {
 
-    private CommandFactory() {
-
-    }
-
-    public static ExecuteCommand createStrategy(CommandType commandType, Properties properties) {
-        if (commandType == CommandType.TENANT) {
-            TenantProperties tenantProperties = new TenantProperties(properties);
-            return new TenantExecuteCommand(tenantProperties);
-        }
-        throw new UnsupportedOperationException("Unsupported create strategy: " + commandType);
-    }
+    /**
+     * 获得执行的命令对象
+     *
+     * @param commandType 命令类型
+     * @param properties  属性信息
+     * @return
+     */
+    public ExecuteCommand createStrategy(String commandType, Properties properties);
 }

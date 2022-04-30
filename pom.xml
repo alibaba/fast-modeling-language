@@ -62,6 +62,21 @@
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <dep.antlr.version>4.9</dep.antlr.version>
     </properties>
+
+    <developers>
+        <developer>
+            <id>Willam2004</id>
+            <name>Willam2004</name>
+            <email>panguanjing@gmail.com</email>
+            <url>https://github.com/Willam2004</url>
+        </developer>
+        <developer>
+            <id>Rubinhuang9239</id>
+            <name>Rubinhuang9239</name>
+            <url>https://github.com/Rubinhuang9239</url>
+        </developer>
+    </developers>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

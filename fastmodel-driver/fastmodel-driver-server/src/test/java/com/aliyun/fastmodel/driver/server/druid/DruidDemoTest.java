@@ -20,12 +20,9 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import com.aliyun.fastmodel.driver.server.DriverBaseTest;
-import com.aliyun.fastmodel.driver.server.DriverTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Desc:
@@ -40,7 +37,7 @@ public class DruidDemoTest extends DriverBaseTest {
     @Before
     public void setUp() throws Exception {
         Properties properties = getProperties();
-        druidDemo.init("jdbc:fastmodel://localhost:8082", "com.aliyun.fastmodel.driver.client.FastModelEngineDriver",
+        druidDemo.init("jdbc:fastmodel://localhost:8082/jdbc", "com.aliyun.fastmodel.driver.client.FastModelEngineDriver",
             properties);
     }
 
