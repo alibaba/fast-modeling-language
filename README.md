@@ -1,18 +1,23 @@
+> 语言： [中文](https://alibaba.github.io/fast-modeling-language/) | English
+
 # Fast Modeling Language
 
-FML(Fast Modeling Language) is a SQL-like language designed for Dimensional Modeling. It is an attempt for fast modeling follows the “Kimball Dimensional Modeling Techniques
-Theory” and the “Alibaba’s OneData Theory.“
-FML inherits many features from the SQL. For example, the FML studied and consulted the standard DDL syntax when creating a model, and extensions upon it. While designing a model,
-you no longer have to care about the specific rules for different kinds of big data engines. The FML Transformer will convert your models into a SQL
-syntax, which can be read directly by a certain kind of engine.
+FML(Fast Modeling Language) is a SQL-like language designed for Dimensional Modeling. It is an attempt for fast modeling follows the “Kimball
+Dimensional Modeling Techniques Theory” and the “Alibaba’s OneData Theory.“ FML inherits many features from the SQL. For example, the FML studied and
+consulted the standard DDL syntax when creating a model, and extensions upon it. While designing a model, you no longer have to care about the
+specific rules for different kinds of big data engines. The FML Transformer will convert your models into a SQL syntax, which can be read directly by
+a certain kind of engine.
 
 ### Features
 
 - A SQL-like language specially designed dimensional modeling.
-- Supports syntax definition in the process of data warehouse establishment, such as: Data Warehouse Planning, Fields Standards, Code Tables, Data Indicators.
+- Supports syntax definition in the process of data warehouse establishment, such as: Data Warehouse Planning, Fields Standards, Code Tables, Data
+  Indicators.
 - Build with Java, you can build models easily with the Syntax Nodes Construct API.
 - Transforms models into varies syntax with the Transform API for common engines, such as: Hive, Hologres, Mysql.
 - Supports JDBC Driver mode, interact with the model engine.
+
+Relation Document: https://alibaba.github.io/fast-modeling-language/
 
 ### Parser Example
 
