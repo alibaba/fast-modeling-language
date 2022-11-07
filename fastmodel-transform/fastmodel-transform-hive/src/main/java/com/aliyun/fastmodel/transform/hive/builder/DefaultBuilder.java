@@ -26,12 +26,12 @@ import com.aliyun.fastmodel.transform.hive.format.HiveFormatter;
 import com.google.auto.service.AutoService;
 
 /**
- * Desc:
+ * 默认的构建内容
  *
  * @author panguanjing
  * @date 2021/2/8
  */
-@BuilderAnnotation(dialect = DialectName.HIVE, values = {BaseStatement.class})
+@BuilderAnnotation(dialect = DialectName.Constants.HIVE, values = {BaseStatement.class})
 @AutoService(StatementBuilder.class)
 public class DefaultBuilder implements StatementBuilder<HiveTransformContext> {
     @Override

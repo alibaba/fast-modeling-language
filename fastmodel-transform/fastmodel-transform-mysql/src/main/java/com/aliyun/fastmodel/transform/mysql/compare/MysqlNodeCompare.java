@@ -35,7 +35,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/8/29
  */
-@Dialect(DialectName.MYSQL)
+@Dialect(DialectName.Constants.MYSQL)
 @AutoService(NodeCompare.class)
 public class MysqlNodeCompare implements NodeCompare {
 

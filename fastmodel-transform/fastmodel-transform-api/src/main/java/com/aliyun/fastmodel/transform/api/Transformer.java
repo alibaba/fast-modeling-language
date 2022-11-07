@@ -17,6 +17,9 @@
 package com.aliyun.fastmodel.transform.api;
 
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
+import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
@@ -39,7 +42,7 @@ import com.google.common.base.Preconditions;
  * @author panguanjing
  * @date 2020/10/16
  */
-public interface Transformer<T extends Node> {
+public interface Transformer<T extends Node> extends PropertyConverter {
 
     /**
      * 转换器, 核心的内容处理，默认不存在
@@ -84,4 +87,37 @@ public interface Transformer<T extends Node> {
         Preconditions.checkNotNull(dialectNode);
         return reverse(dialectNode, ReverseContext.builder().build());
     }
+
+    /**
+     * 将client dto 转为 核心模型
+     *
+     * @param table
+     * @param context 上下文处理
+     * @return
+     */
+    default Node reverseTable(Table table, ReverseContext context) {
+        throw new UnsupportedOperationException("unSupported Reverse with tableClient");
+    }
+
+    /**
+     * 将client dto 转为 核心模型
+     *
+     * @param table
+     * @return
+     */
+    default Node reverseTable(Table table) {
+        return reverseTable(table, ReverseContext.builder().build());
+    }
+
+    /**
+     * 将client dto 转为 核心模型
+     *
+     * @param table
+     * @param context 上下文处理
+     * @return
+     */
+    default Table transformTable(Node table, TransformContext context) {
+        throw new UnsupportedOperationException("unsupported transform table");
+    }
+
 }

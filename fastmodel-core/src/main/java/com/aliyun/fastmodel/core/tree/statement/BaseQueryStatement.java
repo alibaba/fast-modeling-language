@@ -17,7 +17,7 @@
 package com.aliyun.fastmodel.core.tree.statement;
 
 import com.aliyun.fastmodel.core.tree.AstVisitor;
-import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.BaseFmlStatement;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import lombok.EqualsAndHashCode;
@@ -33,7 +33,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-public abstract class BaseQueryStatement extends BaseStatement {
+public abstract class BaseQueryStatement extends BaseFmlStatement {
 
     /**
      * 语句必须在特定的业务板块中执行

@@ -27,8 +27,6 @@ import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatStringLiteral;
-
 /**
  * ZenVisitor
  *

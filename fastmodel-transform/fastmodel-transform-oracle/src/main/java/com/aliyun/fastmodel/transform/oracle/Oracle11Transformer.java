@@ -37,7 +37,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/7/24
  */
-@Dialect(value = DialectName.ORACLE)
+@Dialect(value = DialectName.Constants.ORACLE)
 @AutoService(Transformer.class)
 public class Oracle11Transformer implements Transformer<BaseStatement> {
 
@@ -45,7 +45,7 @@ public class Oracle11Transformer implements Transformer<BaseStatement> {
     public DialectNode transform(BaseStatement source, TransformContext context) {
         OracleContext oracleContext = new OracleContext(context);
         StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source,
-            new DialectMeta(DialectName.ORACLE, DialectMeta.DEFAULT_VERSION));
+            DialectMeta.createDefault(DialectName.ORACLE), oracleContext);
         DialectNode build = builder.build(source, oracleContext);
         return build;
     }

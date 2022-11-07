@@ -19,9 +19,12 @@ package com.aliyun.fastmodel.transform.mysql.format;
 import java.util.Arrays;
 import java.util.List;
 
+import com.aliyun.fastmodel.core.tree.AliasedName;
+import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.statement.element.MultiComment;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -105,5 +108,37 @@ public class MysqlVisitorTest {
             + "   PRIMARY KEY(c1),\n"
             + "   UNIQUE KEY (c1),\n"
             + "   INDEX idx_name (c1)\n)");
+    }
+
+    @Test
+    public void visitCreateTableWithMultiComment() {
+        MysqlVisitor mysqlVisitor = new MysqlVisitor(MysqlTransformContext.builder().build());
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .columnComments(Arrays.asList(
+                new MultiComment(
+                    ColumnDefinition.builder()
+                        .colName(new Identifier("c1"))
+                        .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+                        .aliasedName(new AliasedName("a"))
+                        .comment(new Comment("comment"))
+                        .build()
+                )
+            ))
+            .build();
+        mysqlVisitor.visitCreateTable(createTable, 0);
+        assertEquals(mysqlVisitor.getBuilder().toString(), "CREATE TABLE abc\n"
+            + "/*(\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
+            + ")*/\n");
+    }
+
+    @Test
+    public void testGetCode() {
+        MysqlVisitor mysqlVisitor = new MysqlVisitor(MysqlTransformContext.builder()
+            .database("abc")
+            .build());
+        String code = mysqlVisitor.getCode(QualifiedName.of("a.b.c"));
+        assertEquals(code, "abc.c");
     }
 }

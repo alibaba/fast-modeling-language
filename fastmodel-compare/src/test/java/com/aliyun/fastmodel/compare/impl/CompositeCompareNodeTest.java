@@ -22,8 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.aliyun.fastmodel.compare.BaseCompareNode;
-import com.aliyun.fastmodel.compare.ComparePair;
+import com.aliyun.fastmodel.compare.impl.helper.ComparePair;
 import com.aliyun.fastmodel.compare.CompareStrategy;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;

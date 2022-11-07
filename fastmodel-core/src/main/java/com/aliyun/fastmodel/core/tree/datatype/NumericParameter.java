@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.datatype;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
@@ -41,7 +41,7 @@ public class NumericParameter extends DataTypeParameter {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitNumericTypeParameter(this, context);
     }
 

@@ -25,15 +25,14 @@ import lombok.Getter;
  * @author panguanjing
  * @date 2021/3/7
  */
+@Getter
 public class HologresTransformContext extends TransformContext {
 
     public static final String COLUMN = "column";
     public static final long DEFAULT_SECONDS = 3153600000L;
 
-    @Getter
     private String orientation = COLUMN;
 
-    @Getter
     private Long timeToLiveInSeconds = DEFAULT_SECONDS;
 
     public HologresTransformContext(TransformContext context) {
@@ -55,12 +54,11 @@ public class HologresTransformContext extends TransformContext {
         return new Builder();
     }
 
+    @Getter
     public static class Builder extends TransformContext.Builder<Builder> {
 
-        @Getter
         private String orientation = COLUMN;
 
-        @Getter
         private Long timeToLiveInSeconds = DEFAULT_SECONDS;
 
         @Override
@@ -77,5 +75,6 @@ public class HologresTransformContext extends TransformContext {
             this.timeToLiveInSeconds = timeToLiveInSeconds;
             return this;
         }
+
     }
 }

@@ -16,15 +16,14 @@
 
 package com.aliyun.fastmodel.core.tree.expr.literal;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.google.common.base.Preconditions;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
- * Desc:
+ * double literal
  *
  * @author panguanjing
  * @date 2020/11/2
@@ -45,7 +44,7 @@ public class DoubleLiteral extends BaseLiteral {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitDoubleLiteral(this, context);
     }
 }

@@ -26,6 +26,7 @@ import com.aliyun.fastmodel.transform.api.dialect.Dialect;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import com.aliyun.fastmodel.transform.mysql.context.MysqlTransformContext;
 import com.aliyun.fastmodel.transform.mysql.parser.MysqlTransformerParser;
 import com.google.auto.service.AutoService;
@@ -37,7 +38,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/6/24
  */
-@Dialect(value = DialectName.MYSQL, version = DialectMeta.DEFAULT_VERSION)
+@Dialect(value = DialectName.Constants.MYSQL)
 @AutoService(Transformer.class)
 public class MysqlTransformer implements Transformer<BaseStatement> {
 
@@ -45,13 +46,13 @@ public class MysqlTransformer implements Transformer<BaseStatement> {
 
     @Override
     public DialectNode transform(BaseStatement source, TransformContext context) {
-        DialectMeta dialectMeta = new DialectMeta(DialectName.MYSQL, DialectMeta.DEFAULT_VERSION);
-        StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, dialectMeta);
+        DialectMeta dialectMeta = new DialectMeta(DialectName.MYSQL, IVersion.getDefault());
+        MysqlTransformContext mysqlTransformContext = new MysqlTransformContext(context);
+        StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, dialectMeta, mysqlTransformContext);
         if (builder == null) {
             throw new UnsupportedOperationException(
                 "UnSupported statement transform with target Dialect, source: " + source.getClass());
         }
-        MysqlTransformContext mysqlTransformContext = new MysqlTransformContext(context);
         return builder.build(source, mysqlTransformContext);
     }
 

@@ -57,11 +57,10 @@ public class PerformanceUtil {
     public static Long getCost(PerformanceExec performanceExec, TimeUnit timeUnit) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         performanceExec.execute();
-        Duration elapsed = stopwatch.elapsed();
         if (timeUnit == TimeUnit.MILLISECONDS) {
-            return elapsed.toMillis();
+            return stopwatch.elapsed(TimeUnit.MILLISECONDS);
         } else if (timeUnit == TimeUnit.NANOSECONDS) {
-            return Integer.valueOf(elapsed.getNano()).longValue();
+            return stopwatch.elapsed(TimeUnit.NANOSECONDS);
         }
         throw new IllegalArgumentException("unsupported timeunit with:" + timeUnit);
     }

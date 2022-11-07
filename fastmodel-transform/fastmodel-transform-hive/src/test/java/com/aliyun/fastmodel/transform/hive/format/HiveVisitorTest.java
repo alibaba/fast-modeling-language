@@ -16,12 +16,21 @@
 
 package com.aliyun.fastmodel.transform.hive.format;
 
+import java.util.Arrays;
+
+import com.aliyun.fastmodel.core.tree.AliasedName;
+import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.Row;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.aliyun.fastmodel.core.tree.statement.element.MultiComment;
 import com.aliyun.fastmodel.core.tree.statement.insert.Insert;
+import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.core.tree.util.QueryUtil;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
 import com.google.common.collect.ImmutableList;
@@ -64,5 +73,70 @@ public class HiveVisitorTest {
             + "  VALUES \n"
             + "  ('abc', 1)\n"
             + ", ('abc', 1)\n");
+    }
+
+    @Test
+    public void testVisitCreateTableWithoutColumns() {
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .columnComments(Arrays.asList(
+                new MultiComment(
+                    ColumnDefinition.builder()
+                        .colName(new Identifier("c1"))
+                        .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+                        .aliasedName(new AliasedName("c"))
+                        .comment(new Comment("comment"))
+                        .build()
+                )
+            ))
+            .build();
+        hiveVisitor.visitCreateTable(createTable, 0);
+        assertEquals(hiveVisitor.getBuilder().toString(), "CREATE TABLE abc\n"
+            + "--(\n"
+            + "--   c1 BIGINT COMMENT 'comment'\n"
+            + "--)");
+    }
+
+    @Test
+    public void testVisitCreateTableWithColumns() {
+        ColumnDefinition build = ColumnDefinition.builder()
+            .colName(new Identifier("c1"))
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+            .comment(new Comment("comment"))
+            .build();
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .columns(Arrays.asList(
+                build
+            ))
+            .columnComments(Arrays.asList(
+                new MultiComment(
+                    build
+                )
+            ))
+            .build();
+        hiveVisitor.visitCreateTable(createTable, 0);
+        assertEquals(hiveVisitor.getBuilder().toString(), "CREATE TABLE abc\n"
+            + "(\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
+            + ")");
+    }
+
+    @Test
+    public void testWithDatabase() {
+        HiveTransformContext context = HiveTransformContext.builder()
+            .database("d1")
+            .schema("s1")
+            .build();
+        HiveVisitor hiveVisitor = new HiveVisitor(context);
+        String test = hiveVisitor.getCode(QualifiedName.of("test"));
+        assertEquals(test, "d1.s1.test");
+        context = HiveTransformContext.builder()
+            .schema("s1")
+            .build();
+        hiveVisitor = new HiveVisitor(context);
+        test = hiveVisitor.getCode(QualifiedName.of("test"));
+        assertEquals(test, "s1.test");
+
     }
 }

@@ -19,14 +19,11 @@ package com.aliyun.fastmodel.core.tree.statement.select.order;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.Singular;
 import lombok.ToString;
 
 /**
@@ -57,7 +54,7 @@ public class OrderBy extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitOrderBy(this, context);
     }
 }

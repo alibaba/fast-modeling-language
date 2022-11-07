@@ -31,7 +31,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/7/24
  */
-@BuilderAnnotation(dialect = DialectName.ORACLE, values = {BaseStatement.class})
+@BuilderAnnotation(dialect = DialectName.Constants.ORACLE, values = {BaseStatement.class})
 @AutoService(StatementBuilder.class)
 public class DefaultOracleBuilder implements StatementBuilder<OracleContext> {
 

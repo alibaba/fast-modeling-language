@@ -33,6 +33,7 @@ import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.enums.ComparisonOperator;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.aliyun.fastmodel.core.tree.statement.adjunct.CreateAdjunct;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnCategory;
 import com.aliyun.fastmodel.core.tree.statement.constants.ShowObjectsType;
 import com.aliyun.fastmodel.core.tree.statement.constants.ShowType;
@@ -70,6 +71,8 @@ import com.aliyun.fastmodel.core.tree.statement.script.RefDirection;
 import com.aliyun.fastmodel.core.tree.statement.script.RefObject;
 import com.aliyun.fastmodel.core.tree.statement.script.RefRelation;
 import com.aliyun.fastmodel.core.tree.statement.select.Query;
+import com.aliyun.fastmodel.core.tree.statement.select.item.AllColumns;
+import com.aliyun.fastmodel.core.tree.statement.select.item.SingleColumn;
 import com.aliyun.fastmodel.core.tree.statement.show.ShowObjects;
 import com.aliyun.fastmodel.core.tree.statement.show.WhereCondition;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
@@ -77,6 +80,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableAliasedName;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.NotNullConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.RedundantConstraint;
 import com.aliyun.fastmodel.core.tree.statement.timeperiod.CreateTimePeriod;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
@@ -609,5 +613,94 @@ public class FastModelVisitorTest {
         fastModelVisitor.visitMoveReferences(references, 0);
         String text = fastModelVisitor.getBuilder().toString();
         assertEquals(text, "MOVE DOMAIN REFERENCES a.b TO b.c");
+    }
+
+    @Test
+    public void testCreatAdjunct() {
+        CreateAdjunct createAdjunct = new CreateAdjunct(
+            CreateElement.builder()
+                .createOrReplace(true)
+                .qualifiedName(QualifiedName.of("abc"))
+                .comment(new Comment("comment"))
+                .build(),
+            new StringLiteral("abc")
+        );
+        fastModelVisitor.visitCreateAdjunct(createAdjunct, 0);
+        assertEquals(fastModelVisitor.getBuilder().toString(), "CREATE OR REPLACE ADJUNCT abc COMMENT 'comment' AS 'abc'");
+    }
+
+    @Test
+    public void testVisitSingleColumn() {
+        SingleColumn singleColumn = new SingleColumn(
+            null, new TableOrColumn(QualifiedName.of("abc")), new Identifier("a"), true
+        );
+        fastModelVisitor.visitSingleColumn(singleColumn, 0);
+        assertEquals(fastModelVisitor.getBuilder().toString(), "abc AS a");
+    }
+
+    @Test
+    public void testVisitSingleColumnWithoutAs() {
+        SingleColumn singleColumn = new SingleColumn(
+            null, new TableOrColumn(QualifiedName.of("abc")), new Identifier("a"), false
+        );
+        fastModelVisitor.visitSingleColumn(singleColumn, 0);
+        assertEquals(fastModelVisitor.getBuilder().toString(), "abc a");
+    }
+
+    @Test
+    public void testVisitAllColumnWithoutAs() {
+        AllColumns singleColumn = new AllColumns(
+            null, new TableOrColumn(QualifiedName.of("abc")), ImmutableList.of(new Identifier("a")), true
+        );
+        fastModelVisitor.visitAllColumns(singleColumn, 0);
+        assertEquals(fastModelVisitor.getBuilder().toString(), "abc.* AS (a)");
+    }
+
+    @Test
+    public void testVisitAllColumnWithAs() {
+        AllColumns singleColumn = new AllColumns(
+            null, new TableOrColumn(QualifiedName.of("abc")), ImmutableList.of(new Identifier("a")), false
+        );
+        fastModelVisitor.visitAllColumns(singleColumn, 0);
+        assertEquals(fastModelVisitor.getBuilder().toString(), "abc.* (a)");
+    }
+
+    @Test
+    public void testVisitRedunctConstraint() {
+
+        RedundantConstraint constraint = new RedundantConstraint(
+            new Identifier("c1"),
+            new Identifier("abc"),
+            QualifiedName.of("abc.bcd"),
+            null
+        );
+        fastModelVisitor.visitRedundantConstraint(constraint, 0);
+        String s = fastModelVisitor.getBuilder().toString();
+        assertEquals(s, "CONSTRAINT c1 REDUNDANT abc REFERENCES abc.bcd");
+    }
+    @Test
+    public void testVisitRedunctConstraint2() {
+        RedundantConstraint constraint = new RedundantConstraint(
+            new Identifier("c1"),
+            new Identifier("abc"),
+            QualifiedName.of("abc.bcd.$"),
+            null
+        );
+        fastModelVisitor.visitRedundantConstraint(constraint, 0);
+        String s = fastModelVisitor.getBuilder().toString();
+        assertEquals(s, "CONSTRAINT c1 REDUNDANT abc REFERENCES abc.bcd.`$`");
+    }
+
+    @Test
+    public void testVisitRedunctConstraint3() {
+        RedundantConstraint constraint = new RedundantConstraint(
+           IdentifierUtil.sysIdentifier(),
+            new Identifier("abc"),
+            QualifiedName.of("abc.bcd.$"),
+            Lists.newArrayList(new Identifier("c2"), new Identifier("c3"))
+        );
+        fastModelVisitor.visitRedundantConstraint(constraint, 0);
+        String s = fastModelVisitor.getBuilder().toString();
+        assertEquals(s, "REDUNDANT abc REFERENCES abc.bcd.`$`(c2,c3)");
     }
 }

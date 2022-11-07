@@ -1,17 +1,9 @@
 /*
- * Copyright 2021-2022 Alibaba Group Holding Ltd.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright (c)  2020. Aliyun.com All right reserved. This software is the
+ * confidential and proprietary information of Aliyun.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Aliyun.com.
  */
 
 package com.aliyun.fastmodel.transform.api.dialect;
@@ -34,19 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 public class DialectMeta {
 
     /**
-     * 不传的默认版本
+     * maxcompute
      */
-    public static final String DEFAULT_VERSION = "";
-    /**
-     * 引擎的名字，唯一标示，大小写不敏感
-     */
-    private final DialectName name;
-
-    /**
-     * 引擎的版本，不同的版本，对应生成的Transform可能会存在差异
-     */
-    private final String version;
-
+    public static final DialectMeta DEFAULT_MAX_COMPUTE = createDefault(DialectName.MAXCOMPUTE);
     /**
      * hive
      */
@@ -62,18 +44,32 @@ public class DialectMeta {
     public static final DialectMeta DEFAULT_MYSQL = createDefault(DialectName.MYSQL);
 
     /**
+     * 引擎的名字，唯一标示，大小写不敏感
+     */
+    private final IDialectName dialectName;
+
+    /**
+     * 引擎的版本，不同的版本，对应生成的Transform可能会存在差异
+     */
+    private final IVersion version;
+
+    /**
      * Create Default
      *
      * @param maxcompute
      * @return {@link DialectMeta}
      */
-    public static DialectMeta createDefault(DialectName maxcompute) {
-        return new DialectMeta(maxcompute, DEFAULT_VERSION);
+    public static DialectMeta createDefault(IDialectName maxcompute) {
+        return new DialectMeta(maxcompute, IVersion.getDefault());
     }
 
-    public DialectMeta(DialectName name, String version) {
-        this.name = name;
+    public DialectMeta(IDialectName dialectName, IVersion version) {
+        this.dialectName = dialectName;
         this.version = version;
+    }
+
+    public static DialectMeta getMaxCompute() {
+        return DEFAULT_MAX_COMPUTE;
     }
 
     public static DialectMeta getHive() {
@@ -84,7 +80,7 @@ public class DialectMeta {
         return DEFAULT_HOLO;
     }
 
-    public static DialectMeta getByNameAndVersion(String name, String version) {
+    public static DialectMeta getByNameAndVersion(String name, IVersion version) {
         return new DialectMeta(DialectName.getByCode(name), version);
     }
 
@@ -94,16 +90,16 @@ public class DialectMeta {
      * @param dialectName
      * @return {@link DialectMeta}
      */
-    public static DialectMeta getByName(DialectName dialectName) {
-        return new DialectMeta(dialectName, DEFAULT_VERSION);
+    public static DialectMeta getByName(IDialectName dialectName) {
+        return new DialectMeta(dialectName, IVersion.getDefault());
     }
 
     @Override
     public String toString() {
-        if (StringUtils.isBlank(getVersion())) {
-            return getName().name();
+        if (version == null || StringUtils.isBlank(version.getName())) {
+            return this.getDialectName().getName();
         } else {
-            return getName().name() + getVersion();
+            return this.getDialectName().getName() + getVersion().getName();
         }
     }
 

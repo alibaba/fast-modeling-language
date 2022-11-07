@@ -26,8 +26,8 @@ import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
@@ -35,6 +35,7 @@ import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -119,16 +120,16 @@ public class CreateTableCompareNodeTest {
     @Test
     public void testCompareColumn() {
         List<ColumnDefinition> list = new ArrayList<>();
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         ColumnDefinition col1 = ColumnDefinition.builder().colName(new Identifier("col1")).dataType(
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT
-                .name()), null)).build();
+            dataType).build();
         list.add(col1);
         CreateDimTable createDimTable = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).detailType(
             TableDetailType.NORMAL_DIM).columns(list).comment(new Comment("comment")).build();
         List<ColumnDefinition> list2 = new ArrayList<>();
+        BaseDataType dataType1 = DataTypeUtil.simpleType(DataTypeEnums.VARCHAR, new NumericParameter("1"));
         list2.add(ColumnDefinition.builder().colName(new Identifier("col2"))
-            .dataType(new GenericDataType(new Identifier(DataTypeEnums.VARCHAR
-                .name()), ImmutableList.of(new NumericParameter("1")))).build());
+            .dataType(dataType1).build());
 
         CreateDimTable createDimTable1 = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).detailType(
             TableDetailType.NORMAL_DIM).columns(list2).comment(new Comment("comment")).build();
@@ -148,17 +149,17 @@ public class CreateTableCompareNodeTest {
     @Test
     public void testCompareChangeColumn() {
         List<ColumnDefinition> list = new ArrayList<>();
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         list.add(ColumnDefinition.builder().colName(new Identifier("col1"))
-            .dataType(new GenericDataType(new Identifier(DataTypeEnums.BIGINT
-                .name()), null)).build());
+            .dataType(dataType).build());
 
         CreateDimTable createDimTable = CreateDimTable.builder().tableName(
             QualifiedName.of("a.b")).columns(list).comment(new Comment("a")).build();
 
         List<ColumnDefinition> list2 = new ArrayList<>();
+        BaseDataType dataType1 = DataTypeUtil.simpleType(DataTypeEnums.VARCHAR, new NumericParameter("1"));
         list2.add(ColumnDefinition.builder().colName(new Identifier("col1"))
-            .dataType(new GenericDataType(new Identifier(DataTypeEnums.VARCHAR
-                .name()), ImmutableList.of(new NumericParameter("1")))).build());
+            .dataType(dataType1).build());
 
         CreateDimTable createDimTable1 = CreateDimTable.builder().tableName(
             QualifiedName.of("a.b")).columns(list2).comment(new Comment("a")).build();
@@ -183,14 +184,14 @@ public class CreateTableCompareNodeTest {
 
     @Test
     public void testComparePartition() {
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         PartitionedBy p1 = new PartitionedBy(ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col1")).dataType(
-                    new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())))
+                    dataType)
                 .build()));
         PartitionedBy p2 = new PartitionedBy(ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col2"))
-                .dataType(new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())
-                )).build()));
+                .dataType(dataType).build()));
         CreateDimTable createDimTable
             = CreateDimTable.builder().tableName(
             QualifiedName.of("a.b")).comment(
@@ -219,11 +220,12 @@ public class CreateTableCompareNodeTest {
                 new PrimaryConstraint(new Identifier("abc"),
                     ImmutableList.of(new Identifier("col1"), new Identifier("col2")))
             );
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         List<ColumnDefinition> list = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col1")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).build(),
+                dataType).build(),
             ColumnDefinition.builder().colName(new Identifier("col2")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).build()
+                dataType).build()
         );
         CreateDimTable createDimTable
             = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).columns(list).constraints(constraints)
@@ -257,15 +259,16 @@ public class CreateTableCompareNodeTest {
 
     @Test
     public void testCompareWithUuid() {
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         List<ColumnDefinition> leftList = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col1")).dataType(
-                    new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())))
+                    dataType)
                 .properties(ImmutableList.of(new Property("uuid", "uuid1"))).build()
         );
 
         List<ColumnDefinition> rightList = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col2")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).properties(
+                dataType).properties(
                 ImmutableList.of(new Property("uuid", "uuid1"))
             ).build()
         );
@@ -286,9 +289,10 @@ public class CreateTableCompareNodeTest {
 
     @Test
     public void testCompareWithUuidSetComment() {
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         List<ColumnDefinition> leftList = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col2")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).comment(
+                dataType).comment(
                 new Comment("abc")).properties(
                 ImmutableList.of(new Property("uuid", "uuid1"))
             ).build()
@@ -296,7 +300,7 @@ public class CreateTableCompareNodeTest {
 
         List<ColumnDefinition> rightList = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col2")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+                dataType
             ).comment(new Comment("bcd")).properties(ImmutableList.of(new Property("uuid", "uuid1"))
             ).build()
         );
@@ -317,15 +321,16 @@ public class CreateTableCompareNodeTest {
 
     @Test
     public void testCompareWithUuidWithChange() {
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         List<ColumnDefinition> leftList = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col1")).dataType(
-                    new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).comment(new Comment("abc"))
+                    dataType).comment(new Comment("abc"))
                 .properties(ImmutableList.of(new Property("uuid", "uuid1"))).build()
         );
 
         List<ColumnDefinition> rightList = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("col2")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+                dataType
             ).comment(
                 new Comment("bcd")
             ).properties(
@@ -354,10 +359,10 @@ public class CreateTableCompareNodeTest {
         CreateDimTable beforeDim = CreateDimTable.builder().tableName(
             QualifiedName.of("a")).comment(new Comment("comment")).build();
 
+        BaseDataType dataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
         ImmutableList<ColumnDefinition> p1 = ImmutableList
             .of(ColumnDefinition.builder().colName(new Identifier("p1"))
-                .dataType(new GenericDataType(new Identifier(DataTypeEnums.BIGINT
-                    .name()))).build());
+                .dataType(dataType).build());
         CreateDimTable afterDim = CreateDimTable.builder().tableName(
             QualifiedName.of("a")).comment(new Comment("comment")).partition(new PartitionedBy(p1)).build();
 
@@ -514,5 +519,13 @@ public class CreateTableCompareNodeTest {
                 .colName(new Identifier("col1")).comment(comment).build())
         ).build();
         return before;
+    }
+
+    @Test
+    public void testCreateTableWithFull() {
+        List<BaseStatement> baseStatements = createTableCompareNode.compareNode(null, CreateTable.builder().tableName(QualifiedName.of("abc")).build(), CompareStrategy.FULL);
+        assertEquals(2, baseStatements.size());
+        BaseStatement baseStatement = baseStatements.get(0);
+        assertEquals(baseStatement.toString(), "DROP TABLE IF EXISTS abc");
     }
 }

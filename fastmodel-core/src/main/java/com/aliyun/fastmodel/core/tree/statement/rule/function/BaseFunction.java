@@ -19,6 +19,7 @@ package com.aliyun.fastmodel.core.tree.statement.rule.function;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import lombok.EqualsAndHashCode;
@@ -54,8 +55,12 @@ public abstract class BaseFunction extends BaseExpression {
      */
     public abstract List<BaseExpression> arguments();
 
-    @Override
     public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
         return visitor.visitBaseFunction(this, context);
+    }
+
+    @Override
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
+        return (R)accept((AstVisitor)visitor, context);
     }
 }

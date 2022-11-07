@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
+import lombok.Data;
 import lombok.Getter;
 
 /**
@@ -30,11 +31,29 @@ import lombok.Getter;
  * @author panguanjing
  * @date 2021/7/26
  */
-@Getter
+@Data
 public class UniqueConstraint extends BaseConstraint {
 
     private final List<Identifier> columnNames;
 
+    /**
+     * 默认是true
+     *
+     * @param constraintName
+     * @param columnNames
+     */
+    public UniqueConstraint(Identifier constraintName,
+                            List<Identifier> columnNames) {
+        this(constraintName, columnNames, true);
+    }
+
+    /**
+     * 支持传入enable
+     *
+     * @param constraintName
+     * @param columnNames
+     * @param enable
+     */
     public UniqueConstraint(Identifier constraintName,
                             List<Identifier> columnNames,
                             Boolean enable) {

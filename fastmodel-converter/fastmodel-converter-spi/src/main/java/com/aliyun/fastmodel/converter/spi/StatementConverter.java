@@ -16,6 +16,8 @@
 
 package com.aliyun.fastmodel.converter.spi;
 
+import java.util.List;
+
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 
 /**
@@ -24,7 +26,7 @@ import com.aliyun.fastmodel.core.tree.BaseStatement;
  * @author panguanjing
  * @date 2021/5/30
  */
-public interface StatementConverter<T extends BaseStatement, C extends ConvertContext> {
+public interface StatementConverter<T extends BaseStatement, R extends BaseStatement, C extends ConvertContext> {
 
     /**
      * 从一种statement转换为另外一种statement
@@ -33,6 +35,8 @@ public interface StatementConverter<T extends BaseStatement, C extends ConvertCo
      * @param context
      * @return BaseStatement
      */
-    BaseStatement convert(T source, C context);
+    default R convert(T source, C context){
+        return null;
+    }
 
 }

@@ -30,8 +30,8 @@ import com.google.common.collect.Lists;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Locale.ENGLISH;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Desc:
@@ -50,19 +50,19 @@ public class QualifiedName extends AbstractNode {
     private QualifiedName(List<Identifier> originalParts) {
         this.originalParts = originalParts;
         parts = originalParts.stream().map(identifier -> identifier.getValue().toLowerCase(ENGLISH)).collect(
-            toImmutableList());
+            toList());
     }
 
     public static QualifiedName of(String name) {
         Preconditions.checkNotNull(name);
         Splitter splitter = Splitter.on(".");
         List<String> strings = splitter.splitToList(name);
-        return new QualifiedName(strings.stream().map(Identifier::new).collect(Collectors.toList()));
+        return new QualifiedName(strings.stream().map(Identifier::new).collect(toList()));
     }
 
     public static QualifiedName of(String first, String... rest) {
         return of(ImmutableList.copyOf(Lists.asList(first, rest).stream().map(Identifier::new)
-            .collect(Collectors.toList())));
+            .collect(toList())));
     }
 
     public static QualifiedName of(Iterable<Identifier> originalParts) {
@@ -121,6 +121,15 @@ public class QualifiedName extends AbstractNode {
     }
 
     /**
+     * 是否为链接路径
+     *
+     * @return true 如果是链接路径
+     */
+    public boolean isJoinPath() {
+        return this.getParts().size() > 1;
+    }
+
+    /**
      * 获取前置路径
      * a.b.c => a.b
      * c => null
@@ -148,7 +157,7 @@ public class QualifiedName extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitQualifiedName(this, context);
     }
 }

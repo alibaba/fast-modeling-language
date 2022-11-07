@@ -25,8 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.aliyun.fastmodel.compare.BaseCompareNode;
-import com.aliyun.fastmodel.compare.ComparePair;
+import com.aliyun.fastmodel.compare.impl.helper.ComparePair;
 import com.aliyun.fastmodel.compare.CompareStrategy;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -104,18 +103,31 @@ public class CompositeCompareNode extends BaseCompareNode<CompositeStatement> {
             BaseStatement baseStatement = beforeList.get(i);
             BaseStatement afterStatement = afterList.get(i);
             BaseCompareNode baseCompareNode = singleStatementCompare.get(baseStatement.getClass().getName());
+            //if compare node is null,  skip
+            if (baseCompareNode == null) {
+                continue;
+            }
             result.addAll(baseCompareNode.compareResult(baseStatement, afterStatement, strategy));
         }
         if (size < beforeSize) {
             for (int start = size; start < beforeSize; start++) {
                 BaseStatement baseStatement = beforeList.get(start);
                 BaseCompareNode baseCompareNode = singleStatementCompare.get(baseStatement.getClass().getName());
-                result.addAll(baseCompareNode.compareResult(baseStatement, null, strategy));
+                //if compare node is null,  skip
+                if (baseCompareNode == null) {
+                    continue;
+                }
+                List compareResult = baseCompareNode.compareResult(baseStatement, null, strategy);
+                result.addAll(compareResult);
             }
         } else if (size < afterSize) {
             for (int start = size; start < afterSize; start++) {
                 BaseStatement baseStatement = afterList.get(start);
                 BaseCompareNode baseCompareNode = singleStatementCompare.get(baseStatement.getClass().getName());
+                //if compare node is null,  skip
+                if (baseCompareNode == null) {
+                    continue;
+                }
                 result.addAll(baseCompareNode.compareResult(null, baseStatement, strategy));
             }
         }
@@ -136,6 +148,9 @@ public class CompositeCompareNode extends BaseCompareNode<CompositeStatement> {
     private void sort(List<BaseStatement> beforeList, List<QualifiedName> afterQualifiedName) {
         Collections.sort(beforeList,
             Comparator.comparing(item -> {
+                if (!(item instanceof BaseCreate)) {
+                    return Integer.MAX_VALUE;
+                }
                 BaseCreate baseCreate = (BaseCreate)item;
                 int index = afterQualifiedName.indexOf(baseCreate.getQualifiedName());
                 if (index == -1) {

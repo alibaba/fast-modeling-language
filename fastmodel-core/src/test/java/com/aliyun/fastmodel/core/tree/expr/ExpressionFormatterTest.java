@@ -44,23 +44,4 @@ public class ExpressionFormatterTest {
         assertNotNull(expression1);
     }
 
-    @Test
-    public void formatStringLiteral() {
-        String abc = ExpressionFormatter.formatStringLiteral("abc");
-        assertEquals("'abc'", abc);
-    }
-
-    @Test
-    public void formatGroupingSet() {
-        String a = ExpressionFormatter.formatGroupingSet(ImmutableList.of(new Identifier("a")));
-        assertEquals("(a)", a);
-    }
-
-    @Test
-    public void formatOrderBy() {
-        OrderBy orderBy = new OrderBy(
-            ImmutableList.of(new SortItem(new Identifier("a"), Ordering.ASC, NullOrdering.UNDEFINED)));
-        String s = ExpressionFormatter.formatOrderBy(orderBy);
-        assertEquals(s, "ORDER BY a ASC");
-    }
 }

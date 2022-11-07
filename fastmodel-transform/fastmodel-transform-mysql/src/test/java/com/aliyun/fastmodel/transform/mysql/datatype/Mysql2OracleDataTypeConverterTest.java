@@ -50,12 +50,12 @@ public class Mysql2OracleDataTypeConverterTest {
     @Test
     public void getSourceDialect() {
         DialectMeta sourceDialect = mysql2OracleDataTypeTransformer.getSourceDialect();
-        assertEquals(sourceDialect.getName(), DialectMeta.DEFAULT_MYSQL.getName());
+        assertEquals(sourceDialect.getDialectName(), DialectMeta.DEFAULT_MYSQL.getDialectName());
     }
 
     @Test
     public void getTargetDialect() {
         DialectMeta targetDialect = mysql2OracleDataTypeTransformer.getTargetDialect();
-        assertEquals(targetDialect.getName(), DialectName.ORACLE);
+        assertEquals(targetDialect.getDialectName(), DialectName.ORACLE);
     }
 }

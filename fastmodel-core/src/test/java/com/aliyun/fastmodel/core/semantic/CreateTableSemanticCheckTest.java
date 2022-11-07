@@ -91,12 +91,15 @@ public class CreateTableSemanticCheckTest {
         }
     }
 
-    @Test(expected = SemanticException.class)
+    @Test
     public void testCheckWithPartitionBy() {
         List<ColumnDefinition> columnDefinitions = constructorTypeStatement();
         PartitionedBy partitionedBy = new PartitionedBy(columnDefinitions);
-        CreateDimTable.builder().tableName(
-            QualifiedName.of("a.b")).columns(columnDefinitions).partition(partitionedBy).build();
+        CreateDimTable build = CreateDimTable.builder().tableName(
+                QualifiedName.of("a.b")).columns(columnDefinitions).partition(partitionedBy)
+            .build();
+        assertNotNull(build);
+
     }
 
     @Test

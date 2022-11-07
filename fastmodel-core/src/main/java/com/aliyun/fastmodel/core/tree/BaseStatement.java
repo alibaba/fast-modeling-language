@@ -16,8 +16,10 @@
 
 package com.aliyun.fastmodel.core.tree;
 
+import java.util.List;
+
 import com.aliyun.fastmodel.core.formatter.FastModelFormatter;
-import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,18 +33,16 @@ import lombok.Setter;
 @Setter
 public abstract class BaseStatement extends AbstractNode {
 
-    /**
-     * 语句类型{@link StatementType}
-     */
-    private StatementType statementType;
+    protected String origin;
 
-    /**
-     * 语句的原始信息
-     */
-    private String origin;
+    protected IStatementType statementType;
 
-    public BaseStatement(NodeLocation nodeLocation) {
-        this(nodeLocation, null);
+    public BaseStatement() {
+        this(null, null);
+    }
+
+    public BaseStatement(NodeLocation location) {
+        super(location);
     }
 
     public BaseStatement(NodeLocation location, String origin) {
@@ -51,18 +51,16 @@ public abstract class BaseStatement extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
-        return visitor.visitStatement(this, context);
+    public List<? extends Node> getChildren() {
+        return ImmutableList.of();
     }
 
     @Override
     public String toString() {
         try {
-            String formatNode = FastModelFormatter.formatNode(this);
-            return formatNode;
+            return FastModelFormatter.formatNode(this);
         } catch (Exception ignore) {
             return getClass() + ":{statementType:" + statementType + ";origin:" + origin + "}";
         }
     }
-
 }

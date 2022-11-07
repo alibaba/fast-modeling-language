@@ -16,6 +16,7 @@
 
 package com.aliyun.fastmodel.parser.statement;
 
+import com.aliyun.fastmodel.core.formatter.FastModelFormatter;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.parser.BaseTest;
 import org.junit.Test;
@@ -57,12 +58,12 @@ public class QueryProcessTest extends BaseTest {
             + "              SELECT  *\n"
             + "              FROM    antods.ods_kn_prize_delta_hh\n"
             + "              WHERE   dt = '20210118'\n"
-            + "              AND     HOUR = '23'\n"
+            + "              AND     HOUR = '3'\n"
             + "          ) AS prize\n"
             + "ON      prize.prize_id = rel.prize_id\n"
             + "WHERE   prize_type != \"VOUCHER_PRIZE\"";
         BaseStatement statement = nodeParser.parseStatement(sql);
-        assertEquals(statement.toString(), "SELECT\n"
+        assertEquals(FastModelFormatter.formatNode(statement), "SELECT\n"
             + "  rel.pool_id\n"
             + ", rel.relation_id\n"
             + ", prize.*\n"
@@ -70,7 +71,7 @@ public class QueryProcessTest extends BaseTest {
             + "  (\n"
             + "      SELECT\n"
             + "        *\n"
-            + "      , 'dd' hour\n"
+            + "      , 'dd' AS hour\n"
             + "      FROM\n"
             + "        antods.ods_kn_prize_pool_relation\n"
             + "      WHERE dt = '20210117' AND pool_id IN ('PP202006131310', 'PP202006121286')\n"
@@ -82,14 +83,14 @@ public class QueryProcessTest extends BaseTest {
             + "LEFT JOIN (\n"
             + "      SELECT\n"
             + "        *\n"
-            + "      , 'dd' `hour`\n"
+            + "      , 'dd' AS `hour`\n"
             + "      FROM\n"
             + "        antods.ods_kn_prize\n"
             + "      WHERE dt = '20210117'\n"
             + "UNION       SELECT *\n"
             + "      FROM\n"
             + "        antods.ods_kn_prize_delta_hh\n"
-            + "      WHERE dt = '20210118' AND hour = '23'\n"
+            + "      WHERE dt = '20210118' AND hour = '3'\n"
             + "   )  prize ON prize.prize_id = rel.prize_id\n"
             + "WHERE prize_type != 'VOUCHER_PRIZE'\n");
     }

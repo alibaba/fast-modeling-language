@@ -29,9 +29,24 @@ import lombok.Setter;
 @Getter
 @Setter
 public class IndicatorDataModel implements DomainObject {
+    /**
+     * 指标名
+     */
     private String indicatorName;
+    /**
+     * 指标备注
+     */
     private String comment;
+    /**
+     * 引用
+     */
     private String references;
+    /**
+     * 表达式
+     */
     private String expr;
+    /**
+     * 数据类型
+     */
     private String dataType;
 }

@@ -36,6 +36,8 @@
     * [模型发布](zh-cn/publish/model.md)
 * DDL转换
     * [总览](zh-cn/transformer/guide.md)
+    * [建表SDK](zh-cn/transformer/table.md)
+    * [MaxCompute](zh-cn/transformer/maxcompute.md)
     * [Hive](zh-cn/transformer/hive.md)
     * [Hologres](zh-cn/transformer/hologres.md)
     * [Mysql](zh-cn/transformer/mysql.md)

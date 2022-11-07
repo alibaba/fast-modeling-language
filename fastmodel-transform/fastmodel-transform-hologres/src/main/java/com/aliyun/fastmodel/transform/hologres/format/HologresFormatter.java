@@ -19,6 +19,10 @@ package com.aliyun.fastmodel.transform.hologres.format;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresAstVisitor;
+import org.apache.commons.lang3.StringUtils;
+
+import static com.aliyun.fastmodel.transform.api.context.TransformContext.SEMICOLON;
 
 /**
  * Hologres Formatter
@@ -29,11 +33,17 @@ import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 public class HologresFormatter {
 
     public static DialectNode format(BaseStatement statement, HologresTransformContext context) {
-        HologresVisitor hologresVisitor = new HologresVisitor(context);
+        HologresAstVisitor hologresVisitor = new HologresAstVisitor(context);
         Boolean process = hologresVisitor.process(statement, 0);
         StringBuilder builder = hologresVisitor.getBuilder();
-        String string = builder.toString();
-        return new DialectNode(string, process);
+        String result = builder.toString();
+        if (StringUtils.isBlank(result)) {
+            return new DialectNode(result, process);
+        }
+        if (context.isAppendSemicolon() && !result.endsWith(SEMICOLON)) {
+            result = result + SEMICOLON;
+        }
+        return new DialectNode(result, process);
     }
 
 }

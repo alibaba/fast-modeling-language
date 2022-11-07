@@ -18,17 +18,16 @@ package com.aliyun.fastmodel.compare.impl;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.compare.BaseCompareNode;
 import com.aliyun.fastmodel.compare.CompareStrategy;
-import com.aliyun.fastmodel.compare.table.AliasCompare;
-import com.aliyun.fastmodel.compare.table.ColumnCompare;
-import com.aliyun.fastmodel.compare.table.CommentCompare;
-import com.aliyun.fastmodel.compare.table.ConstraintCompare;
-import com.aliyun.fastmodel.compare.table.PartitionByCompare;
-import com.aliyun.fastmodel.compare.table.PropertiesCompare;
-import com.aliyun.fastmodel.compare.table.TableElementCompare;
-import com.aliyun.fastmodel.compare.table.TableIndexCompare;
-import com.aliyun.fastmodel.compare.table.TableNameCompare;
+import com.aliyun.fastmodel.compare.impl.table.AliasCompare;
+import com.aliyun.fastmodel.compare.impl.table.ColumnCompare;
+import com.aliyun.fastmodel.compare.impl.table.CommentCompare;
+import com.aliyun.fastmodel.compare.impl.table.ConstraintCompare;
+import com.aliyun.fastmodel.compare.impl.table.PartitionByCompare;
+import com.aliyun.fastmodel.compare.impl.table.PropertiesCompare;
+import com.aliyun.fastmodel.compare.impl.table.TableElementCompare;
+import com.aliyun.fastmodel.compare.impl.table.TableIndexCompare;
+import com.aliyun.fastmodel.compare.impl.table.TableNameCompare;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;
@@ -73,8 +72,17 @@ public class CreateTableCompareNode extends BaseCompareNode<CreateTable> {
             return builder.build();
         }
         if (before == null) {
-            builder.add(after);
-            return builder.build();
+            //之前是空的，还要增加判断比对策略
+            if (strategy == CompareStrategy.INCREMENTAL) {
+                builder.add(after);
+                return builder.build();
+            } else if (strategy == CompareStrategy.FULL) {
+                //全量的话，先生成删除内容
+                DropTable dropTable = new DropTable(after.getQualifiedName(), true);
+                builder.add(dropTable);
+                builder.add(after);
+                return builder.build();
+            }
         }
         if (strategy == CompareStrategy.FULL) {
             DropTable dropTable = new DropTable(before.getQualifiedName(), true);

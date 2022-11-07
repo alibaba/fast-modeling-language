@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.google.common.collect.ImmutableList;
 
@@ -39,19 +40,20 @@ public class DataTypeUtil {
      * @param parameters    参数
      * @return {@link BaseDataType}
      */
-    public static BaseDataType simpleType(DataTypeEnums dataTypeEnums, DataTypeParameter... parameters) {
-        return new GenericDataType(new Identifier(dataTypeEnums.name(), false), ImmutableList.copyOf(parameters));
+    public static BaseDataType simpleType(IDataTypeName dataTypeEnums, DataTypeParameter... parameters) {
+        Identifier identifier = new Identifier(dataTypeEnums.getValue(), false);
+        return new GenericDataType(identifier.getValue(), ImmutableList.copyOf(parameters));
     }
 
     /**
      * use dataType
      *
      * @param dataType
-     * @param parameters
+     * @param arguments
      * @return {@link BaseDataType}
      */
     public static BaseDataType simpleType(String dataType, List<DataTypeParameter> arguments) {
-        return new GenericDataType(new Identifier(dataType), arguments);
+        return new GenericDataType(dataType, arguments);
     }
 
     /**
@@ -62,12 +64,12 @@ public class DataTypeUtil {
      * @return
      * @throws UnsupportedOperationException 如果srcDataType不是GenericDataType
      */
-    public static BaseDataType convert(BaseDataType srcDataType, DataTypeEnums dataTypeEnums) {
+    public static BaseDataType convert(BaseDataType srcDataType, IDataTypeName dataTypeEnums) {
         if (srcDataType instanceof GenericDataType) {
-            return new GenericDataType(new Identifier(dataTypeEnums.name()),
+            return new GenericDataType(dataTypeEnums.getValue(),
                 ((GenericDataType)srcDataType).getArguments());
         }
-        throw new UnsupportedOperationException("unSupported convert not GenericDataType:" + srcDataType.getClass());
+        return srcDataType;
     }
 
 }

@@ -74,6 +74,12 @@ public class StripUtilsTest {
             + "line 3\n"
             + "line 5");
     }
+
+    @Test
+    public void testAddStrip() {
+        String comment = StripUtils.addStrip("comment");
+        assertEquals(comment, "'comment'");
+    }
 }
 
 //Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev

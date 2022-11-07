@@ -36,6 +36,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * 创建表的语义校验
@@ -47,26 +48,28 @@ public class CreateTableSemanticCheck implements SemanticCheck<CreateTable> {
 
     @Override
     public void check(CreateTable baseStatement) throws SemanticException {
-
         List<ColumnDefinition> columnDefines = baseStatement.getColumnDefines();
         List<ColumnDefinition> allColumns = Lists.newArrayList();
         if (columnDefines != null) {
+            containSameCol(columnDefines);
             allColumns.addAll(columnDefines);
         }
+
         if (baseStatement.getPartitionedBy() != null) {
             PartitionedBy partitionedBy = baseStatement.getPartitionedBy();
             if (partitionedBy.isNotEmpty()) {
-                allColumns.addAll(partitionedBy.getColumnDefinitions());
+                List<ColumnDefinition> columnDefinitions = partitionedBy.getColumnDefinitions();
+                allColumns.addAll(columnDefinitions);
+                containSameCol(columnDefinitions);
             }
         }
-        containSameCol(allColumns);
         List<BaseConstraint> constraintStatements = baseStatement.getConstraintStatements();
         if (constraintStatements != null) {
             constraintCheck(allColumns, constraintStatements);
         }
     }
 
-    private void containSameCol(List<ColumnDefinition> statements) {
+    public static void containSameCol(List<ColumnDefinition> statements) {
         Set<Identifier> set = new HashSet<>(4);
         for (ColumnDefinition columnDefine : statements) {
             Identifier colName = columnDefine.getColName();

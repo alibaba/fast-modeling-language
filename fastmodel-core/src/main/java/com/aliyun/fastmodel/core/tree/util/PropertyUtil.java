@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,9 +48,9 @@ public class PropertyUtil {
 
     public static Map<String, String> toMap(List<Property> propertyList) {
         if (propertyList == null) {
-            return Maps.newHashMap();
+            return Maps.newLinkedHashMap();
         }
-        Map<String, String> maps = new HashMap<>(propertyList.size());
+        Map<String, String> maps = new LinkedHashMap<>(propertyList.size());
         for (Property property : propertyList) {
             maps.put(property.getName(), property.getValue());
         }

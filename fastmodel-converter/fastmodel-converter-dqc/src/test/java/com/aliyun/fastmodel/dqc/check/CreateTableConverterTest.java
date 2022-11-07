@@ -55,7 +55,7 @@ public class CreateTableConverterTest {
     CreateTableConverter createTableConverter = new CreateTableConverter();
 
     @Test
-    public void convert() {
+    public void testConvert() {
         List<ColumnDefinition> columns = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("abc")).dataType(
                 DataTypeUtil.simpleType(DataTypeEnums.BIGINT)

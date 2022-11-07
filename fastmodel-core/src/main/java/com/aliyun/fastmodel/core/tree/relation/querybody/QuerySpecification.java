@@ -18,16 +18,19 @@ package com.aliyun.fastmodel.core.tree.relation.querybody;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.BaseRelation;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
-import com.aliyun.fastmodel.core.tree.BaseRelation;
 import com.aliyun.fastmodel.core.tree.statement.select.Hint;
 import com.aliyun.fastmodel.core.tree.statement.select.Offset;
-import com.aliyun.fastmodel.core.tree.statement.select.order.OrderBy;
 import com.aliyun.fastmodel.core.tree.statement.select.Select;
 import com.aliyun.fastmodel.core.tree.statement.select.groupby.GroupBy;
+import com.aliyun.fastmodel.core.tree.statement.select.order.OrderBy;
+import com.aliyun.fastmodel.core.tree.statement.select.sort.ClusterBy;
+import com.aliyun.fastmodel.core.tree.statement.select.sort.DistributeBy;
+import com.aliyun.fastmodel.core.tree.statement.select.sort.SortBy;
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -45,7 +48,6 @@ import lombok.ToString;
 @Setter
 @Builder
 @EqualsAndHashCode(callSuper = false)
-@ToString
 public class QuerySpecification extends BaseQueryBody {
 
     private Select select;
@@ -62,18 +64,29 @@ public class QuerySpecification extends BaseQueryBody {
 
     private OrderBy orderBy;
 
+    private ClusterBy clusterBy;
+
+    private DistributeBy distributeBy;
+
+    private SortBy sortBy;
+
     private Offset offset;
 
     private Node limit;
 
     public QuerySpecification(Select select, BaseRelation from) {
-        this(null, select, null, from, null, null, null, null, null, null);
+        this(null, select, null, from, null, null, null,
+            null, null, null, null, null, null);
     }
 
     public QuerySpecification(NodeLocation location,
                               Select select, List<Hint> hints, BaseRelation from, BaseExpression where,
                               GroupBy groupBy, BaseExpression having,
-                              OrderBy orderBy, Offset offset, Node limit) {
+                              OrderBy orderBy,
+                              ClusterBy clusterBy,
+                              DistributeBy distributeBy,
+                              SortBy sortBy,
+                              Offset offset, Node limit) {
         super(location);
         this.select = select;
         this.hints = hints;
@@ -82,15 +95,22 @@ public class QuerySpecification extends BaseQueryBody {
         this.groupBy = groupBy;
         this.having = having;
         this.orderBy = orderBy;
+        this.clusterBy = clusterBy;
+        this.distributeBy = distributeBy;
+        this.sortBy = sortBy;
         this.offset = offset;
         this.limit = limit;
     }
 
     public QuerySpecification(Select select, List<Hint> hints, BaseRelation from, BaseExpression where,
                               GroupBy groupBy, BaseExpression having,
-                              OrderBy orderBy, Offset offset,
+                              OrderBy orderBy,
+                              ClusterBy clusterBy,
+                              DistributeBy distributeBy,
+                              SortBy sortBy,
+                              Offset offset,
                               Node limit) {
-        this(null, select, hints, from, where, groupBy, having, orderBy, offset, limit);
+        this(null, select, hints, from, where, groupBy, having, orderBy, clusterBy, distributeBy, sortBy, offset, limit);
     }
 
     @Override
@@ -125,7 +145,7 @@ public class QuerySpecification extends BaseQueryBody {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitQuerySpecification(this, context);
     }
 }

@@ -18,8 +18,8 @@ package com.aliyun.fastmodel.core.tree.statement.misc;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
@@ -39,7 +39,6 @@ public class Call extends BaseStatement {
     private final FunctionCall functionCall;
 
     public Call(FunctionCall functionCall) {
-        super(null);
         Preconditions.checkNotNull(functionCall);
         this.functionCall = functionCall;
         setStatementType(StatementType.CALL);
@@ -51,7 +50,7 @@ public class Call extends BaseStatement {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitCall(this, context);
     }
 }

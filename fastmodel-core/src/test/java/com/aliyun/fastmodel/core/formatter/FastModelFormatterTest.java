@@ -24,7 +24,6 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.expr.CustomExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
@@ -183,7 +182,7 @@ public class FastModelFormatterTest {
             new Comment("comment")).notExists(true).build();
         CreateAtomicIndicator createAtomicIndicator = new CreateAtomicIndicator(
             createElement,
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())),
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT),
             QueryUtil.functionCall("sum", new TableOrColumn(QualifiedName.of("a.b"))),
             null
         );
@@ -198,7 +197,7 @@ public class FastModelFormatterTest {
             new Comment("comment")).build();
         CreateAtomicCompositeIndicator createAtomicCompositeIndicator = new CreateAtomicCompositeIndicator(
             createElement,
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name())),
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT),
             QueryUtil.functionCall("sum", new TableOrColumn(QualifiedName.of("a.b")))
         );
         String ddl = format(createAtomicCompositeIndicator);
@@ -214,7 +213,7 @@ public class FastModelFormatterTest {
         ).comment(new Comment("comment")).build();
         CreateDerivativeIndicator createDerivativeIndicator = new CreateDerivativeIndicator(
             createElement,
-            new GenericDataType(new Identifier(DataTypeEnums.BOOLEAN.name())),
+            DataTypeUtil.simpleType(DataTypeEnums.BOOLEAN),
             null,
             QualifiedName.of("b.c")
         );
@@ -232,7 +231,7 @@ public class FastModelFormatterTest {
             ).build();
         CreateDerivativeCompositeIndicator createDerivativeIndicator = new CreateDerivativeCompositeIndicator(
             createElement,
-            new GenericDataType(new Identifier(DataTypeEnums.BOOLEAN.name())),
+            DataTypeUtil.simpleType(DataTypeEnums.BOOLEAN),
             null,
             QualifiedName.of("b.c")
         );
@@ -245,19 +244,19 @@ public class FastModelFormatterTest {
     @Test
     public void testCreateTableWithPartitionBy() {
         ColumnDefinition colName = ColumnDefinition.builder().colName(new Identifier("colName")).dataType(
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
         ).comment(new Comment("字段_0")).category(ColumnCategory.MEASUREMENT).properties(
             ImmutableList.of(new Property("key1", "value1"))
         ).build();
 
         ColumnDefinition colName2 = ColumnDefinition.builder().colName(new Identifier("colName2")).dataType(
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
         ).comment(new Comment("字段_0")).category(ColumnCategory.MEASUREMENT).properties(
             ImmutableList.of(new Property("key1", "value1"))
         ).build();
 
         ColumnDefinition colName3 = ColumnDefinition.builder().colName(new Identifier("colName3")).dataType(
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
         ).comment(new Comment("字段_3")).category(ColumnCategory.MEASUREMENT).properties(
             ImmutableList.of(new Property("key1", "value1"))
         ).build();
@@ -292,13 +291,13 @@ public class FastModelFormatterTest {
     @Test
     public void testCreateTableWithColumn() {
         ColumnDefinition colName = ColumnDefinition.builder().colName(new Identifier("colName"))
-            .dataType(new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))).comment(
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT)).comment(
                 new Comment("colComment")).category(
                 ColumnCategory.MEASUREMENT
             ).properties(ImmutableList.of(new Property("key1", "value1"))).build();
 
         ColumnDefinition colName2 = ColumnDefinition.builder().colName(new Identifier("colName2")).dataType(
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
         ).comment(new Comment("colComment")).category(ColumnCategory.MEASUREMENT).properties(
             ImmutableList.of(new Property("key1", "value1"))
         ).build();
@@ -413,7 +412,7 @@ public class FastModelFormatterTest {
     @Test
     public void testPartitionBy() {
         ColumnDefinition colName = ColumnDefinition.builder().colName(new Identifier("colName")).dataType(
-            new GenericDataType(new Identifier(DataTypeEnums.BIGINT.name()))
+            DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
         ).comment(new Comment("字段_0")).category(ColumnCategory.MEASUREMENT).properties(
             ImmutableList.of(new Property("key1", "value1"))
         ).build();

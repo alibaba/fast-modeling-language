@@ -54,12 +54,12 @@ public class HiveFormatterTest {
         List<Property> properties = ImmutableList.of(new Property("a", "b"), new Property("a1", "b1"));
         ImmutableList<ColumnDefinition> of = ImmutableList.of(
             ColumnDefinition.builder().colName(new Identifier("c1"))
-                .dataType(new GenericDataType(new Identifier(DataTypeEnums.STRING.name()))).comment(new Comment("abc"))
+                .dataType(DataTypeUtil.simpleType(DataTypeEnums.STRING)).comment(new Comment("abc"))
                 .build()
         );
         ImmutableList<ColumnDefinition> of2 = ImmutableList.of(
             ColumnDefinition.builder().colName(
-                new Identifier("c2")).dataType(new GenericDataType(new Identifier(DataTypeEnums.STRING.name())))
+                    new Identifier("c2")).dataType(DataTypeUtil.simpleType(DataTypeEnums.STRING))
                 .comment(
                     new Comment("abc")
                 ).build()

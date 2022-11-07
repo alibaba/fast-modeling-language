@@ -37,9 +37,9 @@ import com.google.auto.service.AutoService;
  * @date 2021/6/2
  */
 @AutoService(StatementConverter.class)
-public class DropColConverter extends BaseDqcStatementConverter<DropCol> {
+public class DropColConverter extends BaseDqcStatementConverter<DropCol, DropDqcRule> {
     @Override
-    public BaseStatement convert(DropCol source, ConvertContext context) {
+    public DropDqcRule convert(DropCol source, ConvertContext context) {
         QualifiedName tableName = source.getQualifiedName();
         Identifier col = source.getColumnName();
         List<PartitionSpec> partitionSpecList = getPartitionSpec(context);

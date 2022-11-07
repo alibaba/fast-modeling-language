@@ -35,6 +35,8 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Desc:
@@ -65,6 +67,12 @@ public class DropPrimaryConstraintConverterTest {
             ).columns(ImmutableList.of(ColumnDefinition.builder().colName(new Identifier("pk")).build())).build();
         context.setBeforeStatement(createTable);
         context.setAfterStatement(createTable);
+    }
+
+    @Test
+    public void testContextIsNull() {
+        DropPrimaryConstraintConverter dropPrimaryConstraintConverter = new DropPrimaryConstraintConverter();
+        assertNull(dropPrimaryConstraintConverter.convert(null, new DefaultConvertContext()));
     }
 
     @Test

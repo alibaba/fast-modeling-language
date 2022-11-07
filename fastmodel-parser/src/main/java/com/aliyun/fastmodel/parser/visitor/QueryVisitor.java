@@ -72,12 +72,17 @@ import com.aliyun.fastmodel.core.tree.statement.select.order.NullOrdering;
 import com.aliyun.fastmodel.core.tree.statement.select.order.OrderBy;
 import com.aliyun.fastmodel.core.tree.statement.select.order.Ordering;
 import com.aliyun.fastmodel.core.tree.statement.select.order.SortItem;
+import com.aliyun.fastmodel.core.tree.statement.select.sort.ClusterBy;
+import com.aliyun.fastmodel.core.tree.statement.select.sort.DistributeBy;
+import com.aliyun.fastmodel.core.tree.statement.select.sort.SortBy;
 import com.aliyun.fastmodel.core.tree.statement.show.WhereCondition;
 import com.aliyun.fastmodel.parser.AstBuilder;
 import com.aliyun.fastmodel.parser.annotation.SubVisitor;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.AliasedRelationContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.ClusterByClauseContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.CubeContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.DeleteContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.DistributeByClauseContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.GroupByContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.GroupingOperationContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.HintStatementContext;
@@ -86,9 +91,11 @@ import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.InsertIntoCon
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.JoinRelationContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.MultipleGroupingSetsContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.NamedQueryContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.ParenthesizedRelationContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.QueryContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.QueryNoWithContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.QuerySpecificationContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.RelationDefaultContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.RollupContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SampledRelationContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SelectAllContext;
@@ -96,6 +103,7 @@ import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SelectSingleC
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SetOperationContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SetQuantifierContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SingleGroupingSetContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SortByClauseContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SortItemContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SubqueryContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.SubqueryRelationContext;
@@ -145,6 +153,21 @@ public class QueryVisitor extends AstBuilder {
         Optional<OrderBy> orderBy = Optional.empty();
         if (ctx.KW_ORDER() != null) {
             orderBy = Optional.of(new OrderBy(visit(ctx.sortItem(), SortItem.class)));
+        }
+
+        ClusterBy clusterBy = null;
+        if (ctx.clusterByClause() != null) {
+            clusterBy = (ClusterBy)visit(ctx.clusterByClause());
+        }
+
+        DistributeBy distributeBy = null;
+        if (ctx.distributeByClause() != null) {
+            distributeBy = (DistributeBy)visit(ctx.distributeByClause());
+        }
+
+        SortBy sortBy = null;
+        if (ctx.sortByClause() != null) {
+            sortBy = (SortBy)visit(ctx.sortByClause());
         }
 
         Optional<Offset> offset = Optional.empty();
@@ -212,6 +235,9 @@ public class QueryVisitor extends AstBuilder {
                     query.getGroupBy(),
                     query.getHaving(),
                     orderBy.orElse(null),
+                    clusterBy,
+                    distributeBy,
+                    sortBy,
                     offset.orElse(null),
                     limit.orElse(null)),
                 null,
@@ -225,6 +251,27 @@ public class QueryVisitor extends AstBuilder {
             orderBy.orElse(null),
             offset.orElse(null),
             limit.orElse(null));
+    }
+
+    @Override
+    public Node visitClusterByClause(ClusterByClauseContext ctx) {
+        return new ClusterBy(
+            visit(ctx.expression(), BaseExpression.class)
+        );
+    }
+
+    @Override
+    public Node visitDistributeByClause(DistributeByClauseContext ctx) {
+        return new DistributeBy(
+            visit(ctx.sortItem(), SortItem.class)
+        );
+    }
+
+    @Override
+    public Node visitSortByClause(SortByClauseContext ctx) {
+        return new SortBy(
+            visit(ctx.sortItem(), SortItem.class)
+        );
     }
 
     @Override
@@ -267,7 +314,7 @@ public class QueryVisitor extends AstBuilder {
             (BaseExpression)visit(ctx.expression()),
             Optional.ofNullable(ctx.ordering)
                 .map(this::getOrderingType)
-                .orElse(Ordering.ASC),
+                .orElse(null),
             Optional.ofNullable(ctx.nullOrdering)
                 .map(this::getNullOrderingType)
                 .orElse(NullOrdering.UNDEFINED));
@@ -300,6 +347,9 @@ public class QueryVisitor extends AstBuilder {
             visitIfPresent(ctx.where, BaseExpression.class).orElse(null),
             visitIfPresent(ctx.groupBy(), GroupBy.class).orElse(null),
             visitIfPresent(ctx.having, BaseExpression.class).orElse(null),
+            null,
+            null,
+            null,
             null,
             null,
             null);
@@ -361,7 +411,9 @@ public class QueryVisitor extends AstBuilder {
         return new SingleColumn(
             ParserHelper.getLocation(ctx),
             (BaseExpression)visit(ctx.expression()),
-            visitIfPresent(ctx.identifier(), Identifier.class).orElse(null));
+            visitIfPresent(ctx.identifier(), Identifier.class).orElse(null),
+            ctx.KW_AS() != null
+        );
     }
 
     @Override
@@ -370,11 +422,15 @@ public class QueryVisitor extends AstBuilder {
         if (ctx.columnAliases() != null) {
             aliases = visit(ctx.columnAliases().identifier(), Identifier.class);
         }
-
         return new AllColumns(
             ParserHelper.getLocation(ctx),
             visitIfPresent(ctx.atomExpression(), BaseExpression.class).orElse(null),
-            aliases);
+            aliases, ctx.KW_AS() != null);
+    }
+
+    @Override
+    public Node visitRelationDefault(RelationDefaultContext ctx) {
+        return visit(ctx.sampledRelation());
     }
 
     @Override
@@ -434,18 +490,37 @@ public class QueryVisitor extends AstBuilder {
             }
         }
 
-        JoinToken joinToken;
+        JoinToken joinToken = null;
+        boolean isOuter = ctx.joinType().KW_OUTER() != null;
         if (ctx.joinType().KW_LEFT() != null) {
-            joinToken = JoinToken.LEFT;
+            if (isOuter) {
+                joinToken = JoinToken.LEFT_OUTER;
+            } else {
+                joinToken = JoinToken.LEFT;
+            }
         } else if (ctx.joinType().KW_RIGHT() != null) {
-            joinToken = JoinToken.RIGHT;
+            if (isOuter) {
+                joinToken = JoinToken.RIGHT_OUTER;
+            } else {
+                joinToken = JoinToken.RIGHT;
+            }
         } else if (ctx.joinType().KW_FULL() != null) {
-            joinToken = JoinToken.FULL;
-        } else {
+            if (isOuter) {
+                joinToken = JoinToken.FULL_OUTER;
+            } else {
+                joinToken = JoinToken.FULL;
+            }
+        } else if (ctx.joinType().KW_INNER() != null) {
             joinToken = JoinToken.INNER;
+        } else {
+            joinToken = JoinToken.NULL;
         }
-
         return new Join(joinToken, left, right, criteria);
+    }
+
+    @Override
+    public Node visitParenthesizedRelation(ParenthesizedRelationContext context) {
+        return visit(context.relation());
     }
 
     @Override

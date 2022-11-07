@@ -51,4 +51,15 @@ public interface StatementBuilder<T extends TransformContext> {
     default <R extends GenericDialectNode> R buildGenericNode(BaseStatement source, T context) {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * 默认匹配builder处理
+     *
+     * @param source
+     * @param context
+     * @return
+     */
+    default boolean isMatch(BaseStatement source, T context) {
+        return true;
+    }
 }

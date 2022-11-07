@@ -25,6 +25,11 @@ package com.aliyun.fastmodel.core.tree.relation.join;
 public enum JoinToken {
 
     /**
+     * null join
+     */
+    NULL(""),
+
+    /**
      * inner join
      */
     INNER("INNER"),
@@ -32,15 +37,33 @@ public enum JoinToken {
      * left join
      */
     LEFT("LEFT"),
+
+    /**
+     * left outer
+     */
+    LEFT_OUTER("LEFT OUTER"),
     /**
      * right join
      */
     RIGHT("RIGHT"),
+
+    /**
+     * right outer
+     */
+    RIGHT_OUTER("RIGHT OUTER"),
     /**
      * full join
      */
     FULL("FULL"),
 
+    /**
+     * full outer
+     */
+    FULL_OUTER("FULL OUTER"),
+
+    /**
+     * cross
+     */
     CROSS("CROSS"),
 
     /**

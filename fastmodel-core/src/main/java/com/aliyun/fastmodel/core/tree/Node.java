@@ -32,7 +32,7 @@ public interface Node {
      * @param context 上下文
      * @return 遍历结果
      */
-    <R, C> R accept(AstVisitor<R, C> visitor, C context);
+    <R, C> R accept(IAstVisitor<R, C> visitor, C context);
 
     /**
      * 获取子节点内容

@@ -39,6 +39,7 @@ import com.aliyun.fastmodel.ide.spi.params.FmlParams;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.google.common.collect.ImmutableList;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @date 2021/12/21
  */
 @RestController
-@RequestMapping(value = ApiConstant.COMMAND)
+@RequestMapping(value = ApiConstant.ENGINE)
 public class CommandController {
 
     private final CommandProvider commandProvider;
@@ -68,6 +69,16 @@ public class CommandController {
         this.commandProvider = commandProvider;
         this.ideInvoker = ideInvoker;
         this.storage = storage;
+    }
+
+    @PostMapping(value = "get-image", produces = MediaType.IMAGE_PNG_VALUE)
+    public @ResponseBody
+    byte[] exportPng(FmlParamDTO plantUmlDTO) {
+        ExportSql renderFml = new ExportSql(new Identifier(DialectName.PLANTUML.name()), Optional.empty(),
+            Optional.of(plantUmlDTO.getFml()), null);
+        IdeCommand ideCommand = commandProvider.getIdeCommand(renderFml);
+        InvokeResult<byte[]> invokeResult = ideCommand.execute(renderFml);
+        return invokeResult.getData();
     }
 
     @PostMapping("/execute")

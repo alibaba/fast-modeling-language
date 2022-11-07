@@ -16,12 +16,12 @@
 
 package com.aliyun.fastmodel.core.tree.expr.literal;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 
 /**
- * Desc:
+ * base literal
  *
  * @author panguanjing
  * @date 2020/9/23
@@ -33,10 +33,8 @@ public abstract class BaseLiteral extends BaseExpression {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitLiteral(this, context);
     }
-
-
 
 }

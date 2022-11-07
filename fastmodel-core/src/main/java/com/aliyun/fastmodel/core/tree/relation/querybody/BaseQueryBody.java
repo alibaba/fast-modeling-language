@@ -16,8 +16,8 @@
 
 package com.aliyun.fastmodel.core.tree.relation.querybody;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.BaseRelation;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 
 /**
@@ -33,7 +33,7 @@ public abstract class BaseQueryBody extends BaseRelation {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
-        return  visitor.visitQueryBody(this, context);
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
+        return visitor.visitQueryBody(this, context);
     }
 }

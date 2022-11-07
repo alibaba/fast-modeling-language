@@ -64,7 +64,9 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelConstraint
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelDefine;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.RedundantConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
+import com.aliyun.fastmodel.parser.BaseTest;
 import com.aliyun.fastmodel.parser.NodeParser;
 import com.aliyun.fastmodel.parser.lexer.ReservedIdentifier;
 import com.google.common.collect.ImmutableList;
@@ -83,7 +85,7 @@ import static org.junit.Assert.assertTrue;
  * @author panguanjing
  * @date 2020/9/22
  */
-public class TableTest {
+public class TableTest extends BaseTest {
 
     NodeParser fastModelAntlrParser = new NodeParser();
 
@@ -657,7 +659,7 @@ public class TableTest {
     public void testCreateTableIssue() {
         List<ColumnDefinition> columnDefines = Lists.newArrayList(
             ColumnDefinition.builder().colName(new Identifier("c1")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.ARRAY.name()), Lists.newArrayList(
+                new GenericDataType(DataTypeEnums.ARRAY.name(), Lists.newArrayList(
                     new TypeParameter(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
                 ))).build()
         );
@@ -673,7 +675,7 @@ public class TableTest {
     public void testCreateTableIssueWithMap() {
         List<ColumnDefinition> columnDefines = Lists.newArrayList(
             ColumnDefinition.builder().colName(new Identifier("c1")).dataType(
-                new GenericDataType(new Identifier(DataTypeEnums.MAP.name()), Lists.newArrayList(
+                new GenericDataType(DataTypeEnums.MAP.name(), Lists.newArrayList(
                     new TypeParameter(DataTypeUtil.simpleType(DataTypeEnums.STRING)),
                     new TypeParameter(DataTypeUtil.simpleType(DataTypeEnums.STRING))
                 ))).build()
@@ -688,14 +690,13 @@ public class TableTest {
 
     @Test
     public void testCreateTableIssueWithArrayMap() {
-        GenericDataType dataType = new GenericDataType(new Identifier(DataTypeEnums.MAP.name()), Lists.newArrayList(
+        GenericDataType dataType = new GenericDataType(DataTypeEnums.MAP.name(), Lists.newArrayList(
             new TypeParameter(DataTypeUtil.simpleType(DataTypeEnums.STRING)),
             new TypeParameter(DataTypeUtil.simpleType(DataTypeEnums.STRING))
         ));
         List<ColumnDefinition> columnDefines = Lists.newArrayList(
             ColumnDefinition.builder().colName(new Identifier("c1")).dataType(
-                new GenericDataType(
-                    new Identifier(DataTypeEnums.ARRAY.name()),
+                new GenericDataType(DataTypeEnums.ARRAY.name(),
                     Lists.newArrayList(new TypeParameter(dataType))
                 )).build()
         );
@@ -737,10 +738,50 @@ public class TableTest {
     }
 
     @Test
+    public void testRedundantWithoutList() {
+        String fml = "CREATE DIM TABLE dim_test (\n"
+            + "     c1 BIGINT COMMENT 'comment',\n"
+            + "     user_id STRING COMMENT 'comment',\n"
+            + "     user_name STRING COMMENT 'user_name' WITH ('redundant'='cc.user_name'),\n"
+            + "     age BIGINT COMMENT 'user_name' WITH ('redundant'='cc.user_age'),\n"
+            + "     user_info STRING COMMENT 'comment' WITH ('source' = 'tbcdm.member.user_info'),\n"
+            + "     constraint cc REDUNDANT user_id REFERENCES t1.user_id\n"
+            + ")";
+        CreateDimTable createDimTable = fastModelAntlrParser.parseStatement(fml);
+        List<BaseConstraint> constraintStatements = createDimTable.getConstraintStatements();
+        assertEquals(1, constraintStatements.size());
+        RedundantConstraint redundantConstraint = (RedundantConstraint)constraintStatements.get(0);
+        assertEquals(redundantConstraint.getColumn(), new Identifier("user_id"));
+        QualifiedName joinColumn = redundantConstraint.getJoinColumn();
+        assertEquals(joinColumn.getSuffix(), "user_id");
+    }
+
+    @Test
+    public void testRedundantDollar() {
+        String fml = "CREATE DIM TABLE dim_test (\n"
+            + "     c1 BIGINT COMMENT 'comment',\n"
+            + "     user_id STRING COMMENT 'comment',\n"
+            + "     user_name STRING COMMENT 'user_name' WITH ('redundant'='cc.user_name'),\n"
+            + "     age BIGINT COMMENT 'user_name' WITH ('redundant'='cc.user_age'),\n"
+            + "     user_info STRING COMMENT 'comment' WITH ('source' = 'tbcdm.member.user_info'),\n"
+            + "     constraint cc REDUNDANT user_id REFERENCES t1.`$` (user_name, user_age)\n"
+            + ")";
+        CreateDimTable createDimTable = fastModelAntlrParser.parseStatement(fml);
+        List<BaseConstraint> constraintStatements = createDimTable.getConstraintStatements();
+        assertEquals(1, constraintStatements.size());
+        RedundantConstraint redundantConstraint = (RedundantConstraint)constraintStatements.get(0);
+        assertEquals(redundantConstraint.getColumn(), new Identifier("user_id"));
+        QualifiedName joinColumn = redundantConstraint.getJoinColumn();
+        assertEquals(joinColumn.getSuffix(), "$");
+        List<Identifier> redundantColumns = redundantConstraint.getRedundantColumns();
+        assertEquals(2, redundantColumns.size());
+    }
+
+    @Test
     public void testCloneTable() {
         String fml = "create dim table clone_table1 like source_table1;";
         CloneTable cloneTable = fastModelAntlrParser.parseStatement(fml);
-        TableDetailType tableDetailType = cloneTable.getTableDetailType();
+        ITableDetailType tableDetailType = cloneTable.getTableDetailType();
         assertEquals(tableDetailType, TableDetailType.NORMAL_DIM);
         QualifiedName sourceTable = cloneTable.getSourceTable();
         assertEquals(sourceTable.getSuffix(), "source_table1");
@@ -764,7 +805,7 @@ public class TableTest {
         assertEquals(baseStatement.toString(), "CREATE DIM TABLE a1 \n"
             + "(\n"
             + "   a BIGINT,\n"
-            + "   b CUSTOM('abc'),\n"
+            + "   b abc,\n"
             + "   INDEX abc (a)\n"
             + ")");
     }

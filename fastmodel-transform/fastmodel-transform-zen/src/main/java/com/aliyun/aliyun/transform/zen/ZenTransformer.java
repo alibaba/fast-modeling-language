@@ -36,6 +36,7 @@ import com.aliyun.fastmodel.transform.api.dialect.Dialect;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import com.google.auto.service.AutoService;
 
 /**
@@ -45,7 +46,7 @@ import com.google.auto.service.AutoService;
  * @date 2021/8/16
  */
 @AutoService(Transformer.class)
-@Dialect(DialectName.ZEN)
+@Dialect(DialectName.Constants.ZEN)
 public class ZenTransformer implements Transformer<Node> {
 
     private static final ZenParser ZEN_PARSER = new ZenParserImpl();
@@ -68,7 +69,7 @@ public class ZenTransformer implements Transformer<Node> {
             throw new UnsupportedOperationException("unsupported source expect statement:" + source.getClass());
         }
         StatementBuilder builder = BuilderFactory.getInstance().getBuilder(baseStatement,
-            new DialectMeta(DialectName.ZEN, DialectMeta.DEFAULT_VERSION));
+            new DialectMeta(DialectName.ZEN, IVersion.getDefault()), context);
         return builder.build(baseStatement, context);
     }
 }

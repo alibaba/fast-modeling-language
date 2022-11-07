@@ -19,17 +19,15 @@ package com.aliyun.fastmodel.core.tree.relation;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.BaseRelation;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
-import com.aliyun.fastmodel.core.tree.BaseRelation;
-import com.aliyun.fastmodel.core.tree.relation.join.JoinToken;
 import com.aliyun.fastmodel.core.tree.relation.join.JoinCriteria;
+import com.aliyun.fastmodel.core.tree.relation.join.JoinToken;
 import com.google.common.collect.ImmutableList;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -89,7 +87,7 @@ public class Join extends BaseRelation {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitJoin(this, context);
     }
 }

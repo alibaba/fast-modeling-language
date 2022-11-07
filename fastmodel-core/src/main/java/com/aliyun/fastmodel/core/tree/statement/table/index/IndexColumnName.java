@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.table.index;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -35,7 +35,7 @@ import lombok.Getter;
  */
 @Getter
 @EqualsAndHashCode
-public class IndexColumnName extends AbstractNode {
+public class IndexColumnName extends AbstractFmlNode {
 
     private final Identifier columnName;
 

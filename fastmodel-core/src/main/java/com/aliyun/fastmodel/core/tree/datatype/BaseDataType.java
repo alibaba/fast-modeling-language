@@ -16,7 +16,7 @@
 
 package com.aliyun.fastmodel.core.tree.datatype;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 
@@ -28,6 +28,10 @@ import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
  */
 public abstract class BaseDataType extends BaseExpression {
 
+    public BaseDataType() {
+        this(null, null);
+    }
+
     public BaseDataType(NodeLocation location, String origin) {
         super(location, origin);
     }
@@ -37,10 +41,10 @@ public abstract class BaseDataType extends BaseExpression {
      *
      * @return 类型名字
      */
-    public abstract DataTypeEnums getTypeName();
+    public abstract IDataTypeName getTypeName();
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitDataType(this, context);
     }
 }

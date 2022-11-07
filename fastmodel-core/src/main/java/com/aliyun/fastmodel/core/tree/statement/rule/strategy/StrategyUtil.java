@@ -48,6 +48,11 @@ import static com.google.common.collect.Iterables.isEmpty;
  */
 public class StrategyUtil {
 
+    public static final int WITHOUT_COLUMN_LENGTH = 2;
+    public static final int WITH_COLUMN_LENGTH = 3;
+    public static final int TABLE_INDEX = 1;
+    public static final int MATCH_COLUMN_INDEX = 2;
+
     /**
      * 转换表达式
      *
@@ -107,17 +112,17 @@ public class StrategyUtil {
                 }
                 TableOrColumn tableOrColumn = (TableOrColumn)baseExpression;
                 if (baseFunctionName == BaseFunctionName.IN_TABLE) {
-                    if (arguments.size() < 2 || arguments.size() > 3) {
+                    if (arguments.size() < WITHOUT_COLUMN_LENGTH || arguments.size() > WITH_COLUMN_LENGTH) {
                         //非法的格式
                         return null;
                     }
-                    if (arguments.size() == 2) {
+                    if (arguments.size() == WITHOUT_COLUMN_LENGTH) {
                         TableOrColumn tableOrColumn1 = (TableOrColumn)arguments.get(1);
                         return new InTableFunction(tableOrColumn.getQualifiedName(), tableOrColumn1.getQualifiedName(),
                             null);
-                    } else if (arguments.size() == 3) {
-                        TableOrColumn tableOrColumn1 = (TableOrColumn)arguments.get(1);
-                        TableOrColumn tableOrColumn2 = (TableOrColumn)arguments.get(2);
+                    } else if (arguments.size() == WITH_COLUMN_LENGTH) {
+                        TableOrColumn tableOrColumn1 = (TableOrColumn)arguments.get(TABLE_INDEX);
+                        TableOrColumn tableOrColumn2 = (TableOrColumn)arguments.get(MATCH_COLUMN_INDEX);
                         return new InTableFunction(tableOrColumn.getQualifiedName(), tableOrColumn1.getQualifiedName(),
                             new Identifier(tableOrColumn2.getQualifiedName().getSuffix()));
                     }

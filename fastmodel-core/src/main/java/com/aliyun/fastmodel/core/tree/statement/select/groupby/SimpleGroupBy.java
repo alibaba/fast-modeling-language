@@ -18,10 +18,9 @@ package com.aliyun.fastmodel.core.tree.statement.select.groupby;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,7 +35,6 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = false)
 public class SimpleGroupBy extends GroupingElement {
-
 
     private final List<BaseExpression> columns;
 
@@ -55,7 +53,7 @@ public class SimpleGroupBy extends GroupingElement {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
-        return visitor.visitSimpleGroupBy(this,context);
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
+        return visitor.visitSimpleGroupBy(this, context);
     }
 }

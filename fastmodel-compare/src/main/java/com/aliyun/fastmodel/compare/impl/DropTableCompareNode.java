@@ -18,7 +18,6 @@ package com.aliyun.fastmodel.compare.impl;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.compare.BaseCompareNode;
 import com.aliyun.fastmodel.compare.CompareStrategy;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;

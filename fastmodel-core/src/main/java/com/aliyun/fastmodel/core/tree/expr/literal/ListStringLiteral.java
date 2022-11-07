@@ -18,11 +18,10 @@ package com.aliyun.fastmodel.core.tree.expr.literal;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * ListStringLiteral
@@ -47,7 +46,7 @@ public class ListStringLiteral extends BaseLiteral {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitListStringLiteral(this, context);
     }
 

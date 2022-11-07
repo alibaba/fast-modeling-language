@@ -1,24 +1,16 @@
 /*
- * Copyright 2021-2022 Alibaba Group Holding Ltd.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright (c)  2021. Aliyun.com All right reserved. This software is the
+ * confidential and proprietary information of Aliyun.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Aliyun.com.
  */
 
 package com.aliyun.fastmodel.core.tree.statement.dqc.check;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
@@ -33,7 +25,7 @@ import lombok.Getter;
  * @date 2021/6/7
  */
 @Getter
-public abstract class BaseCheckElement extends AbstractNode {
+public abstract class BaseCheckElement extends AbstractFmlNode {
 
     protected final Identifier checkName;
 
@@ -48,9 +40,9 @@ public abstract class BaseCheckElement extends AbstractNode {
     }
 
     /**
-     * get bool expression for every check element
+     * return baseExpression
      *
-     * @return {@link BaseExpression}
+     * @return
      */
     public abstract BaseExpression getBoolExpression();
 

@@ -22,12 +22,11 @@ import java.util.stream.Collectors;
 import com.aliyun.fastmodel.converter.spi.ConvertContext;
 import com.aliyun.fastmodel.converter.spi.StatementConverter;
 import com.aliyun.fastmodel.conveter.dqc.BaseDqcStatementConverter;
-import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.conveter.dqc.util.FmlTableUtil;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.statement.dqc.CreateDqcRule;
 import com.aliyun.fastmodel.core.tree.statement.dqc.check.BaseCheckElement;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
-import com.aliyun.fastmodel.core.tree.statement.rule.PartitionSpec;
 import com.aliyun.fastmodel.core.tree.statement.rule.RuleDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.util.RuleUtil;
@@ -40,12 +39,14 @@ import com.google.auto.service.AutoService;
  * @date 2021/5/31
  */
 @AutoService(StatementConverter.class)
-public class CreateTableConverter extends BaseDqcStatementConverter<CreateTable> {
+public class CreateTableConverter extends BaseDqcStatementConverter<CreateTable,CreateDqcRule> {
 
     @Override
-    public BaseStatement convert(CreateTable source, ConvertContext convertContext) {
-        List<RuleDefinition> list = toRuleDefinition(source, true).stream().filter(x -> x.isEnable()).filter(
-            distinctByKey(RuleDefinition::getRuleName)).
+    public CreateDqcRule convert(CreateTable source, ConvertContext convertContext) {
+        List<RuleDefinition> list = toRuleDefinition(source, true, convertContext).stream().filter(x -> x.isEnable()).filter(
+                distinctByKey(ruleDefinition -> {
+                    return getDistinctKey(ruleDefinition);
+                })).
             collect(Collectors.toList());
         if (list.isEmpty()) {
             //没有规则不需要生成
@@ -59,28 +60,11 @@ public class CreateTableConverter extends BaseDqcStatementConverter<CreateTable>
                 CreateElement.builder()
                     .qualifiedName(rulesName)
                     .build())
-            .partitionSpecList(toPartitionList(source))
+            .partitionSpecList(FmlTableUtil.getPartitionSpec(source))
             .ruleDefinitions(baseCheckElements)
             .build();
         return createRules;
     }
 
-    /**
-     * 分区列表
-     *
-     * @param source
-     * @return
-     */
-    private List<PartitionSpec> toPartitionList(CreateTable source) {
-        boolean partitionEmpty = source.isPartitionEmpty();
-        if (partitionEmpty) {
-            return null;
-        }
-        return source.getPartitionedBy().getColumnDefinitions().stream().map(
-            x -> {
-                return new PartitionSpec(x.getColName(), null);
-            }
-        ).collect(Collectors.toList());
-    }
 
 }

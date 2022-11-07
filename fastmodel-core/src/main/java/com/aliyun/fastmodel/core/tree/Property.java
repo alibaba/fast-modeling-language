@@ -26,7 +26,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Desc:
+ * Property
  *
  * @author panguanjing
  * @date 2020/11/6
@@ -56,8 +56,8 @@ public class Property extends AbstractNode {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
         Property property = (Property)o;
         return StringUtils.equalsIgnoreCase(name, property.name) && Objects.equal(
             valueLiteral, property.valueLiteral);
@@ -74,7 +74,7 @@ public class Property extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitProperty(this, context);
     }
 }

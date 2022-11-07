@@ -37,7 +37,7 @@ import com.google.auto.service.AutoService;
  * @date 2021/1/29
  */
 @AutoService(Transformer.class)
-@Dialect(DialectName.HIVE)
+@Dialect(DialectName.Constants.HIVE)
 public class HiveTransformer implements Transformer<BaseStatement> {
     HiveLanguageParser hiveLanguageParser = new HiveLanguageParser();
 
@@ -46,7 +46,7 @@ public class HiveTransformer implements Transformer<BaseStatement> {
         if (source == null) {
             throw new IllegalArgumentException("source can't be null");
         }
-        StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, DialectMeta.getHive());
+        StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, DialectMeta.getHive(), context);
         if (builder == null) {
             throw new UnsupportedOperationException(
                 "UnSupported statement transform with target Dialect, source: " + source.getClass());

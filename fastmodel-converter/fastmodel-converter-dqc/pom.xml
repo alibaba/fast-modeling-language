@@ -53,6 +53,12 @@
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

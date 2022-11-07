@@ -35,7 +35,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/9/4
  */
-@Dialect(DialectName.FML)
+@Dialect(DialectName.Constants.FML)
 @AutoService(NodeCompare.class)
 public class FmlNodeCompare implements NodeCompare {
 

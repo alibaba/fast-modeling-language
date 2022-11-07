@@ -22,6 +22,7 @@ import java.util.Map;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
+import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -52,23 +53,28 @@ public class ReverseContext {
     /**
      * 逆向时设置的目标表类型
      */
-    private TableDetailType reverseTableType;
+    private final TableDetailType reverseTableType;
 
     /**
      * 扩展信息
      */
-    private List<Property> properties;
+    private final List<Property> properties;
 
     /**
      * columns
      */
-    private Map<Identifier, List<Property>> columnProperties;
+    private final Map<Identifier, ColumnDefinition> columnProperties;
 
     /**
      * 关系转换策略, FMl不仅提供了DDL模式的处理，还提供了Script的语句
      * 比如关系的转换的策略, 默认提供的是DDL模式，但在一些设计的场景，需要转换为Script模式进行处理。
      */
-    private ReverseTargetStrategy reverseRelationStrategy;
+    private final ReverseTargetStrategy reverseRelationStrategy;
+
+    /**
+     * 逆向时，有些时候需要将多个语句合并到一个语句里。
+     */
+    private final boolean merge;
 
     /**
      * 使用Builder进行传递
@@ -81,6 +87,7 @@ public class ReverseContext {
         reverseTableType = tBuilder.reverseTableType;
         properties = tBuilder.properties;
         columnProperties = tBuilder.columnProperties;
+        merge = tBuilder.merge;
         this.reverseRelationStrategy = tBuilder.reverseTargetStrategy;
     }
 
@@ -108,12 +115,25 @@ public class ReverseContext {
         /**
          * 列的属性转换
          */
-        private Map<Identifier, List<Property>> columnProperties = Maps.newHashMapWithExpectedSize(16);
+        private Map<Identifier, ColumnDefinition> columnProperties = Maps.newHashMapWithExpectedSize(16);
 
         /**
          * 关系转换的目标策略
          */
         private ReverseTargetStrategy reverseTargetStrategy = ReverseTargetStrategy.DDL;
+
+        private boolean merge;
+
+        /**
+         * 是否需要合并
+         *
+         * @param merge
+         * @return
+         */
+        public T merge(boolean merge) {
+            this.merge = merge;
+            return (T)this;
+        }
 
         public T reverseTableType(TableDetailType tableDetailType) {
             reverseTableType = tableDetailType;
@@ -130,12 +150,12 @@ public class ReverseContext {
             return (T)this;
         }
 
-        public T columnProperty(Identifier columnName, List<Property> properties) {
-            columnProperties.put(columnName, properties);
+        public T columnProperty(ColumnDefinition columnDefinition) {
+            columnProperties.put(columnDefinition.getColName(), columnDefinition);
             return (T)this;
         }
 
-        public T columnsProperty(Map<Identifier, List<Property>> columnProperties) {
+        public T columnsProperty(Map<Identifier, ColumnDefinition> columnProperties) {
             this.columnProperties = columnProperties;
             return (T)this;
         }

@@ -42,7 +42,7 @@ import org.apache.commons.collections.CollectionUtils;
  * @author panguanjing
  * @date 2021/12/15
  */
-@BuilderAnnotation(values = {RefRelation.class}, dialect = DialectName.GRAPH)
+@BuilderAnnotation(values = {RefRelation.class}, dialect = DialectName.Constants.GRAPH)
 @AutoService(StatementBuilder.class)
 public class RefRelationBuilder implements StatementBuilder<TransformContext> {
 
@@ -70,12 +70,12 @@ public class RefRelationBuilder implements StatementBuilder<TransformContext> {
         maps.put(TableEdge.RIGHT_COMMENT, relation.getRight().getCommentValue());
         String targetVertex = right.getMainName().toString();
         TableEdge build = TableEdge.builder()
-                                   .id(relation.getQualifiedName().toString())
-                                   .label(identifier)
-                                   .source(sourceVertex)
-                                   .target(targetVertex)
-                                   .maps(maps)
-                                   .build();
+            .id(relation.getQualifiedName().toString())
+            .label(identifier)
+            .source(sourceVertex)
+            .target(targetVertex)
+            .maps(maps)
+            .build();
         return new GenericDialectNode<>(build);
     }
 }

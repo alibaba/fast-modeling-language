@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.aliyun.fastmodel.core.formatter.ExpressionFormatter;
 import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.google.common.collect.ImmutableList;
@@ -62,7 +62,7 @@ public abstract class BaseExpression extends AbstractNode {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitExpression(this, context);
     }
 

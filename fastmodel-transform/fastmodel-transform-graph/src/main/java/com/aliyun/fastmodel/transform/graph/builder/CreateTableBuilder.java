@@ -42,7 +42,7 @@ import com.google.auto.service.AutoService;
     CreateAdsTable.class,
     CreateDwsTable.class,
     CreateDimTable.class,
-    CreateFactTable.class}, dialect = DialectName.GRAPH)
+    CreateFactTable.class}, dialect = DialectName.Constants.GRAPH)
 @AutoService(StatementBuilder.class)
 public class CreateTableBuilder implements StatementBuilder<TransformContext> {
 

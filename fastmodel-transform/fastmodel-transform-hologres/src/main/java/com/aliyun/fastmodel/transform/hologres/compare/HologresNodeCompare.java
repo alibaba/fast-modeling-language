@@ -31,7 +31,7 @@ import com.google.auto.service.AutoService;
  * @date 2021/9/4
  */
 @AutoService(NodeCompare.class)
-@Dialect(DialectName.HOLOGRES)
+@Dialect(value = DialectName.Constants.HOLOGRES)
 public class HologresNodeCompare implements NodeCompare {
 
     @Override

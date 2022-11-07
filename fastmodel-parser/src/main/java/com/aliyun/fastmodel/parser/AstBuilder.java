@@ -61,8 +61,6 @@ import com.aliyun.fastmodel.core.tree.expr.atom.SimpleCaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.SubQueryExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.atom.WhenClause;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddEndExpression;
-import com.aliyun.fastmodel.core.tree.expr.atom.datetime.DateTimeAddStartExpression;
 import com.aliyun.fastmodel.core.tree.expr.enums.ArithmeticOperator;
 import com.aliyun.fastmodel.core.tree.expr.enums.BitOperator;
 import com.aliyun.fastmodel.core.tree.expr.enums.ComparisonOperator;
@@ -229,8 +227,9 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
 
     public static final String IF = "if";
     public static final String COALESCE = "coalesce";
-    public static final String DATETIME_ADD_END = "DATETIME_ADD_END";
-    public static final String DATETIME_ADD_START = "DATETIME_ADD_START";
+    public static final int IF_FUNCTION_LENGTH = 3;
+    public static final int ELSE_EXP_INDEX = 2;
+    public static final int START_DATE_INDEX = 2;
 
     @Override
     public Node visitRoot(RootContext ctx) {
@@ -366,8 +365,8 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
 
         if (name.toString().equalsIgnoreCase(IF)) {
             BaseExpression elseExpression = null;
-            if (ctx.expression().size() == 3) {
-                elseExpression = (BaseExpression)visit(ctx.expression(2));
+            if (ctx.expression().size() == IF_FUNCTION_LENGTH) {
+                elseExpression = (BaseExpression)visit(ctx.expression(ELSE_EXP_INDEX));
             }
             return new IfExpression(
                 getLocation(ctx),
@@ -382,46 +381,6 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
                 visit(ctx.expression(), BaseExpression.class));
         }
 
-        if (DATETIME_ADD_START.equalsIgnoreCase(name.toString())) {
-            BaseExpression visit = (BaseExpression)visit(ctx.expression(0));
-            IntervalExpression intervalExpression = (IntervalExpression)visit(ctx.expression(1));
-            if (ctx.expression().size() == 2) {
-                return new DateTimeAddStartExpression(
-                    getLocation(ctx),
-                    getOrigin(ctx),
-                    visit,
-                    intervalExpression, null
-                );
-            } else if (ctx.expression().size() == 3) {
-                return new DateTimeAddStartExpression(
-                    getLocation(ctx),
-                    getOrigin(ctx),
-                    visit,
-                    intervalExpression,
-                    (StringLiteral)visit(ctx.expression(2))
-                );
-            }
-        }
-        if (DATETIME_ADD_END.equalsIgnoreCase(name.toString())) {
-            BaseExpression visit = (BaseExpression)visit(ctx.expression(0));
-            IntervalExpression intervalExpression = (IntervalExpression)visit(ctx.expression(1));
-            if (ctx.expression().size() == 2) {
-                return new DateTimeAddEndExpression(
-                    getLocation(ctx),
-                    getOrigin(ctx),
-                    visit,
-                    intervalExpression, null
-                );
-            } else if (ctx.expression().size() == 3) {
-                return new DateTimeAddEndExpression(
-                    getLocation(ctx),
-                    getOrigin(ctx),
-                    visit,
-                    intervalExpression,
-                    (StringLiteral)visit(ctx.expression(2))
-                );
-            }
-        }
         List<BaseExpression> list = visit(ctx.expression(), BaseExpression.class);
         OrderBy orderBy = null;
         if (ctx.KW_ORDER() != null) {
@@ -713,7 +672,7 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
             .map(DataTypeParameter.class::cast)
             .collect(toList());
 
-        return new GenericDataType(getLocation(ctx), getOrigin(ctx), new Identifier(ctx.name.getText()), parameters);
+        return new GenericDataType(getLocation(ctx), getOrigin(ctx), ctx.name.getText(), parameters);
     }
 
     @Override
@@ -723,7 +682,7 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
             .map(DataTypeParameter.class::cast)
             .collect(toList());
         StringLiteral stringLiteral = (StringLiteral)visit(ctx.string());
-        return new GenericDataType(getLocation(ctx), getOrigin(ctx), new Identifier(stringLiteral.getValue()),
+        return new GenericDataType(getLocation(ctx), getOrigin(ctx), stringLiteral.getValue(),
             parameters);
     }
 
@@ -739,19 +698,21 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
 
     @Override
     public Node visitListType(ListTypeContext ctx) {
+        String text = ctx.KW_ARRAY().getText();
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.KW_ARRAY().getText(), false),
+            text,
             ImmutableList.of(new TypeParameter((BaseDataType)visit(ctx.typeDbCol()))));
     }
 
     @Override
     public Node visitDoublePrecisionType(DoublePrecisionTypeContext ctx) {
+        String text = ctx.KW_DOUBLE().getText();
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.KW_DOUBLE().getText(), false),
+            text,
             ImmutableList.of());
     }
 
@@ -771,10 +732,11 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
 
     @Override
     public Node visitMapType(MapTypeContext ctx) {
+        String text = ctx.KW_MAP().getText();
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.KW_MAP().getText(), false),
+            text,
             ImmutableList.of(
                 new TypeParameter((BaseDataType)visit(ctx.key)),
                 new TypeParameter((BaseDataType)visit(ctx.value))));

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.aliyun.fastmodel.compare.impl.BaseCompareNode;
 import com.aliyun.fastmodel.compare.impl.CompositeCompareNode;
 import com.aliyun.fastmodel.compare.impl.CreateTableCompareNode;
 import com.aliyun.fastmodel.compare.impl.DropTableCompareNode;

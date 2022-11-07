@@ -66,9 +66,12 @@ public class DiffUtilsTest {
 
     @Test
     public void testDiffDemo() {
-        Patch<String> diff = DiffUtils.diff(Lists.newArrayList("a", "b", "c", "d", "e"),
-            Lists.newArrayList("b", "a", "d", "e"));
-        diff.getDeltas();
+        Patch<String> diff = DiffUtils.diff(Lists.newArrayList("b", "a", "d", "c", "f", "e", "h", "g"),
+            Lists.newArrayList("h", "g", "f", "e", "d", "c", "b", "a"));
+        List<AbstractDelta<String>> deltas = diff.getDeltas();
+        for (AbstractDelta<String> d : deltas) {
+            System.out.println(d.toString());
+        }
     }
 
     @Test

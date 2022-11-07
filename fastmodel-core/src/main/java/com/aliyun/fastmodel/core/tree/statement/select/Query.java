@@ -18,18 +18,18 @@ package com.aliyun.fastmodel.core.tree.statement.select;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
+import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.relation.querybody.BaseQueryBody;
-import com.aliyun.fastmodel.core.tree.Node;
-import com.aliyun.fastmodel.core.tree.statement.BaseQueryStatement;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
 import com.aliyun.fastmodel.core.tree.statement.select.order.OrderBy;
 import com.google.common.collect.ImmutableList;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Desc:
@@ -40,7 +40,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
-public class Query extends BaseQueryStatement {
+public class Query extends BaseStatement {
 
     /**
      * with
@@ -81,7 +81,7 @@ public class Query extends BaseQueryStatement {
     public Query(NodeLocation nodeLocation, String origin, With with, BaseQueryBody queryBody,
                  OrderBy orderBy,
                  Offset offset, Node limit) {
-        super(nodeLocation, origin, null);
+        super(nodeLocation, origin);
         this.with = with;
         this.queryBody = queryBody;
         this.orderBy = orderBy;
@@ -91,7 +91,7 @@ public class Query extends BaseQueryStatement {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitQuery(this, context);
     }
 

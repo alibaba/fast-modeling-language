@@ -40,7 +40,9 @@ public class CreateDimTableTest {
     @Test
     public void testGetChildren() {
         CreateDimTable createDimTable =
-            CreateDimTable.builder().tableName(QualifiedName.of("a.b")).columns(
+            CreateDimTable.builder()
+                .createOrReplace(true)
+                .tableName(QualifiedName.of("a.b")).columns(
                 ImmutableList.of(
                     ColumnDefinition.builder().colName(new Identifier("a")).dataType(DataTypeUtil.simpleType(
                         DataTypeEnums.BIGINT)).build()
@@ -49,6 +51,7 @@ public class CreateDimTableTest {
 
         List<? extends Node> children = createDimTable.getChildren();
         assertEquals(children.size(), 2);
+        assertEquals(createDimTable.getCreateElement().getCreateOrReplace(), true);
 
     }
 }

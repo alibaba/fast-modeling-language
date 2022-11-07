@@ -46,6 +46,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
+import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameColonTypeContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameTypeConstraintContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameTypeOrConstraintListContext;
@@ -119,11 +120,13 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
             if (ctx.tableComment() != null) {
                 comment = (Comment)visit(ctx.tableComment());
             }
+            List<Property> all = Lists.newArrayList(reverseContext.getProperties() == null ? Lists.newArrayList() : reverseContext.getProperties());
             List<Property> properties = ImmutableList.of();
             if (ctx.tablePropertiesPrefixed() != null) {
                 properties = ParserHelper.visit(this,
                     ctx.tablePropertiesPrefixed().tableProperties().tablePropertiesList().keyValueProperty(),
                     Property.class);
+                all.addAll(properties);
             }
             ColumnNameTypeOrConstraintListContext columnNameTypeOrConstraintListContext
                 = ctx.columnNameTypeOrConstraintList();
@@ -162,7 +165,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
                 .constraints(constraints)
                 .partition(partitionBy)
                 .comment(comment)
-                .properties(properties)
+                .properties(all)
                 .build();
         }
     }
@@ -229,6 +232,18 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitColumnNameColonType(ColumnNameColonTypeContext ctx) {
+        Identifier identifier = (Identifier)visit(ctx.identifier());
+        BaseDataType baseDataType = (BaseDataType)visit(ctx.colType());
+        Comment comment = null;
+        if (ctx.StringLiteral() != null) {
+            StringLiteral stringLiteral = getStringLiteral(ctx.StringLiteral());
+            comment = new Comment(stringLiteral.getValue());
+        }
+        return new Field(identifier, baseDataType, comment);
+    }
+
+    @Override
     public Node visitColType(HiveParser.ColTypeContext ctx) {
         return visit(ctx.type_db_col());
     }
@@ -239,7 +254,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
             .map(this::visit)
             .map(DataTypeParameter.class::cast)
             .collect(toList());
-        return new GenericDataType(getLocation(ctx), getOrigin(ctx), new Identifier(ctx.name.getText()), parameters);
+        return new GenericDataType(getLocation(ctx), getOrigin(ctx), ctx.name.getText(), parameters);
     }
 
     @Override
@@ -252,7 +267,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.KW_ARRAY().getText(), false),
+            ctx.KW_ARRAY().getText(),
             ImmutableList.of(new TypeParameter((BaseDataType)visit(ctx.type_db_col()))));
     }
 
@@ -261,7 +276,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            new Identifier(ctx.KW_MAP().getText(), false),
+            ctx.KW_MAP().getText(),
             ImmutableList.of(
                 new TypeParameter((BaseDataType)visit(ctx.key)),
                 new TypeParameter((BaseDataType)visit(ctx.value))));
@@ -272,6 +287,9 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         List<Field> list = ParserHelper.visit(this, ctx.columnNameColonTypeList().columnNameColonType(), Field.class);
         return new RowDataType(list);
     }
+
+
+
 
     private Boolean isPrimary(BaseConstraint baseConstraint) {
         return baseConstraint instanceof PrimaryConstraint;

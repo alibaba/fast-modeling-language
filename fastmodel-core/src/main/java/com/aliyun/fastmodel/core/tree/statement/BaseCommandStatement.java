@@ -19,7 +19,7 @@ package com.aliyun.fastmodel.core.tree.statement;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.AstVisitor;
-import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.BaseFmlStatement;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
@@ -34,7 +34,7 @@ import lombok.Getter;
  */
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public abstract class BaseCommandStatement extends BaseStatement {
+public abstract class BaseCommandStatement extends BaseFmlStatement {
 
     protected final List<Property> properties;
 

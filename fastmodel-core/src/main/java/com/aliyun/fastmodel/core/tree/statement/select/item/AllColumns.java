@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.select.item;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
@@ -43,18 +43,21 @@ public class AllColumns extends SelectItem {
 
     private final BaseExpression target;
 
+    private final boolean existAs;
+
     public AllColumns(BaseExpression target) {
         this(target, null);
     }
 
     public AllColumns(BaseExpression target, List<Identifier> aliases) {
-        this(null, target, aliases);
+        this(null, target, aliases, false);
     }
 
-    public AllColumns(NodeLocation location, BaseExpression target, List<Identifier> aliases) {
+    public AllColumns(NodeLocation location, BaseExpression target, List<Identifier> aliases, boolean existAs) {
         super(location);
         this.aliases = aliases;
         this.target = target;
+        this.existAs = existAs;
     }
 
     @Override
@@ -68,7 +71,7 @@ public class AllColumns extends SelectItem {
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitAllColumns(this, context);
     }
 
@@ -81,8 +84,10 @@ public class AllColumns extends SelectItem {
         }
         builder.append("*");
 
-        if (!aliases.isEmpty()) {
-            builder.append(" (");
+        if (aliases != null && !aliases.isEmpty()) {
+            String separator = existAs ? " AS " : " ";
+            builder.append(separator);
+            builder.append("(");
             Joiner.on(", ").appendTo(builder, aliases);
             builder.append(")");
         }

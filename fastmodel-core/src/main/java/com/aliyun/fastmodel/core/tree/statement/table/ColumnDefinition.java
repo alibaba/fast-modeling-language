@@ -61,12 +61,12 @@ public class ColumnDefinition extends TableElement {
     private final Comment comment;
 
     /**
-     * 是否为主键
+     * 是否为主键,支持设置
      */
-    private final Boolean primary;
+    private Boolean primary;
 
     /**
-     * 是否为空
+     * 是否为空, 支持未来设置
      */
     private Boolean notNull;
 
@@ -132,8 +132,12 @@ public class ColumnDefinition extends TableElement {
         return columnProperties == null || columnProperties.isEmpty();
     }
 
-    public void setNotNull(Boolean b) {
-        notNull = true;
+    public void setNotNull(Boolean notNull) {
+        this.notNull = notNull;
+    }
+
+    public void setPrimary(Boolean primary) {
+        this.primary = primary;
     }
 
     public static class ColumnBuilder {

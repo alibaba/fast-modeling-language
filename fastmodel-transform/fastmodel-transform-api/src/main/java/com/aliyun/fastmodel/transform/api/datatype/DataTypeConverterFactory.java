@@ -44,8 +44,8 @@ public class DataTypeConverterFactory {
             transformerMap.put(dialectKey, transformer);
             //default key put
             String defaultKey = String.format(FORMAT,
-                transformer.getSourceDialect().getName(),
-                transformer.getTargetDialect().getName());
+                transformer.getSourceDialect().getDialectName(),
+                transformer.getTargetDialect().getDialectName());
             transformerMap.put(defaultKey, transformer);
         }
     }
@@ -58,7 +58,7 @@ public class DataTypeConverterFactory {
         String f = String.format(FORMAT, source, target);
         DataTypeConverter dataTypeTransformer = transformerMap.get(f);
         if (dataTypeTransformer == null) {
-            return transformerMap.get(String.format(FORMAT, source.getName(), target.getName()));
+            return transformerMap.get(String.format(FORMAT, source.getDialectName(), target.getDialectName()));
         }
         return dataTypeTransformer;
     }

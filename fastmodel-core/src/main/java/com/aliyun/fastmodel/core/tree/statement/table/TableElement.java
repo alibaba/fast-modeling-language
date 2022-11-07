@@ -16,8 +16,7 @@
 
 package com.aliyun.fastmodel.core.tree.statement.table;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
-import com.aliyun.fastmodel.core.tree.AstVisitor;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 
 /**
  * 表元素信息
@@ -25,9 +24,6 @@ import com.aliyun.fastmodel.core.tree.AstVisitor;
  * @author panguanjing
  * @date 2020/11/6
  */
-public abstract class TableElement extends AbstractNode {
-    @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
-        return visitor.visitTableElement(this, context);
-    }
+public abstract class TableElement extends AbstractFmlNode {
+
 }

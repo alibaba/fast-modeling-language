@@ -105,7 +105,7 @@ public abstract class BaseConverterFactory {
     /**
      * 内部的工厂类的实现，使用autoService的方式
      */
-    static class ConverterFactoryImpl extends BaseConverterFactory {
+    private static class ConverterFactoryImpl extends BaseConverterFactory {
 
         protected Map<String, StatementConverter> maps = new ConcurrentHashMap<>();
 

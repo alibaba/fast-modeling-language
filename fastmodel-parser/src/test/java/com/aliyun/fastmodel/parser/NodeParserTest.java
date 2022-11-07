@@ -60,7 +60,7 @@ public class NodeParserTest {
     }
 
     @Test
-    public void testMultiParse_NoException() {
+    public void testMultiParseNoException() {
         String sql = "create dim table a (b bigint) comment 'comment'";
         List<BaseStatement> statements = nodeParser.multiParse(new DomainLanguage(sql));
         assertEquals(1, statements.size());
@@ -74,7 +74,7 @@ public class NodeParserTest {
     }
 
     @Test
-    public void testExtract_TableColumn() {
+    public void testExtractTableColumn() {
         String expression = "table_code.field1 is null";
         List<TableOrColumn> extract = nodeParser.extract(new DomainLanguage(expression));
         assertEquals(extract.size(), 1);
@@ -92,12 +92,8 @@ public class NodeParserTest {
             + "(\n"
             + "   b ARRAY<STRUCT<task_id:BIGINT COMMENT 'comment',task_create_time:STRING,task_modified_time:STRING,"
             + "task_status_id:BIGINT,task_tag:STRING,task_assign_time:STRING,task_expect_time:STRING,"
-            + "task_end_time:STRING,ext_fields:STRING,dept_path:STRING,task_dealer_info:MAP<STRING, STRING>>>\n"
+            + "task_end_time:STRING,ext_fields:STRING,dept_path:STRING,task_dealer_info:MAP<STRING,STRING>>>\n"
             + ")");
     }
 
-    @Test
-    public void testParser_Struct() {
-        String struct = "ARRAY<STRUCT<0:STRING,1:STRING,2:STRING,3:STRING>>";
-    }
 }

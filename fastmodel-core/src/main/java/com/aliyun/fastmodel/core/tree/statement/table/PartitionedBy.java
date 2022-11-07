@@ -18,7 +18,7 @@ package com.aliyun.fastmodel.core.tree.statement.table;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.core.tree.AbstractNode;
+import com.aliyun.fastmodel.core.tree.AbstractFmlNode;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import lombok.Getter;
@@ -30,7 +30,7 @@ import lombok.Getter;
  * @date 2020/12/7
  */
 @Getter
-public class PartitionedBy extends AbstractNode {
+public class PartitionedBy extends AbstractFmlNode {
     private final List<ColumnDefinition> columnDefinitions;
 
     public PartitionedBy(

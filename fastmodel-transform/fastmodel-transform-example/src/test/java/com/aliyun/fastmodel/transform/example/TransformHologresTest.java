@@ -58,7 +58,6 @@ public class TransformHologresTest {
             + "CALL SET_TABLE_PROPERTY('b', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE b IS 'table comment';\n"
             + "COMMENT ON COLUMN b.c1 IS 'comment';\n"
-            + "\n"
             + "COMMIT;");
     }
 
@@ -67,16 +66,15 @@ public class TransformHologresTest {
         AddCols addCols = new AddCols(
             QualifiedName.of("a.b"),
             ImmutableList.of(ColumnDefinition.builder().colName(new Identifier("col1")).dataType(
-                DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
+                    DataTypeUtil.simpleType(DataTypeEnums.BIGINT)
                 ).build(), ColumnDefinition.builder().colName(new Identifier("col2")).dataType(
-                DataTypeUtil.simpleType(DataTypeEnums.DATETIME)).primary(true).comment(new Comment("table comment"))
+                        DataTypeUtil.simpleType(DataTypeEnums.DATETIME)).primary(true).comment(new Comment("table comment"))
                     .build()
             ));
         String s = starter.transformHologres(addCols);
         assertEquals("BEGIN;\n"
             + "ALTER TABLE IF EXISTS b ADD COLUMN col1 BIGINT, ADD COLUMN col2 TIMESTAMP;\n"
             + "COMMENT ON COLUMN b.col2 IS 'table comment';\n"
-            + "\n"
             + "COMMIT;", s);
     }
 
@@ -86,7 +84,7 @@ public class TransformHologresTest {
             QualifiedName.of("a.b")
         );
         String s = starter.transformHologres(dropTable);
-        assertEquals("DROP TABLE IF EXISTS b", s);
+        assertEquals("DROP TABLE IF EXISTS b;", s);
     }
 
     @Test
@@ -96,9 +94,9 @@ public class TransformHologresTest {
             new Identifier("c1")
         );
         String s = starter.transformHologres(dropCol);
-        assertEquals(s, "ALTER TABLE b DROP COLUMN c1");
+        assertEquals(s, "ALTER TABLE b DROP COLUMN c1;");
     }
-
+   
     @Test
     public void testSetProperties() {
         SetTableProperties setTableProperties = new SetTableProperties(
@@ -106,9 +104,6 @@ public class TransformHologresTest {
             ImmutableList.of(new Property("key", "value"))
         );
         String set = starter.transformHologres(setTableProperties);
-        assertEquals("BEGIN;\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'key', 'value');\n"
-            + "\n"
-            + "COMMIT;", set);
+        assertEquals("", set);
     }
 }

@@ -43,14 +43,14 @@ import com.google.auto.service.AutoService;
  * @date 2021/6/2
  */
 @AutoService(StatementConverter.class)
-public class ChangeColConverter extends BaseDqcStatementConverter<ChangeCol> {
+public class ChangeColConverter extends BaseDqcStatementConverter<ChangeCol,ChangeDqcRule> {
     @Override
-    public BaseStatement convert(ChangeCol source, ConvertContext context) {
+    public ChangeDqcRule convert(ChangeCol source, ConvertContext context) {
         Identifier oldColName = source.getOldColName();
         Identifier newColName = source.getNewColName();
         List<PartitionSpec> partitionSpecList = getPartitionSpec(context);
         //如果相等，返回添加规则操作
-        List<RuleDefinition> list = toRuleDefinition(Arrays.asList(source.getColumnDefinition()), true);
+        List<RuleDefinition> list = toRuleDefinition(Arrays.asList(source.getColumnDefinition()), true, context);
         List<ChangeDqcRuleElement> changeRuleElements = new ArrayList<>();
         if (list.isEmpty()) {
             //如果不相等的话，才进行添加。

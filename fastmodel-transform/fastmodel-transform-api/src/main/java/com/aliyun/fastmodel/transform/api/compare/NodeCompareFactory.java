@@ -35,14 +35,14 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 public class NodeCompareFactory {
     private static final NodeCompareFactory INSTANCE = new NodeCompareFactory();
 
-    private final Map<DialectMeta, NodeCompare> maps = new HashMap<>();
+    private final Map<String, NodeCompare> maps = new HashMap<>();
 
     private NodeCompareFactory() {
         ServiceLoader<NodeCompare> load = ServiceLoader.load(NodeCompare.class);
         for (NodeCompare transformer : load) {
             Dialect annotation = transformer.getClass().getAnnotation(Dialect.class);
             if (annotation != null) {
-                DialectMeta dialectMeta = new DialectMeta(annotation.value(), annotation.version());
+                String dialectMeta = annotation.value() + annotation.version();
                 maps.put(dialectMeta, transformer);
             }
         }
@@ -60,7 +60,7 @@ public class NodeCompareFactory {
 
     public CompareResult compareResult(DialectMeta dialectMeta,
                                        String before, String after, CompareContext context) {
-        NodeCompare nodeCompare = maps.get(dialectMeta);
+        NodeCompare nodeCompare = maps.get(dialectMeta.toString());
         if (nodeCompare == null) {
             throw new UnsupportedOperationException("unsupport the dialect diff:" + dialectMeta);
         }

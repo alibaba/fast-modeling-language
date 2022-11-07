@@ -40,27 +40,4 @@ public class ExpressionFormatter {
         return new ExpressionVisitor().process(baseExpression, null);
     }
 
-    public static String formatStringLiteral(String s) {
-        if (s == null) {
-            return null;
-        }
-        String result = s.replace("'", "''");
-        return "'" + result + "'";
-    }
-
-    public static String formatName(QualifiedName name) {
-        return name.getOriginalParts().stream()
-            .map(ExpressionFormatter::formatExpression)
-            .collect(joining("."));
-    }
-
-    public static String formatGroupingSet(List<BaseExpression> groupingSet) {
-        return format("(%s)", Joiner.on(", ").join(groupingSet.stream()
-            .map(ExpressionFormatter::formatExpression)
-            .iterator()));
-    }
-
-    public static String formatOrderBy(OrderBy orderBy) {
-        return new ExpressionVisitor().formatOrderBy(orderBy);
-    }
 }

@@ -14,7 +14,7 @@
 			"propertyType":"user_defined",
 			"ruleName":"字段规则-表中-(shop_code)",
 			"ruleType":"SLEF_CUSTOM",
-			"ruleValue":"SELECT count(*)\nFROM\n  test_bu.dim_shop_test25\nWHERE NOT (shop_code IN (SELECT value\nFROM\n  code_test\n))\n"
+			"ruleValue":"SELECT count(*)\nFROM\n  dim_shop_test25\nWHERE NOT (shop_code IN (SELECT code\nFROM\n  code_test\n))\n"
 		}
 	],
 	"tableName":"dim_shop_test25"

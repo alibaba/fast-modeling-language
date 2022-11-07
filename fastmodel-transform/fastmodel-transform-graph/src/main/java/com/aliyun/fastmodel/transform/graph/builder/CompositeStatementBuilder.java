@@ -42,7 +42,7 @@ import com.google.common.collect.Maps;
  * @author panguanjing
  * @date 2021/12/12
  */
-@BuilderAnnotation(values = CompositeStatement.class, dialect = DialectName.GRAPH)
+@BuilderAnnotation(values = CompositeStatement.class, dialect = DialectName.Constants.GRAPH)
 @AutoService(StatementBuilder.class)
 public class CompositeStatementBuilder implements StatementBuilder<TransformContext> {
 
@@ -57,7 +57,7 @@ public class CompositeStatementBuilder implements StatementBuilder<TransformCont
         List<Edge> edges = new ArrayList<>();
         for (BaseStatement baseStatement : statementList) {
             StatementBuilder builder = BuilderFactory.getInstance().getBuilder(baseStatement,
-                DialectMeta.getByName(DialectName.GRAPH));
+                DialectMeta.getByName(DialectName.GRAPH), context);
             GenericDialectNode<Element> baseDialectNode = builder.buildGenericNode(baseStatement, context);
             Element node = baseDialectNode.getNode();
             if (node instanceof Vertex) {

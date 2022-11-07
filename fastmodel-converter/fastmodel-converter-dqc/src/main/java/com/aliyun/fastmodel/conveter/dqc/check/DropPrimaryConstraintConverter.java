@@ -21,8 +21,8 @@ import java.util.Optional;
 
 import com.aliyun.fastmodel.converter.spi.ConvertContext;
 import com.aliyun.fastmodel.converter.spi.StatementConverter;
-import com.aliyun.fastmodel.converter.util.FmlTableUtil;
 import com.aliyun.fastmodel.conveter.dqc.BaseDqcStatementConverter;
+import com.aliyun.fastmodel.conveter.dqc.util.FmlTableUtil;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -36,7 +36,6 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.RuleUtil;
 import com.google.auto.service.AutoService;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,12 +46,14 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2021/6/15
  */
 @AutoService(StatementConverter.class)
-public class DropPrimaryConstraintConverter extends BaseDqcStatementConverter<DropConstraint> {
+public class DropPrimaryConstraintConverter extends BaseDqcStatementConverter<DropConstraint, AddDqcRule> {
 
     @Override
-    public BaseStatement convert(DropConstraint dropConstraint, ConvertContext defaultConverterContext) {
-        BaseStatement beforeStatement = defaultConverterContext.getBeforeStatement();
-        Preconditions.checkNotNull(beforeStatement);
+    public AddDqcRule convert(DropConstraint dropConstraint, ConvertContext context) {
+        if (context == null || context.getBeforeStatement() == null) {
+            return null;
+        }
+        BaseStatement beforeStatement = context.getBeforeStatement();
         assert beforeStatement instanceof CreateTable;
         CreateTable createTable = (CreateTable)beforeStatement;
         PrimaryConstraint primaryConstraint = getPrimaryConstraint(createTable);

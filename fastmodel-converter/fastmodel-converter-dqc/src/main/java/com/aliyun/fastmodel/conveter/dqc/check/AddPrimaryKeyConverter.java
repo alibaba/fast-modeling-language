@@ -43,10 +43,10 @@ import com.google.common.collect.ImmutableList;
  * @date 2021/6/6
  */
 @AutoService(StatementConverter.class)
-public class AddPrimaryKeyConverter extends BaseDqcStatementConverter<AddConstraint> {
+public class AddPrimaryKeyConverter extends BaseDqcStatementConverter<AddConstraint,AddDqcRule> {
 
     @Override
-    public BaseStatement convert(AddConstraint source, ConvertContext context) {
+    public AddDqcRule convert(AddConstraint source, ConvertContext context) {
         BaseConstraint constraintStatement = source.getConstraintStatement();
         if (!(constraintStatement instanceof PrimaryConstraint)) {
             return null;

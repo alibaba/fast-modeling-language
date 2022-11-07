@@ -36,7 +36,7 @@ import com.google.auto.service.AutoService;
  * @date 2021/9/4
  */
 @AutoService(NodeCompare.class)
-@Dialect(DialectName.HIVE)
+@Dialect(DialectName.Constants.HIVE)
 public class HiveNodeCompare implements NodeCompare {
 
     private HiveTransformer hiveTransformer = new HiveTransformer();
