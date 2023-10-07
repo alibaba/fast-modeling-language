@@ -1,0 +1,13 @@
+{
+	"dialectName":"MAXCOMPUTE",
+	"entityLevel":"SQL",
+	"matchExpression":"NOTAPARTITIONTABLE",
+	"ruleModelList":[
+		{
+			"action":"UPDATE",
+			"oldProperty":"c1",
+			"property":"c2"
+		}
+	],
+	"tableName":"dim_shop"
+}

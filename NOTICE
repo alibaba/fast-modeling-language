@@ -1,0 +1,26 @@
+========================================================
+fast-modeling-language is a modeling dsl
+Copyright (c) 2019-2022, Alibaba Group.
+Licensed under the Apache License, Version 2.0
+===================================================================
+This product contains various third-party components under other open source licenses.
+This section summarizes those components and their licenses.
+
+
+Presto Software Apache License 2.0
+--------------------------------------
+com.facebook.presto.sql.QueryUtil
+
+
+grammars-v4 Software Apache License, Version 2.0
+-------------------------------------------------
+sql/hive/v3/HiveParser.g4
+sql/hive/v3/HiveLexer.g4
+sql/plsql/PlSqlParser.g4
+sql/plsql/PlSqlLexer.g4
+
+
+grammars-v4 Software The MIT License (MIT)
+-----------------------------------------------
+sql/mysql/Positive-Technologies/MySqlParser.g4
+sql/mysql/Positive-Technologies/MySqlLexer.g4

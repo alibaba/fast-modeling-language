@@ -1,0 +1,1029 @@
+-- 创建数据域
+CREATE DOMAIN test_bu.test_dm COMMENT "测试数据域";
+
+-- 创建业务过程
+CREATE BUSINESS_PROCESS test_bu.test_bp COMMENT "测试业务过程" WITH PROPERTIES('domain_key' = 'test_dm');
+
+-- 创建数据标准组
+CREATE GROUP DICT test_bu.g1 COMMENT 'Group1';
+
+-- 创建汇聚层
+CREATE LAYER test_bu.dws_test COMMENT '汇聚层'  WITH ('description' = '汇聚层设计', 'extend_name' = 'dataWarehouse summary');
+
+-- 创建数据标准-下单金额
+CREATE Dict test_bu.pay_price bigint not null default 'abc'
+comment '下单金额'
+WITH PROPERTIES(
+    'description'='下单金额'
+  , 'extend_name'='pay_price'
+  ,'group' = 'g1'
+  ,'no' = '1'
+);
+
+-- 创建数据标准-门店类型
+CREATE Dict test_bu.shop_type string not null default 'abc'
+comment '门店类型'
+WITH PROPERTIES(
+    'description'='门店类型'
+  , 'extend_name'='shop_type'
+  ,'group' = 'g1'
+  ,'no' = '2'
+);
+
+-- 创建数据标准-商品类型
+CREATE Dict test_bu.sku_type string not null default 'abc'
+comment '商品类型'
+WITH PROPERTIES(
+    'description'='商品类型'
+  , 'extend_name'='sku_type'
+  ,'group' = 'g1'
+  ,'no' = '3'
+);
+
+-- 创建维度表-门店
+CREATE DIM TABLE IF NOT EXISTS test_bu.dim_shop
+(
+  shop_code string COMMENT '门店code',
+  shop_name string COMMENT '门店name',
+  shop_type string COMMENT '门店类型',
+  merchant_code bigint COMMENT '商家code',
+  primary key (shop_code)
+) COMMENT '门店' WITH PROPERTIES('business_process'='test_bp');
+
+-- 物化
+create materialized view test_bu.m1 references (dim_shop) engine ODPS
+with('env'='PRODUCT','project_id'='1', 'instance_ds'='instance1', 'remark'='dsl remark');
+
+-- 创建维度表-商品品牌
+CREATE DIM TABLE IF NOT EXISTS test_bu.dim_sku_brand
+(
+  gmt_create string COMMENT '创建时间',
+  brand_code string COMMENT '品牌code',
+  brand_name string COMMENT '品牌name',
+  primary key (brand_code,brand_name)
+) COMMENT '商品品牌' WITH PROPERTIES('business_process'='test_bp');
+
+-- 物化
+create materialized view test_bu.m1 references (dim_sku_brand) engine ODPS
+with('env'='PRODUCT','project_id'='1', 'instance_ds'='instance1', 'remark'='dsl remark');
+
+-- 创建维度表-商品
+CREATE DIM TABLE IF NOT EXISTS test_bu.dim_sku
+(
+  gmt_create string COMMENT '创建时间',
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  sku_type string COMMENT '商品类型',
+  sku_name string COMMENT '商品name',
+  brand_code string COMMENT '品牌code',
+  dept_code string COMMENT '部门code',
+  cat_level_1_id string COMMENT '1级类目id',
+  cat_level_2_id string COMMENT '2级类目id',
+  cat_level_3_id string COMMENT '3级类目id',
+  cat_level_4_id string COMMENT '4级类目id',
+  primary key (sku_code,shop_code),
+  constraint dim_sku_rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code),
+  constraint dim_sku_rel_dim_sku_brand DIM KEY (brand_code) REFERENCES dim_sku_brand(brand_code)
+) COMMENT '商品' WITH PROPERTIES('business_process'='test_bp');
+
+-- 物化
+create materialized view test_bu.m1 references (dim_sku) engine ODPS
+with('env'='PRODUCT','project_id'='1', 'instance_ds'='instance1', 'remark'='dsl remark');
+
+-- 创建事实表-订单
+CREATE FACT TABLE IF NOT EXISTS test_bu.fact_pay_order
+(
+  order_id string COMMENT '订单id',
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  gmt_create string COMMENT '创建时间',
+  gmt_pay string COMMENT '支付时间',
+  pay_type string COMMENT '支付类型',
+  pay_price bigint COMMENT '支付金额',
+  refund_price bigint COMMENT '退款金额',
+  primary key (order_id),
+  constraint fact_pay_order_rel_dim_sku DIM KEY (sku_code,shop_code) REFERENCES dim_sku(sku_code,shop_code),
+  constraint fact_pay_order_rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code)
+) COMMENT '事实-支付订单' WITH PROPERTIES('type' = 'tx');
+
+-- 物化
+create materialized view test_bu.m1 references (fact_pay_order) engine ODPS
+with('env'='PRODUCT','project_id'='1', 'instance_ds'='instance1', 'remark'='dsl remark');
+
+CREATE GROUP MEASURE_UNIT test_bu.mu1 COMMENT '度量单位分组1' WITH ('extend_name' = 'extendName');
+
+CREATE MEASURE_UNIT test_bu.jian COMMENT '度量单位1' WITH PROPERTIES('group'='mu1', 'extend_name'='extendName');
+
+CREATE MEASURE_UNIT test_bu.cny_yuan COMMENT '度量单位1' WITH PROPERTIES('group'='mu1', 'extend_name'='extendName');
+
+CREATE MEASURE_UNIT test_bu.ci COMMENT '度量单位1' WITH PROPERTIES('group'='mu1', 'extend_name'='extendName');
+
+
+-- 创建原子指标-商品数量
+CREATE ATOMIC Indicator test_bu.sku_count bigint COMMENT '商品数量'
+WITH (
+ 'type' = 'ATOMIC'
+,'data_unit' = 'jian'
+,'is_distinct' = 'false'
+,'agg_function' = 'count'
+,'extend_name' = 'sku_count_name'
+,'sum_type' = 'ALL'
+,'business_process' = 'test_bp'
+,'biz_caliber' = 'count(1)'
+);
+
+-- 创建原子指标-支付金额
+CREATE ATOMIC Indicator test_bu.pay_price bigint COMMENT '支付金额2'
+WITH (
+ 'type' = 'ATOMIC'
+,'data_unit' = 'cny_yuan'
+,'is_distinct' = 'false'
+,'agg_function' = 'sum'
+,'extend_name' = 'pay_price_name'
+,'business_process' = 'test_bp'
+,'biz_caliber' = 'sum(支付金额)'
+);
+
+-- 创建原子指标-下单次数
+CREATE ATOMIC Indicator test_bu.pay_count bigint COMMENT '下单次数'
+WITH (
+ 'type' = 'ATOMIC'
+,'data_unit' = 'ci'
+,'is_distinct' = 'false'
+,'agg_function' = 'count'
+,'extend_name' = 'pay_count_name'
+,'sum_type' = 'ALL'
+,'business_process' = 'test_bp'
+,'biz_caliber' = 'count(记录数)'
+);
+
+-- 创建原子复合指标-平均支付金额
+CREATE ATOMIC COMPOSITE INDICATOR test_bu.pay_price_avg DECIMAL
+COMMENT '平均支付金额'
+WITH (
+  'type'='ATOMIC_COMPOSITE'
+, 'business_process'='test_bp'
+, 'data_unit' = 'ci'
+, 'extend_name' = 'pay_price_avg_name'
+, 'roll_up_type' = 'SUM_THEN_RATE'
+, 'biz_caliber' = '支付金额/下单次数'
+)
+AS pay_price/pay_count;
+
+-- 创建时间周期-d1
+CREATE TIME_PERIOD test_bu.d1 COMMENT '近1天'
+WITH PROPERTIES(
+'type' = 'DAY',
+'extend_name' = 'last1Day'
+)
+AS BETWEEN TO_BEGIN_DATE('${bizdate}','d',-1) AND TO_END_DATE('${bizdate}','d',-1);
+
+-- 创建时间周期-d7
+CREATE TIME_PERIOD test_bu.d7 COMMENT '近7天'
+WITH
+PROPERTIES(
+'type' = 'DAY',
+'extend_name' = 'last7Day'
+)
+AS BETWEEN TO_BEGIN_DATE('${bizdate}','d',-7) AND TO_END_DATE('${bizdate}','d',-1);
+
+-- 创建时间周期-d30
+CREATE TIME_PERIOD test_bu.d30 COMMENT '近30天'
+WITH
+PROPERTIES(
+'type' = 'DAY',
+'extend_name' = 'last30Day'
+)
+AS BETWEEN TO_BEGIN_DATE('${bizdate}','d',-30) AND TO_END_DATE('${bizdate}','d',-1);
+
+-- 创建时间周期-d90
+CREATE TIME_PERIOD test_bu.d90 COMMENT '近90天'
+WITH
+PROPERTIES(
+'type' = 'DAY',
+'extend_name' = 'last90Day'
+)
+AS BETWEEN TO_BEGIN_DATE('${bizdate}','d',-90) AND TO_END_DATE('${bizdate}','d',-1);
+
+-- 创建修饰词-线上支付类型
+CREATE ADJUNCT test_bu.pay_type_app comment '线上支付类型'
+WITH (
+ 'extend_name' = 'pay_type_app'
+,'biz_caliber'='线上支付类型'
+) AS fact_pay_order.pay_type = '1';
+
+-- 创建修饰词-生鲜门店
+CREATE ADJUNCT test_bu.shop_type_fresh comment '生鲜门店'
+WITH (
+ 'extend_name' = 'shop_type_fresh'
+,'biz_caliber'='生鲜类型门店'
+)
+AS dim_shop.shop_type='2';
+
+-- 创建修饰词-生鲜类目
+CREATE ADJUNCT test_bu.sku_type_fresh comment '生鲜类目'
+WITH (
+ 'extend_name' = 'sku_type_fresh'
+,'biz_caliber'='生鲜类目'
+)
+AS dim_sku.sku_type='1';
+
+-- 创建修饰词-生鲜类目V2
+CREATE ADJUNCT test_bu.sku_type_fresh_v2 comment '生鲜类目V2'
+WITH (
+ 'extend_name' = 'sku_type_fresh_v2'
+,'biz_caliber'='生鲜类目V2'
+)
+AS dim_sku.sku_type='10';
+
+-- 创建修饰词-all
+CREATE ADJUNCT test_bu.all_v1 comment 'all_v1'
+WITH (
+ 'extend_name' = 'all_v1'
+,'biz_caliber'='all_v1'
+,'type'='NONE'
+);
+CREATE ADJUNCT test_bu.all_v2 comment 'all_v2'
+WITH (
+ 'extend_name' = 'all_v2'
+,'biz_caliber'='all_v2'
+,'type'='NONE'
+);
+CREATE ADJUNCT test_bu.all_v3 comment 'all_v3'
+WITH (
+ 'extend_name' = 'all_v3'
+,'biz_caliber'='all_v3'
+,'type'='NONE'
+);
+
+-- 创建派生指标-整体_近1天_生鲜品类_新增商品数
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_1d_sku_count_001 BIGINT
+references sku_count
+comment '整体_近1天_生鲜品类_新增商品数'
+WITH (
+     'type' = 'DERIVATIVE',
+     'extend_name' = 'shop_sku_1d_sku_count_001',
+     'date_period'= 'd1',
+     'adjunct' = 'sku_type_fresh',
+     'main_table' = 'dim_sku',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss',
+     'ignore_dim' = 'true'
+) AS count(1);
+
+-- 创建派生指标-整体_近1天_生鲜品类_新增商品数
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_7d_sku_count_002 BIGINT
+references pay_count
+comment '整体_近7天_生鲜品类_新增商品数'
+WITH (
+     'type' = 'DERIVATIVE',
+     'extend_name' = 'shop_sku_1d_sku_count_002',
+     'date_period'= 'd7',
+     'adjunct' = 'sku_type_fresh',
+     'main_table' = 'dim_sku',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss',
+     'ignore_dim' = 'true'
+) AS count(1);
+
+
+-- 创建派生指标-门店&商品品牌_近1天_支付金额
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_brand_1d_pay_price_001 BIGINT
+references pay_price
+comment '门店&商品品牌_近1天_支付金额'
+WITH (
+     'type' = 'DERIVATIVE',
+     'extend_name' = 'shop_sku_brand_1d_pay_price_001',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh',
+     'dim_biz_desc' = '门店维度,商品品牌维度',
+     'dim' = 'dim_shop,dim_sku_brand',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS sum(fact_pay_order.pay_price);
+
+-- 创建派生指标-门店&商品品牌_近1天_支付次数
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_brand_1d_pay_count_001 BIGINT
+references pay_count
+comment '门店&商品品牌_近1天_支付次数'
+WITH (
+     'type' = 'DERIVATIVE',
+     'extend_name' = 'shop_sku_brand_1d_pay_count_001',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh',
+     'dim_biz_desc' = '门店维度,商品品牌维度',
+     'dim' = 'dim_shop,dim_sku_brand',
+     'dim_path' = 'fact_pay_order->dim_shop,fact_pay_order->dim_sku->dim_sku_brand',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS count(1);
+
+-- 创建派生指标-门店&商品_近1天_生鲜门店&生鲜类目_支付金额
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_1d_pay_price_001 BIGINT
+references pay_price
+comment '门店&商品_近1天_生鲜门店&生鲜类目_支付金额'
+WITH (
+     'extend_name' = 'shop_sku_1d_pay_price_001',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS sum(fact_pay_order.pay_price);
+
+-- 创建派生指标-门店&商品_近1天_生鲜门店&生鲜类目_支付次数
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_1d_pay_count_001 BIGINT
+references pay_count
+comment '门店&商品_近1天_生鲜门店&生鲜类目_支付次数'
+WITH (
+     'extend_name' = 'shop_sku_1d_pay_count_001',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS count(1);
+
+-- 创建派生复合指标-门店&商品_近1天_生鲜门店&生鲜类目_平均支付金额
+CREATE DERIVATIVE COMPOSITE INDICATOR test_bu.shop_sku_1d_pay_price_avg DECIMAL
+REFERENCES pay_price_avg
+comment '门店&商品_近1天_生鲜门店&生鲜类目_平均支付金额'
+WITH (
+    'date_period'= 'd1'
+  , 'business_process' = 'test_bp'
+  , 'adjunct' = 'shop_type_fresh,sku_type_fresh'
+  , 'extend_name' = 'shop_sku_1d_pay_price_avg'
+  , 'dim_biz_desc' = '门店维度,商品维度'
+  , 'adjunct' = 'shop_type_fresh,sku_type_fresh'
+) AS shop_sku_1d_pay_price_001 / shop_sku_1d_pay_count_001;
+
+-- 修改派生复合指标-门店&商品_近1天_生鲜门店&生鲜类目_平均支付金额
+ALTER INDICATOR test_bu.shop_sku_1d_pay_price_avg
+SET PROPERTIES(
+    'extend_name' = 'shop_sku_1d_pay_price_avg'
+  , 'dim_biz_desc' = '门店维度,商品维度'
+  , 'adjunct' = 'shop_type_fresh,sku_type_fresh'
+) AS shop_sku_1d_pay_price_001 / shop_sku_1d_pay_count_001;
+
+-- 创建派生指标-门店&商品_近7天_生鲜门店&生鲜类目_支付金额
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_7d_pay_price_001 BIGINT
+references pay_price
+comment '门店&商品_近7天_生鲜门店&生鲜类目_支付金额'
+WITH (
+     'extend_name' = 'shop_sku_7d_pay_price_001',
+     'date_period'= 'd7',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS sum(fact_pay_order.pay_price);
+
+-- 创建派生指标-门店&商品_近7天_生鲜门店&生鲜类目_支付次数
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_7d_pay_count_001 BIGINT
+references pay_count
+comment '门店&商品_近7天_生鲜门店&生鲜类目_支付次数'
+WITH (
+     'extend_name' = 'shop_sku_7d_pay_count_001',
+     'date_period'= 'd7',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS count(1);
+
+-- 创建派生复合指标-门店&商品_近7天_生鲜门店&生鲜类目_平均支付金额
+CREATE DERIVATIVE COMPOSITE INDICATOR test_bu.shop_sku_7d_pay_price_avg DECIMAL
+REFERENCES pay_price_avg
+comment '门店&商品_近7天_生鲜门店&生鲜类目_平均支付金额'
+WITH (
+   'business_process' = 'test_bp'
+ , 'extend_name' = 'shop_sku_7d_pay_price_avg'
+ , 'date_period'= 'd7'
+ , 'adjunct' = 'shop_type_fresh,sku_type_fresh'
+ , 'dim_biz_desc' = '门店维度,商品维度'
+ , 'dim' = 'dim_shop,dim_sku'
+ , 'mapper' = 'pay_price:shop_sku_7d_pay_price_001,pay_count:shop_sku_7d_pay_count_001'
+);
+
+-- 修改派生复合指标-门店&商品_近7天_生鲜门店&生鲜类目_平均支付金额
+ALTER INDICATOR test_bu.shop_sku_7d_pay_price_avg
+SET PROPERTIES (
+   'business_process' = 'test_bp'
+ , 'extend_name' = 'shop_sku_7d_pay_price_avg'
+ , 'date_period'= 'd7'
+ , 'adjunct' = 'shop_type_fresh,sku_type_fresh'
+ , 'dim_biz_desc' = '门店维度,商品维度'
+ , 'dim' = 'dim_shop,dim_sku'
+ , 'mapper' = 'pay_price:shop_sku_7d_pay_price_001,pay_count:shop_sku_7d_pay_count_001'
+);
+
+-- 批量创建派生指标-1
+create batch test_bu.batch_code (
+  shop_sku_30d_pay_price_001 comment '门店&商品_近30天_生鲜门店&生鲜类目_支付金额' adjunct (shop_type_fresh, sku_type_fresh) references pay_price as sum(fact_pay_order.pay_price)
+, shop_sku_30d_pay_price_002 comment '门店&商品_近30天_生鲜门店_支付金额' references pay_price as sum(fact_pay_order.pay_price)
+, shop_sku_30d_pay_count_001 comment '门店&商品_近30天_生鲜门店&生鲜类目_支付次数' adjunct (shop_type_fresh, sku_type_fresh) references pay_count as count(1)
+, shop_sku_30d_pay_count_002 comment '门店&商品_近30天_生鲜门店_支付次数' references pay_count as count(1)
+, time_period d30
+, from table (fact_pay_order)
+, date_field (gmt_create, 'yyyy-MM-dd HH:mm:ss')
+, adjunct (shop_type_fresh)
+, dim table (dim_shop, dim_sku)
+) with ('is_async'='false');
+
+-- 批量创建派生指标-2
+create batch test_bu.batch_code (
+  shop_sku_30d_pay_price_001 comment '门店&商品_近30天_生鲜门店&生鲜类目_支付金额' adjunct (shop_type_fresh, sku_type_fresh) references pay_price as sum(fact_pay_order.pay_price)
+, shop_sku_30d_pay_price_002 comment '门店&商品_近30天_生鲜门店_支付金额' references pay_price as sum(fact_pay_order.pay_price)
+, shop_sku_30d_pay_count_001 comment '门店&商品_近30天_生鲜门店&生鲜类目_支付次数' adjunct (shop_type_fresh, sku_type_fresh) references pay_count as count(1)
+, shop_sku_30d_pay_count_002 comment '门店&商品_近30天_生鲜门店_支付次数' references pay_count as count(1)
+, time_period d30
+, from table (fact_pay_order)
+, date_field (gmt_create, 'yyyy-MM-dd HH:mm:ss')
+, adjunct (shop_type_fresh)
+, dim path (<fact_pay_order, dim_shop>, <fact_pay_order, dim_sku>)
+) with ('is_async'='false');
+
+-- 批量创建派生指标-3
+create batch test_bu.batch_code (
+  shop_sku_90d_pay_price_001 comment '门店&商品_近90天_生鲜门店&生鲜类目_支付金额' adjunct(all_v1) references pay_price as sum(fact_pay_order.pay_price)
+, shop_sku_90d_pay_price_002 comment '门店&商品_近90天_生鲜门店_支付金额' references pay_price as sum(fact_pay_order.pay_price)
+, shop_sku_90d_pay_count_001 comment '门店&商品_近90天_生鲜门店&生鲜类目_支付次数' adjunct(all_v1) references pay_count as count(1)
+, shop_sku_90d_pay_count_002 comment '门店&商品_近90天_生鲜门店_支付次数' references pay_count as count(1)
+, time_period d90
+, from table (fact_pay_order)
+, date_field (gmt_create, 'yyyy-MM-dd HH:mm:ss')
+, adjunct (pay_type_app)
+) with ('is_async'='false', 'ignore_dim'='true');
+
+-- 创建dws表
+CREATE DWS TABLE IF NOT EXISTS test_bu.dws_shop_sku_sales_d30_v1 (
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  sku_type string COMMENT '商品类型',
+  sku_name string COMMENT '商品name',
+  shop_sku_30d_pay_price_001 string COMMENT '支付金额' WITH ('indicator'='shop_sku_30d_pay_price_001'),
+  shop_sku_30d_pay_price_002 string COMMENT '支付次数' WITH ('indicator'='shop_sku_30d_pay_price_002'),
+  PRIMARY KEY (sku_code, shop_code),
+  CONSTRAINT rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code),
+  CONSTRAINT rel_dim_sku DIM KEY (sku_code) REFERENCES dim_sku(sku_code)
+)
+COMMENT '门店商品销售域指标表'
+PARTITIONED BY (gmt_create STRING COMMENT "创建时间" WITH ('pattern'='yyyy-MM-dd HH:mm:ss', 'time_period'='d30'))
+WITH (
+    'data_domain' = 'test_dm',
+    'data_layer' = 'dws_test',
+    'description' = 'test描述'
+);
+
+-- 创建dws表
+CREATE DWS TABLE IF NOT EXISTS test_bu.dws_shop_sku_sales_d30_v2 (
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  sku_type string COMMENT '商品类型',
+  sku_name string COMMENT '商品name',
+  shop_sku_30d_pay_count_001 string COMMENT '支付金额' WITH ('indicator'='shop_sku_30d_pay_count_001'),
+  shop_sku_30d_pay_count_002 string COMMENT '支付次数' WITH ('indicator'='shop_sku_30d_pay_count_002'),
+  PRIMARY KEY (sku_code, shop_code),
+  CONSTRAINT rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code),
+  CONSTRAINT rel_dim_sku DIM KEY (sku_code) REFERENCES dim_sku(sku_code)
+)
+COMMENT '门店商品销售域指标表'
+PARTITIONED BY (gmt_create STRING COMMENT "创建时间" WITH ('pattern'='yyyy-MM-dd HH:mm:ss', 'time_period'='d30'))
+WITH (
+    'data_domain' = 'test_dm',
+    'data_layer' = 'dws_test',
+    'description' = 'test描述'
+);
+
+-- 物化
+create materialized view test_bu.m1 references (dws_shop_sku_sales_d30_v1) engine ODPS
+with('env'='PRODUCT','project_id'='1', 'instance_ds'='instance1', 'remark'='dsl remark');
+
+-- 物化
+create materialized view test_bu.m1 references (dws_shop_sku_sales_d30_v2) engine ODPS
+with('env'='PRODUCT','project_id'='1', 'instance_ds'='instance1', 'remark'='dsl remark');
+
+-- 生成sql
+call generate_indicator_sql('ODPS', '20210325', '20210325', "select dim_sku.sku_code as sku_code
+                          , dim_sku.sku_name as sku_name
+                          , dim_shop.shop_code as shop_code
+                          , dim_shop.shop_name as shop_name
+                          , shop_sku_30d_pay_price_001 as shop_sku_30d_pay_price_001
+                          , shop_sku_30d_pay_price_002 as shop_sku_30d_pay_price_002
+                          , shop_sku_30d_pay_count_001 as shop_sku_30d_pay_count_001
+                           where sku_code = 'xxx'
+                           order by shop_sku_30d_pay_price_001 desc
+                           limit 1000");
+
+-- 生成sql
+call generate_indicator_sql('ODPS', '20210325', '20210325', "select dim_sku.sku_code as sku_code
+                          , dim_sku.sku_name as sku_name
+                          , dim_shop.shop_code as shop_code
+                          , dim_shop.shop_name as shop_name
+                          , shop_sku_30d_pay_price_001 as shop_sku_30d_pay_price_001
+                          , shop_sku_30d_pay_price_002 as shop_sku_30d_pay_price_002
+                           where sku_code = 'xxx'
+                           order by shop_sku_30d_pay_price_001 desc
+                           limit 1000");
+
+-- 生成sql
+call generate_indicator_sql('ODPS', '20210325', '20210325', "select dim_sku.sku_code as sku_code
+                          , dim_sku.sku_name as sku_name
+                          , dim_shop.shop_code as shop_code
+                          , dim_shop.shop_name as shop_name
+                          , shop_sku_30d_pay_price_001 as shop_sku_30d_pay_price_001
+                           where sku_code = 'xxx'
+                           order by shop_sku_30d_pay_price_001 desc
+                           limit 1000");
+
+-- 修改指标comment
+ALTER INDICATOR test_bu.pay_count set comment '下单次数V2';
+
+-- 修改指标comment
+ALTER INDICATOR test_bu.shop_sku_7d_pay_price_avg set comment '门店&商品_近7天_生鲜门店&生鲜类目_平均支付金额hhh';
+
+-- 修改原子指标pay_count
+ALTER INDICATOR test_bu.pay_count
+SET PROPERTIES(
+ 'bp_code' = 'test_bp'
+,'data_unit' = 'ci'
+,'is_distinct' = 'false'
+,'agg_function' = 'count'
+,'extend_name' = 'pay_count_name'
+,'sum_type' = 'ALL'
+,'business_process' = 'test_bp'
+,'biz_caliber' = 'count(记录数)'
+);
+
+-- 修改原子复合指标pay_count
+ALTER INDICATOR test_bu.pay_price_avg
+SET PROPERTIES(
+  'business_process'='test_bp'
+, 'data_unit' = 'ci'
+, 'extend_name' = 'pay_price_avg_name'
+, 'roll_up_type' = 'SUM_THEN_RATE'
+, 'biz_caliber' = '支付金额/下单次数'
+) AS pay_count/pay_price;
+
+-- 修改派生指标
+ALTER INDICATOR test_bu.shop_sku_1d_pay_count_001
+SET PROPERTIES(
+     'extend_name' = 'shop_sku_1d_pay_count_001',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh_v2',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) AS count(*);
+
+-- 新建一个原子指标V2
+CREATE ATOMIC Indicator test_bu.pay_count_v2 bigint COMMENT '下单次数V3'
+WITH PROPERTIES (
+  'business_process'='test_bp'
+, 'data_unit' = 'ci'
+, 'extend_name' = 'pay_count_v2'
+, 'is_distinct' = 'false'
+, 'agg_function' = 'sum'
+, 'biz_caliber' = 'sum(1)'
+);
+
+-- 创建普通维度表
+create dim table test_bu.dim_org(
+    org_id bigint primary key comment '企业Id',
+    org_name string comment '企业名称'
+) comment '企业维度表' ;
+
+create dim table test_bu.dim_dog(
+    id bigint comment 'Id',
+    name string comment '名称',
+    country_code string comment '国家码',
+    country_name string comment '国家名',
+    province_code string comment '省份码',
+    province_name string comment '省份名'
+) comment '小狗维度表';
+
+create dim table test_bu.dim_tree(
+    id bigint comment 'Id',
+    name string comment '名称'
+) comment '树维度表' ;
+
+-- 创建枚举维度表
+CREATE ENUM dim TABLE test_bu.dim_enum_emp_level COMMENT '员工级别枚举维度表';
+
+-- 插入枚举维度
+-- INSERT INTO test_bu.dim_enum_emp_level(`code`, value, description) values('c1','v1','d1'),('c2','v2','d2');
+-- INSERT INTO test_bu.dim_enum_emp_level values('c3','v3','d3');
+
+-- 创建层级维度表
+CREATE LEVEL  dim TABLE test_bu.dim_emp_area(
+    area_code string primary key  comment '地区编号',
+    country_code string comment '国家码',
+    country_name string comment '国家名',
+    province_code string comment '省份码',
+    province_name string comment '省份名',
+    constraint big level <country_code:(country_name), province_code:(province_name)> comment '大层级关系',
+    constraint little level <area_code, province_code> comment '小层级关系'
+) COMMENT '员工地区维度表';
+
+-- 创建附带关系的维度表
+create dim table test_bu.dim_relationship(
+    relation_id bigint comment '企业Id',
+    org_name string comment '企业名称',
+    primary key (relation_id, org_name),
+    constraint org_constraint dim key (org_name) references dim_org(org_id),
+    constraint emp_area_constraint dim references dim_emp_area
+) comment '关联维度表' ;
+
+-- 添加维度列
+ALTER TABLE test_bu.dim_relationship ADD COLUMNS (
+    student_code string COMMENT '学生号',
+    student_name string COMMENT '学生名称'
+);
+
+-- 添加主键约束
+ALTER TABLE test_bu.dim_dog ADD CONSTRAINT c1 primary key(id) ;
+
+-- 添加关联约束
+ALTER TABLE test_bu.dim_relationship ADD CONSTRAINT c2 dim references dim_dog;
+ALTER TABLE test_bu.dim_relationship ADD CONSTRAINT c3 dim key (org_name) references dim_dog(id);
+
+-- 添加层级约束
+ALTER TABLE test_bu.dim_dog ADD constraint test level <country_code:(country_name), province_code:(province_name)>;
+
+-- 删除约束
+ALTER TABLE test_bu.dim_dog drop constraint test;
+
+-- 修改表属性
+alter table test_bu.dim_dog set PROPERTIES('bp' = 'test_bp');
+
+-- 修改维度列
+ALTER TABLE test_bu.dim_dog change column name dog_name string not null comment '狗名';
+
+-- 修改表名
+ALTER TABLE test_bu.dim_tree rename to dim_trees;
+
+-- 修改表描述
+ALTER TABLE test_bu.dim_trees set comment '很多树表';
+
+-- 删除表名
+drop table test_bu.dim_trees;
+
+-- 创建修饰词
+CREATE ADJUNCT test_bu.adj_test_001 comment '修饰词名称'
+WITH (
+'extend_name' = 'adj_test_001_extend'
+,'biz_caliber'='helloworld'
+)
+AS dim_shop.shop_type='2';
+
+-- 修改修饰词注释
+ALTER Adjunct test_bu.adj_test_001 SET COMMENT '修饰词名称2';
+
+-- 修改修饰词
+ALTER Adjunct test_bu.adj_test_001 SET dim_shop.shop_type='abc';
+
+-- 创建修饰词2
+CREATE ADJUNCT test_bu.adj_test_002 comment '修饰词名称22'
+WITH (
+'extend_name' = 'adj_test_002_extend'
+,'biz_caliber'='helloworld'
+)
+AS shop_type='2';
+
+-- 修改修饰词注释2
+ALTER Adjunct test_bu.adj_test_002 SET COMMENT '修饰词名称22';
+
+-- 修改修饰词2
+ALTER Adjunct test_bu.adj_test_002 SET shop_type='abc';
+
+-- 创建时间周期
+CREATE TIME_PERIOD test_bu.d_test3 COMMENT '近3天V2'
+WITH PROPERTIES(
+'type' = 'DAY',
+'extend_name' = 'last3Day'
+)
+AS BETWEEN sub_day(${bizdate}, 2) AND add_day(${bizdate}, 1);
+
+-- 修改时间周期注释
+ALTER TIME_PERIOD test_bu.d_test3 SET COMMENT '近三天V2';
+
+-- 修改时间周期
+ALTER TIME_PERIOD test_bu.d_test3 SET
+PROPERTIES(
+'type' = 'DAY',
+'extend_name' = 'last3Day'
+)
+BETWEEN sub_day(${bizdate}, 2) AND add_day(${bizdate}, 1);
+
+-- 删除修饰词
+DROP Adjunct test_bu.adj_test_001;
+
+-- 删除时间周期
+DROP TIME_PERIOD test_bu.d_test3;
+
+-- *********************** 测试指标删除-BEGIN *********************** --
+
+-- 创建原子指标-支付金额-delete
+CREATE ATOMIC Indicator test_bu.pay_price_delete bigint COMMENT '支付金额3'
+WITH PROPERTIES (
+  'business_process'='test_bp'
+, 'data_unit' = 'cny_yuan'
+, 'extend_name' = 'pay_price_delete_name'
+, 'is_distinct' = 'false'
+, 'agg_function' = 'sum'
+, 'biz_caliber' = 'sum(1)'
+);
+
+-- 创建原子指标-下单次数-delete
+CREATE ATOMIC Indicator test_bu.pay_count_delete bigint COMMENT '下单次数'
+WITH PROPERTIES (
+  'business_process'='test_bp'
+, 'data_unit' = 'ci'
+, 'extend_name' = 'pay_count_delete_name'
+, 'is_distinct' = 'false'
+, 'agg_function' = 'count'
+, 'biz_caliber' = 'sum(1)'
+);
+
+-- 创建原子复合指标-平均支付金额-delete
+CREATE ATOMIC COMPOSITE INDICATOR test_bu.pay_price_avg_delete DECIMAL
+COMMENT '平均支付金额2'
+WITH PROPERTIES (
+  'business_process'='test_bp'
+, 'data_unit' = 'ci'
+, 'extend_name' = 'pay_price_avg_delete_name'
+, 'roll_up_type' = 'SUM_THEN_RATE'
+, 'biz_caliber' = 'pay_price_delete/pay_count_delete'
+)
+AS pay_price_delete/pay_count_delete;
+
+-- 创建派生指标-门店&商品_近1天_生鲜门店&生鲜类目_支付金额-delete
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_1d_pay_price_delete BIGINT
+references pay_price_delete
+comment '门店&商品_近1天_生鲜门店&生鲜类目_支付金额'
+WITH (
+     'extend_name' = 'shop_sku_1d_pay_price_delete',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) as sum(fact_pay_order.pay_price);
+
+-- 创建派生指标-门店&商品_近1天_生鲜门店&生鲜类目_支付次数_delete
+CREATE DERIVATIVE INDICATOR test_bu.shop_sku_1d_pay_count_delete BIGINT
+references pay_count_delete
+comment '门店&商品_近1天_生鲜门店&生鲜类目_支付次数'
+WITH (
+     'extend_name' = 'shop_sku_1d_pay_count_delete',
+     'date_period'= 'd1',
+     'adjunct' = 'shop_type_fresh,sku_type_fresh',
+     'dim_biz_desc' = '门店维度,商品维度',
+     'dim' = 'dim_shop,dim_sku',
+     'main_table' = 'fact_pay_order',
+     'date_field' = 'gmt_create',
+     'date_field_format' = 'yyyy-MM-dd HH:mm:ss'
+) as count(1);
+
+-- 创建派生复合指标-门店&商品_近1天_生鲜门店&生鲜类目_平均支付金额_delete
+CREATE DERIVATIVE COMPOSITE INDICATOR test_bu.shop_sku_1d_pay_price_avg_delete DECIMAL
+REFERENCES pay_price_avg_delete
+comment '门店&商品_近1天_生鲜门店&生鲜类目_平均支付金额'
+WITH PROPERTIES(
+        'date_period'= 'd1'
+      , 'business_process' = 'test_bp'
+      , 'adjunct' = 'shop_type_fresh'
+) AS shop_sku_1d_pay_price_delete / shop_sku_1d_pay_count_delete;
+
+-- 删除派生复合指标
+DROP Indicator test_bu.shop_sku_1d_pay_price_avg_delete;
+
+-- 删除派生指标
+DROP Indicator test_bu.shop_sku_1d_pay_price_delete;
+
+-- 删除派生指标
+DROP Indicator test_bu.shop_sku_1d_pay_count_delete;
+
+-- 删除原子复合指标
+DROP Indicator test_bu.pay_price_avg_delete;
+
+-- 删除原子指标
+DROP Indicator test_bu.pay_price_delete;
+
+-- 删除原子指标
+DROP Indicator test_bu.pay_count_delete;
+
+-- *********************** 测试指标删除-BEGIN *********************** --
+
+-- *********************** 汇总逻辑表 ********************************* --
+
+CREATE DWS TABLE IF NOT EXISTS test_bu.dws_shop_sku_sales_d1 (
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  sku_type string COMMENT '商品类型',
+  sku_name string COMMENT '商品name',
+  shop_sku_1d_sku_count_001 string COMMENT '支付金额' WITH ('indicator'='shop_sku_1d_sku_count_001'),
+  shop_sku_1d_pay_price_001 string COMMENT '支付次数' WITH ('indicator'='shop_sku_1d_pay_price_001'),
+
+  PRIMARY KEY (sku_code, shop_code),
+
+  CONSTRAINT rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code),
+  CONSTRAINT rel_dim_sku DIM KEY (sku_code) REFERENCES dim_sku(sku_code)
+)
+COMMENT '门店商品销售域指标表'
+PARTITIONED BY (gmt_create STRING COMMENT "创建时间" WITH ('pattern'='yyyy-MM-dd HH:mm:ss', 'time_period'='d1'))
+WITH (
+    'data_domain' = 'test_dm',
+    'data_layer' = 'dws_test',
+    'description' = 'test描述'
+);
+
+ALTER TABLE test_bu.dws_shop_sku_sales_d1 ADD COLUMNS (
+    shop_sku_1d_pay_price_avg DECIMAL COMMENT '新增指标' WITH ('indicator'='shop_sku_1d_pay_price_avg')
+)
+
+ALTER TABLE test_bu.dws_shop_sku_sales_d1 DROP COLUMN shop_sku_1d_pay_price_avg
+DROP TABLE test_bu.dws_shop_sku_sales_d1
+
+-- *********************** 事实表 ********************************* --
+
+-- DOMAIN
+CREATE DOMAIN test_bu.dingtalk_contact COMMENT '钉钉通讯录';
+
+-- 不支持 ALTER DOMAIN test_bu.dingtalk_contact1 RENAME TO test_bu.dingtalk_contact;
+
+ALTER DOMAIN test_bu.dingtalk_contact SET COMMENT '丁丁通讯录';
+
+-- BP
+CREATE BUSINESS_PROCESS test_bu.contact_profile_change COMMENT '通讯录档案变化跟踪2' WITH PROPERTIES('domain_key' = 'dingtalk_contact');
+
+ALTER BUSINESS_PROCESS test_bu.contact_profile_change SET COMMENT '通讯录档案变化跟踪03';
+
+-- Fact table
+
+CREATE FACT TABLE IF NOT EXISTS test_bu.fact_emp_change
+( change_id bigint comment '事务变化Id',
+org_id bigint comment '企业Id', emp_id bigint comment '员工Id',
+constraint org_constraint dim key (org_id) references dim_org(org_id),
+constraint emp_constraint dim key (emp_id) references dim_emp_area(area_code),
+CONSTRAINT pk_test PRIMARY KEY (change_id, org_id))
+COMMENT '员工档案变化事实表' ;
+
+-- 列已存在 ALTER TABLE test_bu.fact_emp_change ADD COLUMNS (org_id bigint  COMMENT 'test01');
+
+ALTER TABLE test_bu.fact_emp_change ADD COLUMNS (test01 bigint  COMMENT 'test02');
+
+ALTER TABLE test_bu.fact_emp_change drop constraint pk_test;
+
+ALTER TABLE test_bu.fact_emp_change add constraint pk_test_02 PRIMARY KEY (org_id, test01);
+
+ALTER TABLE test_bu.fact_emp_change CHANGE COLUMN test01 test02 bigint COMMENT 'test02' ;
+
+ALTER TABLE test_bu.fact_emp_change RENAME TO demo.fact_emp_change_test;
+
+ALTER TABLE test_bu.fact_emp_change_test RENAME TO test_bu.fact_emp_change;
+
+ALTER TABLE test_bu.fact_emp_change DROP CONSTRAINT org_constraint;
+
+ALTER TABLE test_bu.fact_emp_change ADD CONSTRAINT test_01 DIM KEY (org_id) REFERENCES dim_org(org_id);
+
+ALTER TABLE test_bu.fact_emp_change DROP CONSTRAINT test_01;
+
+ALTER TABLE test_bu.fact_emp_change  ADD CONSTRAINT test_02 DIM REFERENCES dim_org;
+
+-- DROP BUSINESSPROCESS test_bu.contact_profile_change_test;
+
+-- DROP DOMAIN test_bu.dingtalk_contact1;
+
+-- show tables
+
+SHOW tables from test_bu;
+
+-- Layer
+CREATE LAYER test_bu.dws COMMENT '汇聚层'  WITH ('description' = '汇聚层设计', 'extend_name' = 'dataWarehouse summary')
+
+ALTER LAYER test_bu.dws RENAME TO test_bu.dwd;
+
+ALTER LAYER test_bu.dwd SET COMMENT '明细层';
+
+ALTER LAYER test_bu.dwd SET ('description' = '明细层设计', 'extend_name' = 'dataWarehouse detail');
+
+ALTER LAYER test_bu.dwd ADD CHECKER regex table_name_regex 'aa' COMMENT '测试checker';
+
+
+-- CodeTable
+CREATE CODE TABLE test_bu.sex COMMENT '性别' WITH ('group'='1','extend_name'='sex category','description'='性别枚举表');
+
+ALTER TABLE test_bu.sex SET COMMENT 'test';
+
+ALTER TABLE test_bu.sex SET ('group'='2','extend_name'='sex_category','description'='性别枚举表测试2');
+
+INSERT INTO test_bu.sex(`code`,name,extend_name) VALUES ('code1','name1','extend1');
+
+DROP TABLE test_bu.sex;
+
+
+-- Group
+CREATE GROUP DICT test_bu.dict1 COMMENT '数据字典分组1';
+
+ALTER GROUP DICT test_bu.dict1 SET COMMENT '数据字典分组2';
+
+DROP GROUP DICT test_bu.dict1;
+
+
+ALTER GROUP MEASURE_UNIT test_bu.mu1 SET COMMENT '度量单位分组2';
+
+
+-- MeasureUnit
+CREATE MEASURE_UNIT test_bu.measure1 COMMENT '度量单位1' WITH PROPERTIES('group'='mu1', 'extend_name'='extendName');
+
+ALTER MEASURE_UNIT test_bu.measure1 SET COMMENT 'comment';
+
+ ALTER MEASURE_UNIT test_bu.measure1 SET PROPERTIES('group' = 'mu1');
+
+ DROP MEASURE_UNIT test_bu.measure1;
+
+ DROP GROUP MEASURE_UNIT test_bu.mu1;
+
+
+-- Partitioned + GROUP_测试
+CREATE DIM TABLE IF NOT EXISTS test_bu.dim_sku_partition
+(
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  sku_type string COMMENT '商品类型',
+  sku_name string COMMENT '商品name',
+  brand_code string COMMENT '品牌code',
+  dept_code string COMMENT '部门code',
+  cat_level_1_id string COMMENT '1级类目id',
+  cat_level_2_id string COMMENT '2级类目id',
+  cat_level_3_id string COMMENT '3级类目id',
+  cat_level_4_id string COMMENT '4级类目id',
+  primary key (sku_code,shop_code),
+  constraint dim_sku_rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code),
+  constraint dim_sku_rel_dim_sku_brand DIM KEY (brand_code) REFERENCES dim_sku_brand(brand_code)
+) COMMENT '商品' PARTITIONED BY (ds string COMMENT '日期', sex string COMMENT '性别') WITH PROPERTIES('business_process'='test_bp');
+
+
+CREATE DIM TABLE IF NOT EXISTS test_bu.dim_sku_group
+(
+  sku_code string COMMENT '商品code',
+  shop_code string COMMENT '门店code',
+  sku_type string COMMENT '商品类型',
+  sku_name string COMMENT '商品name',
+  brand_code string COMMENT '品牌code',
+  dept_code string COMMENT '部门code',
+  cat_level_1_id string COMMENT '1级类目id',
+  cat_level_2_id string COMMENT '2级类目id',
+  cat_level_3_id string COMMENT '3级类目id',
+  cat_level_4_id string COMMENT '4级类目id',
+  primary key (sku_code,shop_code),
+  constraint dim_sku_rel_dim_shop DIM KEY (shop_code) REFERENCES dim_shop(shop_code),
+  constraint dim_sku_rel_dim_sku_brand DIM KEY (brand_code) REFERENCES dim_sku_brand(brand_code),
+  constraint col_group COLUMN_GROUP (sku_code, shop_code)
+) COMMENT '商品'  WITH PROPERTIES('business_process'='test_bp');
+
+
+-- Show + Desc
+Desc TABLE test_bu.dim_sku_group;
+
+Show CREATE TABLE test_bu.dim_sku_group;
+
+SHOW TABLES FROM test_bu;
+
+
+CREATE FACT TABLE IF NOT EXISTS test_bu.dwd_dlv_order_df
+(
+    delivery_task_id                    BIGINT COMMENT '配送任务ID',
+    delivery_order_id                   BIGINT COMMENT '配送单ID',
+    delivery_order_created              STRING COMMENT '配送单创建时间',
+    delivery_batch_id                   BIGINT COMMENT '配送批次ID',
+    external_system_code                STRING COMMENT '外部系统编码',
+    fulfill_order_id                    STRING COMMENT '履约单号',
+    delivery_dock_code                  STRING COMMENT '配送站编码',
+    biz_order_type                      BIGINT COMMENT '履约单类型,1外卖,2生鲜,3B2C',
+    sub_biz_order_type                  BIGINT COMMENT 'biz_order_type为3时1表示冷链',
+    fulfill_order_gmt_create            STRING COMMENT '履约单创建时间',
+    order_remark                        STRING COMMENT '履约单配送备注'
+)
+COMMENT '配送DWD主订单'
+PARTITIONED BY (ds STRING COMMENT 'test' )WITH PROPERTIES( 'business_process'='test_bp','lifecycle'='3600');
+
+
+-- 物化
+create materialized view test_bu.m1 references (dim_sku_group) COMMENT 'dsl remark' engine ODPS with('env'='DEV','instance_ds'='instance1');
+

@@ -1,0 +1,27 @@
+## 0.4.5
+新功能（new features）
+Core
+• 支持Call语法的操作，支持指标SQL的转换。
+• 增加CreateDwsTable，汇总逻辑表的定义。 
+• ShowObjects语句对象支持Limit和Offset
+Transformer
+• 支持Maxcompute SQL到FML模型转换
+• Maxcomputer转换器默认使用1.0版本类型方式
+功能优化（enhancement）
+Core
+• CreateTable以及子类使用Builder模式进行重构
+• ColumnDefinition使用Builder模式进行重构 
+• ChangeCol支持更改自定义属性。
+• 新增一些常用的方法，用于判断Statement内的属性是否为空。 
+• 标识（Identifier）支持下划线开头，兼容ODPS表的规范。 
+JDBC Driver
+• 异常提示优化，增加requestId的请求，方便问题排查。
+• 重构了底层的鉴权方式，采用Commad模式。  
+BugFix（bug fix）
+• Fixed MaxCompute Transformer1.0 时，不支持Alter语句的列类型转换。
+向下兼容（compatibility）
+• 暂无
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无

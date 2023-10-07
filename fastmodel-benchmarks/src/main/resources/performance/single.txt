@@ -1,0 +1,9 @@
+-- 创建维度表-门店
+CREATE DIM TABLE IF NOT EXISTS test_bu.dim_shop
+(
+  shop_code string COMMENT '门店code',
+  shop_name string COMMENT '门店name',
+  shop_type string COMMENT '门店类型',
+  merchant_code bigint COMMENT '商家code',
+  primary key (shop_code)
+) COMMENT '门店' WITH PROPERTIES('business_process'='test_bp');

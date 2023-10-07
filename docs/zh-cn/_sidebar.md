@@ -1,0 +1,56 @@
+<!-- docs/_sidebar.md -->
+
+* [首页](zh-cn/README.md)
+* [入门](zh-cn/guide.md)
+* [与SQL的差异](zh-cn/difference.md)
+* [基本元素](zh-cn/basic.md)
+* 数仓规划
+    * [概述](zh-cn/layer/guide.md)
+    * [数仓分层](zh-cn/layer/data_layer.md)
+    * [业务分类](zh-cn/layer/business_category.md)
+    * [数据域](zh-cn/layer/data_domain.md)
+    * [业务过程](zh-cn/layer/business_process.md)
+* 维度建模
+    * [表操作](zh-cn/model/table.md)
+    * [列和约束](zh-cn/model/column.md)
+    * [数据质量](zh-cn/model/quality.md)
+    * [维度定义](zh-cn/model/dimension.md)
+* 数据标准
+    * [数据标准和标准集](zh-cn/standard/standard_dict.md)
+    * [标准代码](zh-cn/standard/code_table.md)
+    * [度量单位](zh-cn/standard/measure_unit.md)
+* 指标管理
+    * [原子指标](zh-cn/indicator/atomic.md)
+    * [修饰词](zh-cn/indicator/adjunct.md)
+    * [时间周期](zh-cn/indicator/time_period.md)
+    * [派生指标](zh-cn/indicator/derivative.md)
+* 查询语句
+    * [总览](zh-cn/query/guide.md)
+* 引用
+    * [查看引用](zh-cn/references/show_references.md)
+    * [移动引用](zh-cn/references/move_references.md)
+* 命令语句
+    * [渲染导入导出](zh-cn/command/impexp.md)
+* 逆向
+    * [逆向建模](zh-cn/reverse/model.md)
+    * [逆向生成指标](zh-cn/reverse/indicator.md)
+* 发布
+    * [模型发布](zh-cn/publish/model.md)
+* DDL转换
+    * [总览](zh-cn/transformer/guide.md)
+    * [建表SDK](zh-cn/transformer/table.md)
+    * [MaxCompute](zh-cn/transformer/maxcompute.md)
+    * [Hive](zh-cn/transformer/hive.md)
+    * [Hologres](zh-cn/transformer/hologres.md)
+    * [Mysql](zh-cn/transformer/mysql.md)
+    * [Oracle](zh-cn/transformer/oracle.md)
+    * [其他](zh-cn/transformer/other.md)
+    * [比较](zh-cn/transformer/compare.md)
+* JDBC
+    * [快速开始](zh-cn/jdbc/guide.md)
+    * [CLI程序](zh-cn/jdbc/cli.md)
+* IDE
+    * [IDE设计](zh-cn/ide/design.md)
+* 其他
+    * [如何贡献](zh-cn/how-to-contribute.md)
+    * [RoadMap](zh-cn/roadmap.md)

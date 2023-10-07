@@ -1,0 +1,6 @@
+target
+node
+node_modules
+log.txt
+/src/antlr/
+/dist/

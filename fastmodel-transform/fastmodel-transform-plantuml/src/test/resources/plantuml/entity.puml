@@ -1,0 +1,13 @@
+@startuml
+entity users {
+  id: Integer
+  created_at: Timestamp
+}
+
+entity user_settings {
+  user_id: Integer
+  setting_key: String
+  setting_value: String
+}
+user_settings::user_id -- users::id
+@enduml

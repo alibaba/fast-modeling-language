@@ -1,0 +1,119 @@
+skinparam dpi 150
+
+hide methods
+hide stereotypes
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Functions
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+''
+'' 表
+''
+'' @param string $name 表名
+'' @param string $desc 详细描述
+''
+!unquoted function Table($name, $desc = "")
+    !return "class " + $name + ' as "' + $name + "\n" + "(" + $desc + ')" << (T,#FFAAAA) >>'
+!endfunction
+
+''
+'' 主键
+''
+'' @param string $col 列名
+''
+!unquoted function PK($col = "id")
+    !return "<b>" + $col + "</b>"
+!endfunction
+
+''
+'' 非空
+''
+'' @param string $col 列名
+''
+!function NN($col)
+    !return "<u>" + $col + "</u>"
+!endfunction
+
+''
+'' 唯一
+''
+'' @param string $col 列名
+''
+!function UQ($col)
+    !return "<color:green>" + $col + "</color>"
+!endfunction
+
+''
+'' 缺省值
+''
+'' @param string $val 缺省值
+''
+!function DV($val)
+    !return "<u>" + $val + "</u>"
+!endfunction
+
+''
+'' 无符号数值，unsigned
+''
+'' @param string $type 类型
+''
+!function UN($type)
+    !return "U_" + $type
+!endfunction
+
+''
+'' 注释
+''
+'' @param string $label 列标题
+'' @param string $desc 详细描述
+''
+!function CM($label, $desc="")
+    !$val = "<color:green>" + $label
+    !if ($desc != "")
+        !$val = $val + "\n" + "<size:8><color:gray><i>“" + $desc + "”</i></color></size>"
+    !endif
+    !return $val
+!endfunction
+
+''
+'' 列
+''
+'' @param string $name 列名
+'' @param string $type 数据类型
+'' @param boolean $notNull 是否非空 0:可空，1:非空，缺省为0
+'' @param mixed $defVal 缺省值 无缺省值时传空字符串""，缺省值为空字符串时传单引号"''"
+'' @param string $label 列标题
+'' @param string $desc 详细描述
+'' 
+!function Column($name, $type, $notNull=0, $defVal="", $label="", $desc="")
+    !$val = ""
+    !if ($notNull == 1)
+        !$name = NN($name)
+    !endif
+    !$val = $name + " <color:royalBlue><size:8>" + %upper($type)
+    !if ($defVal != "")
+        !$val = $val + " " + DV($defVal)
+    !endif
+    !if ($label != "")
+        !$val = $val + " " + CM($label, $desc)
+    !endif
+    !return $val
+!endfunction
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Constants
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' created_at、updated_at、deleted_at三列
+!global TIMESTAMPS = Column("created_at", "TIMESTAMP") + "\n" + Column("updated_at", "TIMESTAMP") + "\n" + Column("deleted_at", "TIMESTAMP")
+
+' 主键类型
+!global PK_TYPE = UN("BIGINT[20]")
+
+' 主键列
+!$tmp = PK()
+!global PRIMARY_KEY = Column($tmp, PK_TYPE)
+
+' 列注释中的换行符
+!global CMBR="\n<size:8><color:gray><i>"

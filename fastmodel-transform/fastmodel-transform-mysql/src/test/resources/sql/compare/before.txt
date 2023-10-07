@@ -1,0 +1,1113 @@
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = adjunct   */
+/******************************************/
+CREATE TABLE `adjunct` (
+                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                           `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                           `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                           `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                           `project_id` varchar(64) DEFAULT NULL COMMENT '项目id',
+                           `creator_id` varchar(128) NOT NULL COMMENT '创建人租户baseId',
+                           `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                           `modifier_id` varchar(128) NOT NULL COMMENT '修改人租户baseId',
+                           `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                           `owner_id` varchar(128) NOT NULL COMMENT '负责人租户baseId',
+                           `owner_name` varchar(128) DEFAULT NULL COMMENT '负责人显示名称',
+                           `uuid` varchar(64) NOT NULL COMMENT '全局唯一的uuid',
+                           `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                           `type` tinyint(4) NOT NULL COMMENT '修饰词类型',
+                           `code` varchar(128) NOT NULL COMMENT '修饰词code',
+                           `name` varchar(256) NOT NULL COMMENT '修饰词name',
+                           `description` varchar(2048) DEFAULT NULL COMMENT '详细描述',
+                           `expression` varchar(1024) DEFAULT NULL COMMENT '计算表达式',
+                           `is_deleted` tinyint(4) NOT NULL COMMENT '是否被删除',
+                           `ext_config` varchar(2048) DEFAULT NULL COMMENT '拓展配置',
+                           `extend_name` varchar(256) DEFAULT NULL COMMENT '拓展名称',
+                           `biz_expression` varchar(1024) DEFAULT NULL COMMENT '业务表达式',
+                           `data_domain_uuid` varchar(64) DEFAULT NULL COMMENT '数据域uuid',
+                           PRIMARY KEY (`id`),
+                           UNIQUE KEY `uk_adjunct_uuid` (`uuid`),
+                           KEY `idx_adjunct_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='修饰词配置表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = business_process   */
+/******************************************/
+CREATE TABLE `business_process` (
+                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                    `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                                    `uuid` varchar(64) NOT NULL COMMENT '唯一编码',
+                                    `code` varchar(128) NOT NULL COMMENT '业务过程编码',
+                                    `name` varchar(2048) NOT NULL COMMENT '业务过程名称',
+                                    `data_domain_uuid` varchar(64) NOT NULL COMMENT '数据域uuid',
+                                    `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                                    `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                    `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                    `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                    `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                    `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                                    `owner_name` varchar(128) NOT NULL COMMENT '负责人名称',
+                                    `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                    `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                    `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务单元uuid',
+                                    `extend_name` varchar(2048) DEFAULT NULL COMMENT '扩展名',
+                                    `order_id` int(11) DEFAULT NULL COMMENT '排序字段',
+                                    `source` tinyint(4) DEFAULT NULL COMMENT '来源(1.系统创建,2.用户创建)',
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uk_uuid` (`uuid`),
+                                    KEY `idx_unit_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=1198 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='业务过程'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = business_unit   */
+/******************************************/
+CREATE TABLE `business_unit` (
+                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                 `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                 `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                 `uuid` varchar(64) NOT NULL COMMENT '唯一编码',
+                                 `code` varchar(128) NOT NULL COMMENT '业务板块编码',
+                                 `name` varchar(2048) NOT NULL COMMENT '业务板块名称',
+                                 `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                                 `project_id` varchar(64) DEFAULT NULL COMMENT '项目ID',
+                                 `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                 `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                 `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                 `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                 `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                                 `owner_name` varchar(128) NOT NULL COMMENT '负责人名称',
+                                 `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                 `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                 `extend_name` varchar(2048) DEFAULT NULL COMMENT '扩展名',
+                                 PRIMARY KEY (`id`),
+                                 UNIQUE KEY `uk_uuid` (`uuid`),
+                                 KEY `uk_tenant_unit` (`tenant_id`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=809 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='业务板块'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = checker   */
+/******************************************/
+CREATE TABLE `checker` (
+                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                           `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                           `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                           `uuid` varchar(64) NOT NULL COMMENT '检查器唯一标识',
+                           `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块UUID',
+                           `code` varchar(128) NOT NULL COMMENT '检查器编码',
+                           `name` varchar(2048) NOT NULL COMMENT '检查器名称',
+                           `type` tinyint(4) NOT NULL COMMENT '检查器类型',
+                           `expression` varchar(1024) DEFAULT NULL COMMENT '检查器规则表达式',
+                           `is_check` tinyint(4) NOT NULL COMMENT '是否开启校验',
+                           `description` varchar(2048) DEFAULT NULL COMMENT '备注',
+                           `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                           `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                           `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                           `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                           `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                           `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                           `is_real` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否实时监测',
+                           PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数仓分层检查器表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = check_result   */
+/******************************************/
+CREATE TABLE `check_result` (
+                                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                `checker_uuid` varchar(64) DEFAULT NULL COMMENT '检查器uuid(废弃)',
+                                `related_entity_uuid` varchar(64) NOT NULL COMMENT '挂载检查器的实体uuid',
+                                `check_entity_uuid` varchar(64) DEFAULT NULL COMMENT '检查对象uuid',
+                                `check_entity_value` varchar(2048) DEFAULT NULL COMMENT '检查对象value',
+                                `check_entity_context` varchar(2048) DEFAULT NULL COMMENT '检查对象上下文',
+                                `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                `checker_type` tinyint(4) DEFAULT NULL COMMENT '检查器类型',
+                                PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1032 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='检查结果表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = code_table   */
+/******************************************/
+CREATE TABLE `code_table` (
+                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                              `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                              `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                              `uuid` varchar(64) NOT NULL COMMENT 'uuid主键',
+                              `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                              `code` varchar(128) NOT NULL COMMENT '编码',
+                              `name` varchar(2048) DEFAULT NULL COMMENT '名称',
+                              `extend_name` varchar(2048) DEFAULT NULL COMMENT '扩展名称',
+                              `description` varchar(2048) DEFAULT NULL COMMENT '码表描述',
+                              `creator_id` varchar(128) DEFAULT NULL COMMENT '创建者id',
+                              `creator_name` varchar(128) DEFAULT NULL COMMENT '创建者名称',
+                              `modifier_id` varchar(128) DEFAULT NULL COMMENT '修改者id',
+                              `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改者名称',
+                              `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                              `owner_id` varchar(128) DEFAULT NULL COMMENT '负责人id',
+                              `owner_name` varchar(128) DEFAULT NULL COMMENT '负责人名称',
+                              `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                              `directory_uuid` varchar(64) DEFAULT NULL COMMENT '所属目录uuid',
+                              PRIMARY KEY (`id`),
+                              KEY `idx_unit_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=911 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='码表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = code_table_column   */
+/******************************************/
+CREATE TABLE `code_table_column` (
+                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                     `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                     `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                                     `table_uuid` varchar(64) NOT NULL COMMENT '码表uuid',
+                                     `code` varchar(128) NOT NULL COMMENT '码表列编码',
+                                     `name` varchar(2048) DEFAULT NULL COMMENT '码表列名称',
+                                     `data_type` varchar(32) NOT NULL COMMENT '数据类型',
+                                     `is_primary_key` tinyint(4) NOT NULL COMMENT '是否主键',
+                                     `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                     `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                     `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                     `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                     `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                     `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                     `uuid` varchar(64) NOT NULL COMMENT '事实列UUID',
+                                     PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3641 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='码表列'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = code_table_content   */
+/******************************************/
+CREATE TABLE `code_table_content` (
+                                      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                      `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                      `code` varchar(128) DEFAULT NULL COMMENT '废弃',
+                                      `code_content` varchar(128) NOT NULL COMMENT '枚举值',
+                                      `name_content` varchar(2048) DEFAULT NULL COMMENT '枚举名称',
+                                      `extend_name_content` varchar(2048) DEFAULT NULL COMMENT '扩展名称',
+                                      `description` varchar(2048) DEFAULT NULL COMMENT '编码含义',
+                                      `creator_id` varchar(128) NOT NULL COMMENT '创建者id',
+                                      `creator_name` varchar(128) NOT NULL COMMENT '创建者名称',
+                                      `modifier_id` varchar(128) NOT NULL COMMENT '修改者id',
+                                      `modifier_name` varchar(128) NOT NULL COMMENT '修改者名称',
+                                      `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                      `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                                      `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                                      `table_uuid` varchar(64) NOT NULL DEFAULT '-1' COMMENT '关联码表uuid',
+                                      PRIMARY KEY (`id`),
+                                      KEY `idx_table_uuid_content` (`table_uuid`,`code_content`)
+) ENGINE=InnoDB AUTO_INCREMENT=2455834 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='码表枚举内容'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = data_dictionary   */
+/******************************************/
+CREATE TABLE `data_dictionary` (
+                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                   `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                   `uuid` varchar(64) NOT NULL COMMENT '唯一标识',
+                                   `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块UUID',
+                                   `code` varchar(128) NOT NULL COMMENT '字段编码',
+                                   `name` varchar(2048) NOT NULL COMMENT '字段中文名',
+                                   `extend_name` varchar(2048) DEFAULT NULL COMMENT '字段扩展名',
+                                   `data_type` varchar(32) NOT NULL COMMENT '字段数据类型',
+                                   `parent_uuid` varchar(64) DEFAULT NULL COMMENT '上一级数据字典uuid',
+                                   `length` int(11) DEFAULT NULL COMMENT '字段长度',
+                                   `numerical_precision` int(11) DEFAULT NULL COMMENT '字段精度',
+                                   `not_null` tinyint(4) DEFAULT NULL COMMENT '是否可空',
+                                   `default_value` varchar(2048) DEFAULT NULL COMMENT '默认值',
+                                   `description` varchar(2048) DEFAULT NULL COMMENT '详细描述',
+                                   `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                   `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                   `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                   `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                   `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                   `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                                   `no` varchar(64) DEFAULT NULL COMMENT '标准编号',
+                                   `directory_uuid` varchar(64) DEFAULT NULL COMMENT '所属目录UUID',
+                                   `code_table_uuid` varchar(64) DEFAULT NULL COMMENT '引用码表UUID',
+                                   PRIMARY KEY (`id`),
+                                   UNIQUE KEY `uk_uuid` (`uuid`),
+                                   KEY `idx_unit_code` (`business_unit_uuid`,`code`),
+                                   KEY `idx_unit_directory` (`business_unit_uuid`,`directory_uuid`),
+                                   KEY `idx_unit_no` (`business_unit_uuid`,`no`)
+) ENGINE=InnoDB AUTO_INCREMENT=4846 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据字典表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = data_domain   */
+/******************************************/
+CREATE TABLE `data_domain` (
+                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                               `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                               `uuid` varchar(64) NOT NULL COMMENT '唯一编码',
+                               `code` varchar(128) NOT NULL COMMENT '数据域编码',
+                               `name` varchar(2048) NOT NULL COMMENT '数据域名称',
+                               `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                               `parent_id` bigint(20) DEFAULT NULL COMMENT '父域ID，废弃',
+                               `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                               `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                               `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                               `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                               `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                               `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                               `owner_name` varchar(128) NOT NULL COMMENT '负责人名称',
+                               `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                               `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                               `extend_name` varchar(2048) DEFAULT NULL COMMENT '扩展名',
+                               `order_id` int(11) DEFAULT NULL COMMENT '排序字段',
+                               PRIMARY KEY (`id`),
+                               UNIQUE KEY `uk_uuid` (`uuid`),
+                               KEY `idx_unit_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=1009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据域'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = data_warehouse_layer   */
+/******************************************/
+CREATE TABLE `data_warehouse_layer` (
+                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                        `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                        `uuid` varchar(64) NOT NULL COMMENT '唯一标识',
+                                        `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块UUID',
+                                        `code` varchar(128) NOT NULL COMMENT '数仓层编码',
+                                        `name` varchar(2048) NOT NULL COMMENT '数仓层中文名',
+                                        `extend_name` varchar(2048) DEFAULT NULL COMMENT '数仓层扩展名',
+                                        `description` varchar(2048) DEFAULT NULL COMMENT '数仓层详细描述',
+                                        `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                        `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                        `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                        `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                        `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                                        `owner_name` varchar(128) NOT NULL COMMENT '负责人名称',
+                                        `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                        `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                                        PRIMARY KEY (`id`),
+                                        UNIQUE KEY `uk_uuid` (`uuid`),
+                                        KEY `idx_unit_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=3912 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数仓分层表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = diagram   */
+/******************************************/
+CREATE TABLE `diagram` (
+                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                           `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                           `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                           `uuid` varchar(64) NOT NULL COMMENT '画板uuid',
+                           `relation_entity_uuid` varchar(128) NOT NULL COMMENT '关联实体存在前缀+实际实体uuid',
+                           `content` mediumtext COMMENT '画板内容',
+                           `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                           `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                           `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                           `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                           `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                           `owner_name` varchar(128) NOT NULL COMMENT '负责人名称',
+                           `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                           `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                           PRIMARY KEY (`id`),
+                           UNIQUE KEY `uk_uuid` (`uuid`),
+                           UNIQUE KEY `uk_relation_entity_id` (`relation_entity_uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=275 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='画布表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = diagram_element   */
+/******************************************/
+CREATE TABLE `diagram_element` (
+                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                   `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                   `uuid` varchar(64) NOT NULL COMMENT '唯一标示',
+                                   `diagram_uuid` varchar(64) NOT NULL COMMENT '关联画布uuid',
+                                   `relation_entity_uuid` varchar(128) NOT NULL COMMENT '关联元素uuid',
+                                   `content` mediumtext COMMENT '画布元素内容',
+                                   `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                   `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                   `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                   `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                   `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                                   `owner_name` varchar(128) NOT NULL COMMENT '负责人名称',
+                                   `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                                   `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                   `type` varchar(64) DEFAULT NULL COMMENT '元素类型',
+                                   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='画板元素表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = dimension_level   */
+/******************************************/
+CREATE TABLE `dimension_level` (
+                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                   `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                   `name` varchar(128) NOT NULL COMMENT '层级名称',
+                                   `dimension_table_uuid` varchar(64) NOT NULL COMMENT '维度表唯一编码',
+                                   `dimension_column_code` varchar(128) NOT NULL COMMENT '维度列编码',
+                                   `is_main` tinyint(4) NOT NULL COMMENT '是否主层级',
+                                   `level_order` int(11) NOT NULL COMMENT '层级顺序',
+                                   `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                   `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                   `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                   `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                   `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                   PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='维度层级'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = directory   */
+/******************************************/
+CREATE TABLE `directory` (
+                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                             `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                             `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                             `uuid` varchar(64) NOT NULL COMMENT '唯一编码',
+                             `name` varchar(128) NOT NULL COMMENT '目录名称',
+                             `type` tinyint(4) NOT NULL COMMENT '目录类型',
+                             `detail_type` varchar(32) NOT NULL COMMENT '子类型',
+                             `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                             `parent_uuid` varchar(64) DEFAULT NULL COMMENT '父级目录UUID',
+                             `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                             `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                             `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                             `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                             `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                             `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                             `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                             `code` varchar(128) DEFAULT NULL COMMENT '目录编码',
+                             `order_id` int(11) DEFAULT NULL COMMENT '排序字段',
+                             PRIMARY KEY (`id`),
+                             UNIQUE KEY `uk_uuid` (`uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=5448 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='目录表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = distributed_lock   */
+/******************************************/
+CREATE TABLE `distributed_lock` (
+                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                    `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                                    `namespace` varchar(128) NOT NULL COMMENT 'namespace',
+                                    `lock_key` varchar(128) NOT NULL COMMENT '锁key',
+                                    `expire_millisecond` int(11) NOT NULL COMMENT '锁最大存活时长(单位:毫秒)',
+                                    `gmt_expire` datetime DEFAULT NULL COMMENT '过期时间',
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uk_distributed_lock_uuid` (`lock_key`,`namespace`),
+                                    KEY `idx_distributed_lock_gmt_expire` (`gmt_expire`)
+) ENGINE=InnoDB AUTO_INCREMENT=51514 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='分布式锁'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = dws_query_config   */
+/******************************************/
+CREATE TABLE `dws_query_config` (
+                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                    `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                    `uuid` varchar(64) NOT NULL COMMENT 'uuid',
+                                    `dws_table_uuid` varchar(64) NOT NULL COMMENT '关联dws表uuid',
+                                    `grouping_mode` tinyint(4) NOT NULL COMMENT '组合模式: 单一粒度(1), 自定义组合(2), CUBE(3)',
+                                    `default_value` varchar(64) DEFAULT NULL COMMENT '默认值',
+                                    `filter_uuid_list` json NOT NULL COMMENT '过滤对象的uuid列表',
+                                    `filter_condition` varchar(1024) DEFAULT NULL COMMENT '对应的过滤条件',
+                                    `type` tinyint(4) NOT NULL COMMENT '取数过滤类型：维度(1)、时间周期(2)、修饰词(3)',
+                                    `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                                    `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务版块ID',
+                                    `filter_hash` varchar(64) NOT NULL COMMENT '过滤对象的uuid列表哈希',
+                                    `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uk_uuid` (`uuid`),
+                                    KEY `idx_dws_table_uuid` (`dws_table_uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='汇总表取数配置'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = entity_relation   */
+/******************************************/
+CREATE TABLE `entity_relation` (
+                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                   `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                   `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                                   `rel_type` int(11) NOT NULL COMMENT '关联类型',
+                                   `left_uuid` varchar(128) NOT NULL COMMENT '左对象uuid',
+                                   `left_type` varchar(128) NOT NULL COMMENT '左对象类型',
+                                   `right_uuid` varchar(128) NOT NULL COMMENT '右对象uuid',
+                                   `right_type` varchar(128) NOT NULL COMMENT '右对象类型',
+                                   `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                   `direction_type` tinyint(4) NOT NULL COMMENT '边方向类型：左引用右，右引用左，左右互相引用',
+                                   PRIMARY KEY (`id`),
+                                   UNIQUE KEY `uk_entity_relation` (`left_uuid`,`right_uuid`,`rel_type`),
+                                   KEY `idx_entity_relation_left` (`left_uuid`,`rel_type`),
+                                   KEY `idx_entity_relation_right` (`right_uuid`,`rel_type`)
+) ENGINE=InnoDB AUTO_INCREMENT=19366 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='领域模型关联关系表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = enum_table_content   */
+/******************************************/
+CREATE TABLE `enum_table_content` (
+                                      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                      `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                      `code` varchar(128) NOT NULL COMMENT '枚举编码',
+                                      `value` varchar(2048) DEFAULT NULL COMMENT '枚举值',
+                                      `description` varchar(2048) DEFAULT NULL COMMENT '枚举描述',
+                                      `model_table_uuid` varchar(64) NOT NULL DEFAULT '-1' COMMENT '枚举维度表uuid',
+                                      `creator_id` varchar(128) NOT NULL COMMENT '创建者id',
+                                      `creator_name` varchar(128) NOT NULL COMMENT '创建者名称',
+                                      `modifier_id` varchar(128) NOT NULL COMMENT '修改者id',
+                                      `modifier_name` varchar(128) NOT NULL COMMENT '修改者名称',
+                                      `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                      `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                                      `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                                      PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='枚举维度表内容'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = indicator_atomic   */
+/******************************************/
+CREATE TABLE `indicator_atomic` (
+                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                    `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                    `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                                    `project_id` varchar(128) DEFAULT NULL COMMENT '项目id',
+                                    `creator_id` varchar(128) NOT NULL COMMENT '创建人租户baseId',
+                                    `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                    `modifier_id` varchar(128) NOT NULL COMMENT '修改人租户baseId',
+                                    `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                    `owner_id` varchar(128) NOT NULL COMMENT '负责人租户baseId',
+                                    `owner_name` varchar(128) DEFAULT NULL COMMENT '负责人显示名称',
+                                    `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid(冗余存储)',
+                                    `business_process_uuid` varchar(64) DEFAULT NULL COMMENT '主业务过程uuid,副业务过程存在关联表中',
+                                    `source_type` tinyint(4) NOT NULL COMMENT '来源类型',
+                                    `uuid` varchar(64) NOT NULL COMMENT '全局唯一的uuid',
+                                    `type` tinyint(4) NOT NULL COMMENT '指标类型：100原子指标，101复合指标',
+                                    `code` varchar(128) NOT NULL COMMENT '指标code',
+                                    `name` varchar(256) NOT NULL COMMENT '指标name',
+                                    `extend_name` varchar(256) DEFAULT NULL COMMENT '拓展名称',
+                                    `description` varchar(2048) DEFAULT NULL COMMENT '指标详细描述',
+                                    `data_type` varchar(64) NOT NULL COMMENT '指标数据类型',
+                                    `data_round` varchar(16) DEFAULT NULL COMMENT '数据精度: N,M',
+                                    `data_unit_uuid` varchar(64) DEFAULT NULL COMMENT '指标单位uuid',
+                                    `status` tinyint(4) DEFAULT NULL COMMENT '状态',
+                                    `biz_expression` varchar(1024) DEFAULT NULL COMMENT '业务口径',
+                                    `calculate_expression` varchar(1024) DEFAULT NULL COMMENT '计算口径(复合指标公式)',
+                                    `is_deleted` tinyint(4) NOT NULL COMMENT '是否被删除',
+                                    `ext_config` varchar(2048) DEFAULT NULL COMMENT '额外配置',
+                                    `data_distinct` tinyint(4) DEFAULT NULL COMMENT '数据是否需要去重',
+                                    `agg_function_type` tinyint(4) DEFAULT NULL COMMENT '指标聚合函数类型',
+                                    `data_roll_up_type` tinyint(4) DEFAULT NULL COMMENT '数据上卷方式',
+                                    PRIMARY KEY (`id`),
+                                    UNIQUE KEY `uk_indicator_atomic_uuid` (`uuid`),
+                                    KEY `idx_indicator_atomic_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=290 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='原子指标配置表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = indicator_derivative   */
+/******************************************/
+CREATE TABLE `indicator_derivative` (
+                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                        `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                        `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                                        `project_id` varchar(128) DEFAULT NULL COMMENT '项目id',
+                                        `creator_id` varchar(128) NOT NULL COMMENT '创建人租户baseId',
+                                        `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                        `modifier_id` varchar(128) NOT NULL COMMENT '修改人租户baseId',
+                                        `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                        `owner_id` varchar(128) NOT NULL COMMENT '负责人租户baseId',
+                                        `owner_name` varchar(128) DEFAULT NULL COMMENT '负责人显示名称',
+                                        `uuid` varchar(64) NOT NULL COMMENT '全局唯一的uuid',
+                                        `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                                        `business_process_uuid` varchar(64) NOT NULL COMMENT '所属的业务过程uuid',
+                                        `source_type` tinyint(4) DEFAULT NULL COMMENT '指标来源',
+                                        `type` tinyint(4) NOT NULL COMMENT '指标类型',
+                                        `status` tinyint(4) DEFAULT NULL COMMENT '状态',
+                                        `code` varchar(128) NOT NULL COMMENT '指标code',
+                                        `name` varchar(256) NOT NULL COMMENT '指标name',
+                                        `extend_name` varchar(256) DEFAULT NULL COMMENT '拓展名称',
+                                        `description` varchar(2048) DEFAULT NULL COMMENT '指标详细描述',
+                                        `ind_hash` varchar(64) DEFAULT NULL COMMENT '指标哈希',
+                                        `time_period_uuid` varchar(64) NOT NULL COMMENT '时间周期uuid',
+                                        `adjunct_uuid_list` varchar(1024) DEFAULT NULL COMMENT '废弃——修饰词uuid列表',
+                                        `atomic_indicator_uuid` varchar(64) NOT NULL COMMENT '原子指标uuid',
+                                        `dimension_uuid_list` varchar(1024) DEFAULT NULL COMMENT '废弃——维度表uuid列表',
+                                        `main_table_uuid` varchar(64) DEFAULT NULL COMMENT '废弃——统计主表uuid',
+                                        `expression` varchar(1024) DEFAULT NULL COMMENT '计算表达式,比如复合衍生指标的计算公式(复合有值)',
+                                        `is_deleted` tinyint(4) NOT NULL COMMENT '是否被删除',
+                                        `ext_config` varchar(4096) DEFAULT NULL COMMENT '额外配置',
+                                        `dimension_hash` varchar(128) DEFAULT NULL COMMENT '废弃——维度列表哈希',
+                                        `dimension_biz_desc` varchar(2048) DEFAULT NULL COMMENT '废弃——维度业务描述',
+                                        `build_type` tinyint(4) DEFAULT NULL COMMENT '指标构建类型',
+                                        `ignore_dimension_tag` tinyint(4) DEFAULT '0' COMMENT '废弃——是否忽略维度',
+                                        `dws_table_uuid` varchar(64) DEFAULT NULL COMMENT '废弃——所属汇总逻辑表uuid',
+                                        `dws_table_column_uuid` varchar(64) DEFAULT NULL COMMENT '废弃——所属汇总逻辑表字段uuid',
+                                        `adjunct_json_array` json DEFAULT NULL COMMENT '修饰词列表数组',
+                                        `dim_json_array` json DEFAULT NULL COMMENT '关联维度列表数组',
+                                        PRIMARY KEY (`id`),
+                                        UNIQUE KEY `uk_indicator_derivative_uuid` (`uuid`),
+                                        KEY `idx_indicator_derivative_hash` (`ind_hash`,`business_unit_uuid`),
+                                        KEY `idx_indicator_derivative_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=1867 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='衍生指标配置表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = indicator_dimension   */
+/******************************************/
+CREATE TABLE `indicator_dimension` (
+                                       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                       `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                       `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                       `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                                       `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属业务板块uuid',
+                                       `uuid` varchar(64) NOT NULL COMMENT 'uuid',
+                                       `rel_table_uuid` varchar(64) DEFAULT NULL COMMENT '关联的维度表的uuid',
+                                       `rel_column_uuid` varchar(64) DEFAULT NULL COMMENT '关联的维度表字段的uuid',
+                                       `creator_id` varchar(64) DEFAULT NULL COMMENT '创建人id',
+                                       `creator_name` varchar(64) DEFAULT NULL COMMENT '创建人显示名称',
+                                       `modifier_id` varchar(64) DEFAULT NULL COMMENT '修改人id',
+                                       `modifier_name` varchar(64) DEFAULT NULL COMMENT '修改人显示名称',
+                                       `owner_id` varchar(64) DEFAULT NULL COMMENT '负责人id',
+                                       `owner_name` varchar(64) DEFAULT NULL COMMENT '负责人显示名称',
+                                       `is_deleted` tinyint(4) DEFAULT NULL COMMENT '是否被删除',
+                                       PRIMARY KEY (`id`),
+                                       UNIQUE KEY `uk_indicator_dimension_uuid` (`uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='指标维度'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = indicator_rel_dws   */
+/******************************************/
+CREATE TABLE `indicator_rel_dws` (
+                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                     `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                     `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                     `tenant_id` varchar(32) NOT NULL COMMENT '租户id',
+                                     `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                                     `ind_uuid` varchar(64) NOT NULL COMMENT '派生指标uuid',
+                                     `dws_table_uuid` varchar(64) NOT NULL COMMENT '汇总逻辑表uuid',
+                                     `dws_column_uuid` varchar(64) NOT NULL COMMENT '汇总逻辑表字段uuid',
+                                     `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                     `is_main` tinyint(4) NOT NULL DEFAULT '0' COMMENT '[废弃]是否取数主表',
+                                     `uuid` varchar(64) NOT NULL COMMENT 'uuid',
+                                     PRIMARY KEY (`id`),
+                                     KEY `idx_indicator_rel_dimension_dws` (`dws_table_uuid`,`dws_column_uuid`),
+                                     KEY `idx_indicator_rel_dimension_derind` (`business_unit_uuid`,`ind_uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='指标关联汇总逻辑表信息'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = log_event   */
+/******************************************/
+CREATE TABLE `log_event` (
+                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                             `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                             `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                             `formatted_message` text NOT NULL COMMENT '格式化后的日志消息',
+                             `level_string` varchar(5) NOT NULL COMMENT '日志级别',
+                             `thread_name` varchar(50) DEFAULT NULL COMMENT '运行线程名称',
+                             `reference_flag` tinyint(4) NOT NULL COMMENT '日志标记类型',
+                             `caller_method` varchar(50) DEFAULT NULL COMMENT '打印日志的方法名称',
+                             `caller_filename` varchar(50) DEFAULT NULL COMMENT '打印日志的文件名称',
+                             `caller_line` smallint(6) DEFAULT NULL COMMENT '打印日志的所在行',
+                             `object_key` varchar(50) NOT NULL COMMENT '日志主对象的key',
+                             `log_time` datetime NOT NULL COMMENT '日志时间',
+                             PRIMARY KEY (`id`),
+                             KEY `idx_object_key` (`object_key`) COMMENT '日志主对象key索引'
+) ENGINE=InnoDB AUTO_INCREMENT=34856 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='日志表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = log_event_exception   */
+/******************************************/
+CREATE TABLE `log_event_exception` (
+                                       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                       `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                       `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                       `event_id` bigint(20) NOT NULL COMMENT '日志表主键',
+                                       `line_number` smallint(6) NOT NULL COMMENT '异常信息的行号',
+                                       `trace_line` varchar(254) NOT NULL COMMENT '一行异常信息',
+                                       PRIMARY KEY (`id`),
+                                       UNIQUE KEY `uk_event_id` (`event_id`) COMMENT '日志id索引'
+) ENGINE=InnoDB AUTO_INCREMENT=437 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='日志异常类'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = measure_unit   */
+/******************************************/
+CREATE TABLE `measure_unit` (
+                                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                `uuid` varchar(64) DEFAULT NULL COMMENT '全局唯一的uuid',
+                                `code` varchar(128) DEFAULT NULL COMMENT 'code',
+                                `name` varchar(2048) DEFAULT NULL COMMENT 'name',
+                                `extend_name` varchar(2048) DEFAULT NULL COMMENT '扩展名称',
+                                `directory_uuid` varchar(64) DEFAULT NULL COMMENT '所属目录（分组）',
+                                `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                `business_unit_uuid` varchar(64) DEFAULT NULL COMMENT '所属业务板块uuid',
+                                `tenant_id` varchar(64) DEFAULT NULL COMMENT '租户id',
+                                `creator_id` varchar(128) DEFAULT NULL COMMENT '创建人租户baseId',
+                                `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                `modifier_id` varchar(128) DEFAULT NULL COMMENT '修改人租户baseId',
+                                `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                `owner_id` varchar(128) DEFAULT NULL COMMENT '负责人租户baseId',
+                                `owner_name` varchar(128) DEFAULT NULL COMMENT '负责人显示名称',
+                                `is_deleted` tinyint(4) DEFAULT NULL COMMENT '是否删除',
+                                `order_id` int(11) DEFAULT NULL COMMENT '排序字段',
+                                PRIMARY KEY (`id`),
+                                UNIQUE KEY `uk_uuid` (`uuid`),
+                                KEY `idx_unit_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=23935 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='度量单位'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = model_column   */
+/******************************************/
+CREATE TABLE `model_column` (
+                                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                                `uuid` varchar(64) NOT NULL COMMENT '列uuid',
+                                `model_table_uuid` varchar(64) NOT NULL COMMENT '表uuid',
+                                `code` varchar(128) NOT NULL COMMENT '基础列编码',
+                                `mapping_code` varchar(128) DEFAULT NULL COMMENT '基础列映射编码',
+                                `name` varchar(2048) DEFAULT NULL COMMENT '列名称',
+                                `data_type` varchar(32) NOT NULL COMMENT '数据类型',
+                                `is_primary_key` tinyint(4) NOT NULL COMMENT '是否主键',
+                                `primary_key_name` varchar(128) DEFAULT NULL COMMENT '主键名',
+                                `not_null` tinyint(4) NOT NULL COMMENT '不为空',
+                                `is_partition_key` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否分区键',
+                                `partition_order` int(11) DEFAULT NULL COMMENT '分区顺序',
+                                `type` varchar(32) NOT NULL COMMENT '列类型',
+                                `data_dictionary_uuid` varchar(64) DEFAULT NULL COMMENT '关联数据字典UUID',
+                                `code_table_uuid` varchar(64) DEFAULT NULL COMMENT '关联码表UUID',
+                                `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人名称',
+                                `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人名称',
+                                `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                `order_id` int(11) DEFAULT NULL COMMENT '排序字段',
+                                `config` json DEFAULT NULL COMMENT '列扩展属性，kv存储',
+                                `measure_unit_uuid` varchar(64) DEFAULT NULL COMMENT '度量单位uuid',
+                                PRIMARY KEY (`id`),
+                                KEY `idx_table_code` (`model_table_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=205592 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='维度建模表字段'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = model_column_group   */
+/******************************************/
+CREATE TABLE `model_column_group` (
+                                      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                      `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                                      `model_table_uuid` varchar(64) NOT NULL COMMENT '表uuid',
+                                      `name` varchar(128) NOT NULL COMMENT '分组名称',
+                                      `model_column_uuid` varchar(64) NOT NULL COMMENT '表字段uuid',
+                                      `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                                      `tenant_id` varchar(64) NOT NULL COMMENT '租户ID',
+                                      `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                      `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人名称',
+                                      `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                      `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人名称',
+                                      `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                                      `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                      PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='维度建模表字段组'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = model_table   */
+/******************************************/
+CREATE TABLE `model_table` (
+                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                               `gmt_modified` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                               `uuid` varchar(64) NOT NULL COMMENT '表唯一编码',
+                               `code` varchar(128) NOT NULL COMMENT '通用表编码',
+                               `name` varchar(2048) NOT NULL COMMENT '表名称',
+                               `type` tinyint(4) NOT NULL COMMENT '表类型(0.事实表;1.维度表)',
+                               `detail_type` varchar(32) NOT NULL COMMENT '表详细类型(普通维度、枚举维度、事务事实)',
+                               `business_process_uuid` varchar(64) NOT NULL COMMENT '业务过程uuid',
+                               `business_unit_uuid` varchar(64) NOT NULL COMMENT '业务板块uuid',
+                               `data_warehouse_layer_uuid` varchar(64) DEFAULT NULL COMMENT '数仓层uuid',
+                               `extend_info` varchar(2048) DEFAULT NULL COMMENT '扩展属性',
+                               `tenant_id` varchar(64) DEFAULT NULL COMMENT '租户ID',
+                               `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                               `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人名称',
+                               `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                               `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人名称',
+                               `owner_id` varchar(128) NOT NULL COMMENT '负责人baseID',
+                               `owner_name` varchar(128) DEFAULT NULL COMMENT '负责人名称',
+                               `description` varchar(2048) DEFAULT NULL COMMENT '描述',
+                               `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                               `config` json DEFAULT NULL COMMENT '表扩展属性，kv存储',
+                               `directory_uuid` varchar(64) DEFAULT NULL COMMENT '分类uuid',
+                               `life_cycle` int(10) unsigned DEFAULT NULL COMMENT '表的生命周期',
+                               PRIMARY KEY (`id`),
+                               UNIQUE KEY `uk_uuid` (`uuid`),
+                               KEY `idx_unit_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=6187 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='维度建模表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = online_dqc_rule   */
+/******************************************/
+CREATE TABLE `online_dqc_rule` (
+                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                   `gmt_modified` datetime DEFAULT NULL COMMENT '修改时间',
+                                   `uuid` varchar(128) NOT NULL COMMENT '提交对象唯一id，替代id用于迁移方便，符合团队规范',
+                                   `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                                   `project_id` varchar(128) NOT NULL COMMENT '项目id',
+                                   `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                                   `business_process_name` varchar(70) NOT NULL COMMENT '业务过程名称',
+                                   `model_type` varchar(128) NOT NULL COMMENT '模型类型',
+                                   `model_id` varchar(128) NOT NULL COMMENT '模型id',
+                                   `fml_statement` text NOT NULL COMMENT 'fml语句',
+                                   `big_engine_dsl` text NOT NULL COMMENT '引擎方言dsl',
+                                   `big_engine_type` varchar(70) NOT NULL COMMENT '大数据引擎类型',
+                                   `big_engine_ds` varchar(255) NOT NULL COMMENT '大数据引擎实例数据源',
+                                   `big_engine_dialect_type` varchar(70) NOT NULL COMMENT '大数据dsl方言类型',
+                                   `release_runtime_env` varchar(70) NOT NULL COMMENT '要生效的运行环境',
+                                   `release_object_id` varchar(128) DEFAULT NULL COMMENT 'release_object外键',
+                                   `commit_object_id` varchar(128) DEFAULT NULL COMMENT '提交对象外键',
+                                   `version` int(11) NOT NULL COMMENT '版本号',
+                                   `creator_id` varchar(128) NOT NULL COMMENT '创建人baseId',
+                                   `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                   `modifier_id` varchar(128) DEFAULT NULL COMMENT '修改人baseId',
+                                   `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                   `property` varchar(128) NOT NULL COMMENT '属性',
+                                   `rule_id` varchar(128) NOT NULL COMMENT '规则lid',
+                                   `partition_expr_id` varchar(128) NOT NULL COMMENT '分区表达式id',
+                                   `partition_expr` varchar(128) NOT NULL COMMENT '分区表达式内容',
+                                   `rule_name` varchar(128) NOT NULL COMMENT '规则名称',
+                                   `block_type` varchar(32) NOT NULL COMMENT '规则强弱',
+                                   `entity_level` tinyint(4) NOT NULL COMMENT '规则级别',
+                                   `rule_value` text NOT NULL COMMENT '规则内容',
+                                   `rule_desc` varchar(2000) DEFAULT NULL COMMENT '规则描述',
+                                   `ext_info` text NOT NULL COMMENT '扩展信息',
+                                   `property_type` varchar(32) NOT NULL COMMENT '属性类型',
+                                   PRIMARY KEY (`id`),
+                                   KEY `idx_model_id` (`model_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='在线dqc配置表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = physical_entity_instance   */
+/******************************************/
+CREATE TABLE `physical_entity_instance` (
+                                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                            `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                            `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                            `tenant_id` varchar(64) DEFAULT NULL COMMENT '租户id',
+                                            `business_unit_uuid` varchar(64) DEFAULT NULL COMMENT '业务板块uuid',
+                                            `entity_type` tinyint(4) DEFAULT NULL COMMENT '实体类型',
+                                            `entity_uuid` varchar(64) DEFAULT NULL COMMENT '实体对象uuid',
+                                            `engine_type` varchar(64) DEFAULT NULL COMMENT '物化引擎类型',
+                                            `engine_datasource` varchar(64) DEFAULT NULL COMMENT '物化引擎数据源code',
+                                            PRIMARY KEY (`id`),
+                                            UNIQUE KEY `uk_physical_entity_instance` (`engine_datasource`,`entity_uuid`,`engine_type`,`business_unit_uuid`,`tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1644 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='物化示例对象信息'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = plan   */
+/******************************************/
+CREATE TABLE `plan` (
+                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                        `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                        `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                        `business_unit_uuid` varchar(255) NOT NULL COMMENT '业务板块uuid',
+                        `plan_name` varchar(255) NOT NULL COMMENT '物化名称',
+                        `physical_obj_uuid` varchar(255) NOT NULL COMMENT '物化主体',
+                        `physical_obj_type` varchar(32) NOT NULL COMMENT '物化主体类型',
+                        `engine_type` varchar(32) NOT NULL COMMENT '物化引擎类型',
+                        `config` varchar(1024) DEFAULT NULL COMMENT '物化配置',
+                        `engine_table_code` varchar(64) DEFAULT NULL COMMENT '物化表名',
+                        `extend` varchar(256) DEFAULT NULL COMMENT '扩展字段',
+                        `owner_id` varchar(64) DEFAULT NULL COMMENT '所有者id',
+                        `owner_name` varchar(64) DEFAULT NULL COMMENT '所有者名称',
+                        `creator_id` varchar(64) DEFAULT NULL COMMENT '创建者id',
+                        `creator_name` varchar(64) DEFAULT NULL COMMENT '创建者名称',
+                        `modifier_id` varchar(64) DEFAULT NULL COMMENT '更新者id',
+                        `modifier_name` varchar(64) DEFAULT NULL COMMENT '更新者名称',
+                        `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                        `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除状态',
+                        PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='物化配置表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = relationship   */
+/******************************************/
+CREATE TABLE `relationship` (
+                                `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                                `name` varchar(128) DEFAULT NULL COMMENT '关系名称',
+                                `left_table_uuid` varchar(64) NOT NULL COMMENT '左表uuid',
+                                `left_table_code` varchar(64) DEFAULT NULL COMMENT '左表名',
+                                `left_table_type` tinyint(4) NOT NULL COMMENT '左表类型',
+                                `left_column_code` varchar(64) DEFAULT NULL COMMENT '左表列编码',
+                                `right_table_uuid` varchar(64) NOT NULL COMMENT '右表uuid',
+                                `right_table_code` varchar(64) DEFAULT NULL COMMENT '右表名',
+                                `right_table_type` varchar(64) NOT NULL COMMENT '右表类型',
+                                `right_column_code` varchar(64) DEFAULT NULL COMMENT '右表列编码',
+                                `creator_id` varchar(128) NOT NULL COMMENT '创建人baseID',
+                                `creator_name` varchar(128) NOT NULL COMMENT '创建人名称',
+                                `modifier_id` varchar(128) NOT NULL COMMENT '修改人baseID',
+                                `modifier_name` varchar(128) NOT NULL COMMENT '修改人名称',
+                                `is_deleted` tinyint(4) NOT NULL COMMENT '是否删除',
+                                PRIMARY KEY (`id`),
+                                KEY `idx_left_right_uuid` (`left_table_uuid`,`right_table_uuid`),
+                                KEY `idx_right_left_uuid` (`right_table_uuid`,`left_table_uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=547 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='关联关系'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = table_demo   */
+/******************************************/
+CREATE TABLE `table_demo` (
+                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                              `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                              `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                              `tenant_id` varchar(128) DEFAULT NULL COMMENT '租户id',
+                              `project_id` varchar(255) DEFAULT NULL COMMENT '项目id',
+                              `creator_id` varchar(64) DEFAULT NULL COMMENT '创建人租户baseId',
+                              `creator_name` varchar(64) DEFAULT NULL COMMENT '创建人显示名称',
+                              `modifier_id` varchar(64) DEFAULT NULL COMMENT '修改人租户baseId',
+                              `modifier_name` varchar(64) DEFAULT NULL COMMENT '修改人显示名称',
+                              `owner_id` varchar(64) DEFAULT NULL COMMENT '负责人租户baseId',
+                              `owner_name` varchar(64) DEFAULT NULL COMMENT '负责人显示名称',
+                              `uuid` varchar(128) DEFAULT NULL COMMENT '全局唯一的uuid',
+                              PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='表样板'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = time_period   */
+/******************************************/
+CREATE TABLE `time_period` (
+                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                               `gmt_modified` datetime NOT NULL COMMENT '修改时间',
+                               `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                               `project_id` varchar(255) DEFAULT NULL COMMENT '项目id',
+                               `creator_id` varchar(64) NOT NULL COMMENT '创建人租户baseId',
+                               `creator_name` varchar(64) DEFAULT NULL COMMENT '创建人显示名称',
+                               `modifier_id` varchar(64) NOT NULL COMMENT '修改人租户baseId',
+                               `modifier_name` varchar(64) DEFAULT NULL COMMENT '修改人显示名称',
+                               `owner_id` varchar(64) NOT NULL COMMENT '负责人租户baseId',
+                               `owner_name` varchar(64) DEFAULT NULL COMMENT '负责人显示名称',
+                               `uuid` varchar(128) NOT NULL COMMENT '全局唯一的uuid',
+                               `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                               `type` tinyint(4) NOT NULL COMMENT '时间周期类型',
+                               `code` varchar(64) NOT NULL COMMENT '时间周期code',
+                               `name` varchar(64) NOT NULL COMMENT '时间周期name',
+                               `description` varchar(512) DEFAULT NULL COMMENT '时间周期描述',
+                               `time_begin` varchar(128) DEFAULT NULL COMMENT '开始时间表达式',
+                               `time_end` varchar(128) DEFAULT NULL COMMENT '结束时间表达式',
+                               `is_deleted` tinyint(4) NOT NULL COMMENT '是否被删除',
+                               `extend_name` varchar(64) DEFAULT NULL COMMENT '拓展名称',
+                               `template_type` tinyint(4) DEFAULT NULL COMMENT '模板类型',
+                               `ext_config` varchar(2048) DEFAULT NULL COMMENT '拓展配置',
+                               PRIMARY KEY (`id`),
+                               UNIQUE KEY `uk_time_period_uuid` (`uuid`),
+                               KEY `idx_time_period_code` (`business_unit_uuid`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=50039 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='时间周期配置表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = t_online_model   */
+/******************************************/
+CREATE TABLE `t_online_model` (
+                                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                  `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                  `gmt_modified` datetime DEFAULT NULL COMMENT '修改时间',
+                                  `uuid` varchar(128) NOT NULL COMMENT '提交对象唯一id，替代id用于迁移方便，符合团队规范',
+                                  `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                                  `project_id` varchar(128) NOT NULL COMMENT '项目id',
+                                  `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                                  `business_process_name` varchar(70) NOT NULL COMMENT '业务过程名称',
+                                  `model_type` varchar(128) NOT NULL COMMENT '模型类型',
+                                  `model_id` varchar(128) NOT NULL COMMENT '模型id',
+                                  `fml_statement` text NOT NULL COMMENT 'fml语句',
+                                  `big_engine_dsl` text NOT NULL COMMENT '引擎方言dsl',
+                                  `big_engine_type` varchar(70) NOT NULL COMMENT '大数据引擎类型',
+                                  `big_engine_ds` varchar(255) NOT NULL COMMENT '大数据引擎实例数据源',
+                                  `big_engine_dialect_type` varchar(70) NOT NULL COMMENT '大数据dsl方言类型',
+                                  `release_runtime_env` varchar(70) NOT NULL COMMENT '要生效的运行环境',
+                                  `release_object_id` varchar(128) DEFAULT NULL COMMENT 'release_object外键',
+                                  `commit_object_id` varchar(128) DEFAULT NULL COMMENT '提交对象外键',
+                                  `version` int(11) NOT NULL COMMENT '版本号',
+                                  `creator_id` varchar(128) NOT NULL COMMENT '创建人baseId',
+                                  `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                  `modifier_id` varchar(128) DEFAULT NULL COMMENT '修改人baseId',
+                                  `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                  PRIMARY KEY (`id`),
+                                  KEY `idx_model_id` (`model_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1252 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='在线模型表'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = t_release_package   */
+/******************************************/
+CREATE TABLE `t_release_package` (
+                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                     `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                     `gmt_modified` datetime DEFAULT NULL COMMENT '修改时间',
+                                     `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                                     `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                                     `project_id` varchar(64) NOT NULL COMMENT '项目id',
+                                     `creator_id` varchar(128) NOT NULL COMMENT '创建人租户baseId',
+                                     `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                     `modifier_id` varchar(128) DEFAULT NULL COMMENT '修改人租户baseId',
+                                     `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                     `big_engine_type` varchar(70) NOT NULL COMMENT '大数据引擎类型',
+                                     `big_engine_ds` varchar(255) NOT NULL COMMENT '大数据引擎实例数据源',
+                                     `big_engine_dialect_type` varchar(70) NOT NULL COMMENT '大数据dsl方言类型',
+                                     `releaser_id` varchar(64) NOT NULL COMMENT '发布者id',
+                                     `releaser_name` varchar(128) NOT NULL COMMENT '发布者名称',
+                                     `release_date` datetime NOT NULL COMMENT '发布时间',
+                                     `release_remark` text NOT NULL COMMENT '发布备注',
+                                     `version` bigint(20) NOT NULL COMMENT '版本号',
+                                     `status` varchar(70) NOT NULL COMMENT '状态',
+                                     `release_runtime_env` varchar(70) NOT NULL COMMENT '要生效的运行环境',
+                                     `uuid` varchar(128) NOT NULL COMMENT '发布包唯一id，替代id用于迁移方便和符合团队规范',
+                                     `dataworks_module_type` varchar(20) DEFAULT NULL COMMENT 'dataworks模块类型',
+                                     PRIMARY KEY (`id`),
+                                     UNIQUE KEY `uk_uuid_idx` (`uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=931 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='发布包'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = t_release_package_object   */
+/******************************************/
+CREATE TABLE `t_release_package_object` (
+                                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                            `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                                            `tenant_id` varchar(64) NOT NULL COMMENT '租户id',
+                                            `project_id` varchar(64) NOT NULL COMMENT '项目id',
+                                            `creator_id` varchar(128) NOT NULL COMMENT '创建人租户baseId',
+                                            `creator_name` varchar(128) DEFAULT NULL COMMENT '创建人显示名称',
+                                            `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                            `modifier_id` varchar(128) DEFAULT NULL COMMENT '修改人租户baseId',
+                                            `modifier_name` varchar(128) DEFAULT NULL COMMENT '修改人显示名称',
+                                            `gmt_modified` datetime DEFAULT NULL COMMENT '修改时间',
+                                            `version` bigint(20) NOT NULL COMMENT '版本号',
+                                            `release_package_id` varchar(128) NOT NULL COMMENT '发布包外键',
+                                            `commit_object_id` varchar(128) NOT NULL COMMENT '提交对象外键',
+                                            `need_realease_fml` text NOT NULL COMMENT '需要发布的fml语句',
+                                            `big_engine_dsl` text COMMENT '引擎方言的dsl',
+                                            `status` varchar(70) DEFAULT NULL COMMENT '状态',
+                                            `runtime_refer_id` varchar(255) DEFAULT NULL COMMENT '运行期id',
+                                            `deploy_log` text COMMENT '部署详情',
+                                            `uuid` varchar(128) NOT NULL COMMENT '唯一id，用于替代ID，方便迁移和符合团队规范',
+                                            `not_executable_dsl` text COMMENT '无法执行的dsl',
+                                            `dqc_rule` text COMMENT 'dqc规则',
+                                            PRIMARY KEY (`id`),
+                                            UNIQUE KEY `uk_uuid_idx` (`uuid`),
+                                            KEY `idx_commit_object_id` (`commit_object_id`),
+                                            KEY `idx_release_package_id` (`release_package_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=930 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='发布包要执行的发布对象'
+;
+
+/******************************************/
+/*   DatabaseName = model-engine   */
+/*   TableName = t_vc_commit_object   */
+/******************************************/
+CREATE TABLE `t_vc_commit_object` (
+                                      `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                      `model_id` varchar(128) DEFAULT NULL COMMENT '模型id',
+                                      `model_type` varchar(128) DEFAULT NULL COMMENT '模型类型',
+                                      `committer_id` varchar(64) NOT NULL COMMENT '提交人id',
+                                      `committer_name` varchar(64) DEFAULT NULL COMMENT '提交人姓名',
+                                      `commit_remark` text NOT NULL COMMENT '提交备注',
+                                      `commit_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
+                                      `fml_statement` text NOT NULL COMMENT 'fml语句',
+                                      `previous_commit_object_id` varchar(128) DEFAULT NULL COMMENT '上一个版本的commitObjectId',
+                                      `business_unit_uuid` varchar(64) NOT NULL COMMENT '所属的业务板块uuid',
+                                      `tenant_id` varchar(128) NOT NULL COMMENT '租户id',
+                                      `project_id` varchar(255) DEFAULT NULL COMMENT '项目id',
+                                      `creator_id` varchar(64) NOT NULL COMMENT '创建人租户baseId',
+                                      `creator_name` varchar(64) DEFAULT NULL COMMENT '创建人显示名称',
+                                      `gmt_create` datetime NOT NULL COMMENT '创建时间',
+                                      `modifier_id` varchar(64) DEFAULT NULL COMMENT '修改人租户baseId',
+                                      `modifier_name` varchar(64) DEFAULT NULL COMMENT '修改人显示名称',
+                                      `gmt_modified` datetime DEFAULT NULL COMMENT '修改时间',
+                                      `version` int(11) NOT NULL COMMENT '版本号',
+                                      `business_process_name` varchar(70) NOT NULL COMMENT '业务过程名称',
+                                      `uuid` varchar(128) NOT NULL COMMENT '提交对象唯一id，替代id用于迁移方便，符合团队规范',
+                                      `release_object_id` varchar(128) DEFAULT NULL COMMENT 'release_object外键',
+                                      PRIMARY KEY (`id`),
+                                      UNIQUE KEY `uk_uuid_idx` (`uuid`),
+                                      KEY `idx_model` (`model_type`,`model_id`),
+                                      KEY `idx_release_object` (`release_object_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=615 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='修饰词配置表'
+;
+
