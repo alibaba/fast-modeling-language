@@ -25,3 +25,23 @@ BugFix（bug fix）
 无
 安全漏洞修复（vulnerability）
 无
+
+
+## 0.5.8
+新功能（new features）
+Core
+• 新增Create ODS TABLE
+• 新增Show Statics语句
+
+
+Transformer
+• 新增FML到Sqlite的转换
+• 新增FML到Adb Mysql的转换
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无
