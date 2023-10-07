@@ -80,6 +80,25 @@ public class StripUtilsTest {
         String comment = StripUtils.addStrip("comment");
         assertEquals(comment, "'comment'");
     }
+
+    @Test
+    public void testStripWithTwoSingleQuote() {
+        String comment = StripUtils.strip("''type''");
+        assertEquals("'type'", comment);
+        String src = "'abc ''type'''";
+        comment = StripUtils.strip(src);
+        assertEquals("abc 'type'", comment);
+    }
+
+    @Test
+    public void testRemoveDoubleStrip() {
+        String s = StripUtils.removeDoubleStrip("\"test\"");
+        assertEquals("test", s);
+        s = StripUtils.removeDoubleStrip("\"test\".\"abc\"");
+        assertEquals("test.abc", s);
+        s = StripUtils.removeDoubleStrip("\"te st\".\"abc\".\"test-dbc\"");
+        assertEquals("te st.abc.test-dbc", s);
+    }
 }
 
 //Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev

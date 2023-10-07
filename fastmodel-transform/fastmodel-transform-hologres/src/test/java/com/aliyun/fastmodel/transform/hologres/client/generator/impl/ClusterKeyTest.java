@@ -54,7 +54,7 @@ public class ClusterKeyTest extends BaseGeneratorTest {
         String node = dialectNode.getNode();
         assertEquals(node, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS abc;\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'clustering_key', 'c1,c2');\n"
+            + "CALL SET_TABLE_PROPERTY('abc', 'clustering_key', '\"c1,c2\"');\n"
             + "COMMIT;");
     }
 }

@@ -11,6 +11,7 @@ package com.aliyun.fastmodel.transform.api.client.dto.table;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -40,5 +41,11 @@ public class TableConfig {
      * 默认不生成
      */
     private boolean dropIfExist;
+
+    /**
+     * 生成的sql是否需要增加分号
+     */
+    @Default
+    private boolean appendSemicolon = true;
 
 }

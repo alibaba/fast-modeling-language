@@ -43,7 +43,7 @@ public class RenderPlantUmlIdeCommand extends BaseIdeCommand<byte[], ExportSql> 
         DialectMeta dialectMeta = DialectMeta.getByName(byCode);
         String result = getIdePlatform().getToolService().exportSql(renderFml.getFml().get(), dialectMeta);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        DiagramGenerator.exportPng(result, outputStream);
+        DiagramGenerator.exportPNG(result, outputStream);
         byte[] bytes = outputStream.toByteArray();
         return InvokeResult.success(bytes);
     }

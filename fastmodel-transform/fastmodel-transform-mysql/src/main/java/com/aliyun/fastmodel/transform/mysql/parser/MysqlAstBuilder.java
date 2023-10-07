@@ -254,7 +254,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitColumnDeclaration(ColumnDeclarationContext ctx) {
-        UidContext uid = ctx.uid();
+        UidContext uid = ctx.fullColumnName().uid();
         Identifier identifier = getIdentifier(uid);
         ColumnDefinitionContext columnDefinitionContext = ctx.columnDefinition();
         List<ColumnConstraintContext> columnConstraintContexts = columnDefinitionContext.columnConstraint();
@@ -489,7 +489,6 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         } else {
             constraintName = IdentifierUtil.sysIdentifier();
         }
-        IndexColumnNamesContext indexColumnNamesContext = ctx.indexColumnNames();
         List<Identifier> columnName = ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(),
             IndexColumnName.class).stream().map(IndexColumnName::getColumnName).collect(Collectors.toList());
 
@@ -576,13 +575,12 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitTableOptionAverage(TableOptionAverageContext ctx) {
-        Property property = new Property(ctx.AVG_ROW_LENGTH().getText(), ctx.decimalLiteral().getText());
-        return property;
+        return new Property(ctx.AVG_ROW_LENGTH().getText(), ctx.decimalLiteral().getText());
     }
 
     @Override
     public Node visitTableOptionCharset(TableOptionCharsetContext ctx) {
-        Property property = new Property(ctx.CHARSET().getText(), ctx.charsetName().getText());
+        Property property = new Property(ctx.charSet().getText(), ctx.charsetName().getText());
         return property;
     }
 
@@ -762,7 +760,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
                 );
             default:
                 throw new ReverseUnsupportedOperationException(ParserHelper.getOrigin(ctx),
-                    "unsupport the strategy:" + reverseContext.getReverseRelationStrategy());
+                    "unsupported the strategy:" + reverseContext.getReverseRelationStrategy());
         }
     }
 

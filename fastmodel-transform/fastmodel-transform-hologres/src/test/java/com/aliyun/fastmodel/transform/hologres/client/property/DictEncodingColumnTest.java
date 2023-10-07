@@ -10,11 +10,9 @@ package com.aliyun.fastmodel.transform.hologres.client.property;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn.ColumnStatus;
-import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn.Status;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Desc:
@@ -32,6 +30,7 @@ public class DictEncodingColumnTest {
         assertEquals(value.size(), 2);
         ColumnStatus columnStatus = value.get(0);
         assertEquals(columnStatus.getStatus(), Status.ON);
+        assertEquals(2, dictEncodingColumns.toColumnList().size());
     }
 
     @Test

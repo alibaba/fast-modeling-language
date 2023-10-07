@@ -43,6 +43,7 @@ import com.aliyun.fastmodel.transform.api.client.dto.constraint.OutlineConstrain
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.base.Preconditions;
@@ -71,7 +72,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      * @return {@link Node}
      */
     @Override
-    public Node covertToNode(Table table) {
+    public Node covertToNode(Table table, TableConfig tableConfig) {
         QualifiedName of = StringJoinUtil.join(table.getDatabase(), table.getSchema(), table.getName());
         Comment comment = null;
         if (table.getComment() != null) {
@@ -121,10 +122,12 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .build();
     }
 
-    private String toSchema(CreateTable createTable, T hologresTransformContext) {
+
+
+    protected String toSchema(CreateTable createTable, T transformContext) {
         QualifiedName qualifiedName = createTable.getQualifiedName();
         if (!qualifiedName.isJoinPath()) {
-            return hologresTransformContext.getSchema();
+            return transformContext.getSchema();
         }
         boolean isSecondSchema = qualifiedName.getOriginalParts().size() == SECOND_INDEX;
         if (isSecondSchema) {
@@ -134,7 +137,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         if (isThirdSchema) {
             return qualifiedName.getParts().get(1);
         }
-        return hologresTransformContext.getSchema();
+        return transformContext.getSchema();
     }
 
     private String toDatabase(CreateTable createTable, String database) {
@@ -177,7 +180,9 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      * @param createTable
      * @return
      */
-    public abstract Long toLifeCycleSeconds(CreateTable createTable);
+    protected Long toLifeCycleSeconds(CreateTable createTable) {
+        return 0L;
+    }
 
     /**
      * toTableColumns
@@ -299,7 +304,6 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      * @return
      */
     protected List<Property> toProperty(Table table, List<BaseClientProperty> properties) {
-        
         if (properties == null) {
             return Collections.emptyList();
         }

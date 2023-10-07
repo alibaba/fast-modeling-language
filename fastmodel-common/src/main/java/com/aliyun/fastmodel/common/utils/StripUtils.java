@@ -28,6 +28,8 @@ public class StripUtils {
 
     public static final String SUFFIX = ";";
     public static final String SINGLE = "'";
+    public static final String PREFIX = "`";
+    public static final String DOUBLE_QUOTE = "\"";
 
     /**
      * 将字符串坐下strip
@@ -38,15 +40,36 @@ public class StripUtils {
     public static String strip(String src) {
         String prefix = SINGLE;
         if (src.startsWith(prefix)) {
-            return StringUtils.strip(src, prefix);
+            return stripOne(src, prefix);
         }
-        prefix = "\"";
+        prefix = DOUBLE_QUOTE;
         if (src.startsWith(prefix)) {
-            return StringUtils.strip(src, prefix);
+            return stripOne(src, prefix);
         }
-        prefix = "`";
+        prefix = PREFIX;
         if (src.startsWith(prefix)) {
-            return StringUtils.strip(src, prefix);
+            return stripOne(src, prefix);
+        }
+        return src;
+    }
+
+    /**
+     * 将双引号去掉
+     * @param src
+     * @return 去除之后的双引号
+     */
+    public static String removeDoubleStrip(String src){
+        return StringUtils.remove(src, DOUBLE_QUOTE);
+    }
+
+    private static String unquote(String value) {
+        return value.substring(1, value.length() - 1)
+            .replace("''", "'");
+    }
+
+    private static String stripOne(String src, String prefix) {
+        if (src.startsWith(prefix) && src.endsWith(prefix)) {
+            return unquote(src);
         }
         return src;
     }
@@ -62,13 +85,33 @@ public class StripUtils {
     }
 
     /**
+     * 给string增加反引号
+     *
+     * @param src
+     * @return
+     */
+    public static String addPrefix(String src) {
+        return PREFIX + src + PREFIX;
+    }
+
+    /**
+     * 增加双引号
+     */
+    public static String addDoubleStrip(String src) {
+        return "\"" + src + "\"";
+    }
+
+    /**
      * 追加分号，如果结尾没有增加
      *
      * @param code
      * @return appendSemicolon
      */
     public static String appendSemicolon(String code) {
-        if (!code.endsWith(SUFFIX)) {
+        if (code == null) {
+            return null;
+        }
+        if (!code.trim().endsWith(SUFFIX)) {
             return code + SUFFIX;
         }
         return code;

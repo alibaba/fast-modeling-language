@@ -8,14 +8,12 @@
 
 package com.aliyun.fastmodel.transform.hologres.parser.visitor;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
-import com.aliyun.fastmodel.core.formatter.ExpressionFormatter;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
@@ -24,6 +22,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
@@ -44,13 +43,15 @@ import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
-import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.BeginWork;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.CommitWork;
 import com.aliyun.fastmodel.transform.hologres.parser.util.BuilderUtil;
+import com.aliyun.fastmodel.transform.hologres.parser.util.HologresReservedWordUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -67,8 +68,15 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     private final HologresTransformContext context;
 
-    public HologresAstVisitor(HologresTransformContext context) {
+    private final HologresVersion hologresVersion;
+
+    public HologresAstVisitor(HologresTransformContext context, HologresVersion hologresVersion) {
         this.context = context;
+        this.hologresVersion = hologresVersion;
+    }
+
+    public HologresAstVisitor(HologresTransformContext context) {
+        this(context, HologresVersion.V1);
     }
 
     @Override
@@ -123,7 +131,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
                     continue;
                 }
                 builder.append("\n");
-                builder.append(commentColumn(tableCode, formatExpression(columnDefinition.getColName()), columnDefinition.getCommentValue()));
+                builder.append(commentColumn(tableCode, formatColName(columnDefinition.getColName(), 0), columnDefinition.getCommentValue()));
             }
         }
         builder.append("\n");
@@ -165,7 +173,9 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     public Boolean visitPrimaryConstraint(PrimaryConstraint primaryConstraint, Integer indent) {
         builder.append(indentString(indent)).append("PRIMARY KEY(");
         builder.append(
-            primaryConstraint.getColNames().stream().map(ExpressionFormatter::formatExpression).collect(joining(",")));
+            primaryConstraint.getColNames().stream().map(
+                c -> formatColName(c, 0)
+            ).collect(joining(",")));
         builder.append(")");
         return true;
     }
@@ -175,8 +185,25 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         if (!instance.isValidProperty(key)) {
             return StringUtils.EMPTY;
         }
+        BaseClientProperty baseClientProperty = instance.create(key, value);
+        //https://help.aliyun.com/document_detail/160754.html?spm=a2c4g.467951.0.0.12c01598oEHfQG
+        List<String> list = baseClientProperty.toColumnList();
+        if (!list.isEmpty()) {
+            if (hologresVersion == HologresVersion.V2) {
+                //按照2.0的方式
+                String[] strings = list.stream().map(c -> StripUtils.addDoubleStrip(c)).collect(Collectors.toList()).toArray(new String[0]);
+                String[] searchList = list.toArray(new String[0]);
+                value = StringUtils.replaceEach(value, searchList, strings);
+            } else {
+                //默认按照1.0的方式
+                value = StripUtils.addDoubleStrip(value);
+            }
+        }
+        //将code中的双引号去除
+        String strip = StripUtils.removeDoubleStrip(code);
+        //如果是列属性，那么
         String format = "CALL SET_TABLE_PROPERTY('%s', '%s', '%s');";
-        return String.format(format, code, key, value);
+        return String.format(format, strip, key, value);
     }
 
     private String commentTable(String code, String comment) {
@@ -184,7 +211,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         if (comment == null) {
             return String.format(format, code, "NULL");
         }
-        return String.format(format, code, StripUtils.addStrip(comment));
+        return String.format(format, code, formatStringLiteral(comment));
     }
 
     private String commentColumn(String code, String column, String comment) {
@@ -192,7 +219,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         if (comment == null) {
             return String.format(format, code, column, "NULL");
         }
-        return String.format(format, code, column, StripUtils.addStrip(comment));
+        return String.format(format, code, column, formatStringLiteral(comment));
     }
 
     @Override
@@ -218,14 +245,33 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     }
 
     @Override
+    protected String formatColName(Identifier colName, Integer size) {
+        String value = StringUtils.isNotBlank(colName.getOrigin()) ?
+            StripUtils.strip(colName.getOrigin()) : colName.getValue();
+        if (!colName.isDelimited()) {
+            boolean reservedKeyWord = HologresReservedWordUtil.isReservedKeyWord(value);
+            //如果node是关键字，那么进行转义处理
+            if (reservedKeyWord) {
+                value = StripUtils.addDoubleStrip(value);
+            } else if (context.isCaseSensitive()) {
+                //如果是不忽略大小写，那么统一加上双引号
+                value = StripUtils.addDoubleStrip(value);
+            }
+        } else {
+            String strip = StripUtils.strip(value);
+            value = StripUtils.addDoubleStrip(strip);
+        }
+        return StringUtils.rightPad(value, size);
+    }
+
+    @Override
     protected BaseDataType convert(BaseDataType dataType) {
         IDataTypeName typeName = dataType.getTypeName();
-        if (typeName == DataTypeEnums.STRING) {
+        if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.STRING.getValue())) {
             return new GenericDataType(DataTypeEnums.TEXT.name());
-        } else if (typeName == DataTypeEnums.DATETIME) {
+        } else if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.DATETIME.getValue())) {
             return DataTypeUtil.simpleType(DataTypeEnums.TIMESTAMP);
-        } else if (typeName == DataTypeEnums.ARRAY || typeName == DataTypeEnums.MAP
-            || typeName == DataTypeEnums.STRUCT) {
+        } else if (typeName.getDimension() == Dimension.MULTIPLE) {
             return DataTypeUtil.simpleType(DataTypeEnums.JSON);
         }
         return dataType;
@@ -244,7 +290,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
                     stringBuilder.append("\n");
                     stringBuilder.append(
                         commentColumn(getCode(addCols.getQualifiedName()),
-                            formatExpression(columnDefinition.getColName()),
+                            formatColName(columnDefinition.getColName(), 0),
                             columnDefinition.getCommentValue()));
                 }
             }
@@ -261,8 +307,9 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     @Override
     public Boolean visitSetTableComment(SetTableComment setTableComment, Integer context) {
-        builder.append(
-            commentTable(getCode(setTableComment.getQualifiedName()), setTableComment.getComment().getComment()));
+        BuilderUtil.addTransaction(builder, () ->{
+            return commentTable(getCode(setTableComment.getQualifiedName()), setTableComment.getComment().getComment());
+        });
         return true;
     }
 
@@ -341,7 +388,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             BaseLiteral defaultValue = changeCol.getDefaultValue();
             if (defaultValue != null) {
                 String builder = "ALTER TABLE " + code
-                    + " ALTER COLUMN " + formatExpression(oldColName)
+                    + " ALTER COLUMN " + formatColName(oldColName, 0)
                     + " SET DEFAULT " + formatExpression(defaultValue)
                     + ";";
                 changeValue.add(builder);
@@ -349,7 +396,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             Comment comment = changeCol.getColumnDefinition().getComment();
             if (comment != null) {
                 StringBuilder builder = new StringBuilder();
-                String commentColumn = commentColumn(code, formatExpression(newColName), comment.getComment());
+                String commentColumn = commentColumn(code, formatColName(newColName, 0), comment.getComment());
                 builder.append(commentColumn);
                 changeValue.add(builder.toString());
             }
@@ -365,23 +412,23 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             return false;
         }
         String join = Joiner.on("\n").join(changeValue);
-        if (changeValue.size() > 1) {
-            BuilderUtil.addTransaction(builder, () -> join);
-        } else {
-            builder.append(join);
-        }
+        BuilderUtil.addTransaction(builder, () -> join);
         return true;
     }
 
     @Override
     protected String formatExpression(BaseExpression baseExpression) {
-        return new HologresExpressionVisitor().process(baseExpression);
+        return new HologresExpressionVisitor(context).process(baseExpression);
     }
 
     @Override
     protected String getCode(QualifiedName qualifiedName) {
-        QualifiedName tableName = StringJoinUtil.join(this.context.getDatabase(),
-            this.context.getSchema(), qualifiedName.getSuffix());
+        //hologres的2.x版本不支持3段式的创建，1.x支持，为了兼容统一采用2段式的创建
+        QualifiedName tableName = StringJoinUtil.join(
+            null,
+            this.context.getSchema(),
+            qualifiedName.getSuffix()
+        );
         return formatName(tableName);
     }
 

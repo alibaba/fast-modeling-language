@@ -151,6 +151,24 @@
 
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-adbmysql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-spark</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-sqlite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
                 <artifactId>fastmodel-ide-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>

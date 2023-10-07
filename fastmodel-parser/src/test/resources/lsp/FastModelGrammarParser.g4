@@ -146,8 +146,14 @@ typeDbCol
     | listType
     | mapType
     | structType
+    | jsonType
     ;
 
+
+jsonType
+    : KW_JSON |
+    KW_JSON LESSTHAN typeList GREATERTHAN
+    ;
 
 
 primitiveType
@@ -539,7 +545,7 @@ nonReserved
     | KW_CUSTOM | KW_BUSINESS_CATEGORIES | KW_BUSINESS_CATEGORY | KW_DIMENSION | KW_MARKET | KW_SUBJECT | KW_ATTRIBUTES | KW_DIMENSIONS | KW_DIM_ATTRIBUTES
     | KW_MARKETS | KW_SUBJECTS | KW_DYNAMIC | KW_ADS | KW_RENDER | KW_INCREASE | KW_VARCHAR | KW_DECREASE |KW_REF | KW_STAT_TIME | KW_IMPORT_SQL | KW_EXPORT_SQL
     | KW_STRONG | KW_WEAK | KW_SELECT | KW_PRECEDING | KW_UNBOUNDED | KW_FOLLOWING | KW_ADVANCED | KW_MATERIALIZED | KW_TIMESTAMPLOCALTZ
-    | KW_UNIONTYPE | KW_FORMAT | KW_DEPENDENCY | KW_HELP | KW_AFTER | KW_MOVE
+    | KW_UNIONTYPE | KW_FORMAT | KW_DEPENDENCY | KW_HELP | KW_AFTER | KW_MOVE | KW_STATISTIC | KW_VIEWS | KW_JSON | KW_ODS
     ;
 
 
@@ -751,6 +757,7 @@ createTableStatement
         | type=KW_CODE
         | dwDetailType? type=KW_DWS
         | type=KW_ADS
+        | type=KW_ODS
         ;
 
     dwDetailType:
@@ -870,7 +877,7 @@ createTableStatement
             : (KW_CONSTRAINT identifier)? KW_PRIMARY KW_KEY columnParenthesesList
             ;
 
-        columnDefinition
+    columnDefinition
             : identifier alias? colType category? columnConstraintType* defaultValue? comment? (KW_WITH tableProperties)? referencesObjects?
             ;
 
@@ -1320,6 +1327,7 @@ showStatements:
      showCreate
      | showObjects
      | describe
+     | showStatistic
    ;
 
 showCreate:
@@ -1331,12 +1339,21 @@ output:
 
 showObjects:
     KW_SHOW (KW_FULL)? (type=showObjectTypes)
-    ((KW_FROM | KW_IN) qualifiedName)?
+    ((KW_FROM | KW_IN) qualifiedName (COMMA qualifiedName)* )?
     ((KW_LIKE string) | (KW_WHERE expression))?
     (KW_OFFSET offset=INTEGER_VALUE)?
     (KW_LIMIT limit=INTEGER_VALUE)?
     ;
 
+
+showStatistic:
+    KW_SHOW KW_STATISTIC
+    (showObjectTypes | singleStatisticObject)
+;
+
+singleStatisticObject:
+    showType qualifiedName
+;
 
 describe:
     (KW_DESC | KW_DESCRIBE) type=showType qualifiedName
@@ -1346,7 +1363,7 @@ showObjectTypes:
     tableType? KW_TABLES
     | indicatorType? KW_INDICATORS
     | KW_DOMAINS
-    | KW_DICTS
+    | dictType? KW_DICTS
     | KW_TIMEPERIODS
     | KW_ADJUNCTS
     | KW_MEASUREUNITS
@@ -1361,12 +1378,17 @@ showObjectTypes:
     | KW_DIM_ATTRIBUTES
     | KW_CODES
     | KW_COLUMNS
+    | KW_MATERIALIZED KW_VIEWS
+;
+
+dictType:
+    KW_NAMING
 ;
 
 
 showType:
     KW_TABLE
-    | KW_INDICATOR
+    | indicatorType? KW_INDICATOR
     | KW_DOMAIN
     | KW_DICT
     | KW_TIMEPERIOD

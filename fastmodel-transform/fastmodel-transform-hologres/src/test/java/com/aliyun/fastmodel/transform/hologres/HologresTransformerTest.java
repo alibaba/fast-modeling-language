@@ -99,7 +99,9 @@ public class HologresTransformerTest {
                 .build()
         );
         DialectNode transform = hologresTransformer.transform(changeCol, HologresTransformContext.builder().build());
-        assertEquals(transform.getNode(), "ALTER TABLE abc RENAME COLUMN bcd TO bde;");
+        assertEquals(transform.getNode(), "BEGIN;\n"
+            + "ALTER TABLE abc RENAME COLUMN bcd TO bde;\n"
+            + "COMMIT;");
         assertTrue(transform.isExecutable());
     }
 
@@ -113,7 +115,9 @@ public class HologresTransformerTest {
                 .build()
         );
         DialectNode transform = hologresTransformer.transform(changeCol, HologresTransformContext.builder().build());
-        assertEquals(transform.getNode(), "ALTER TABLE abc ALTER COLUMN bcd SET DEFAULT 'bcd';");
+        assertEquals(transform.getNode(), "BEGIN;\n"
+            + "ALTER TABLE abc ALTER COLUMN bcd SET DEFAULT 'bcd';\n"
+            + "COMMIT;");
         assertTrue(transform.isExecutable());
     }
 
@@ -127,7 +131,9 @@ public class HologresTransformerTest {
                 .build()
         );
         DialectNode transform = hologresTransformer.transform(changeCol, HologresTransformContext.builder().build());
-        assertEquals(transform.getNode(), "ALTER TABLE abc ALTER COLUMN bcd SET DEFAULT 1;");
+        assertEquals(transform.getNode(), "BEGIN;\n"
+            + "ALTER TABLE abc ALTER COLUMN bcd SET DEFAULT 1;\n"
+            + "COMMIT;");
         assertTrue(transform.isExecutable());
     }
 
@@ -261,18 +267,18 @@ public class HologresTransformerTest {
                 .build()
         );
         Table table = Table.builder()
-            .name("name")
+            .name("t_name")
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
         String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
         assertEquals(node1, "BEGIN;\n"
-            + "CREATE TABLE IF NOT EXISTS name (\n"
+            + "CREATE TABLE IF NOT EXISTS t_name (\n"
             + "   n VARCHAR(1) NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('name', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('name', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN name.n IS NULL;\n"
+            + "CALL SET_TABLE_PROPERTY('t_name', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('t_name', 'time_to_live_in_seconds', '3153600000');\n"
+            + "COMMENT ON COLUMN t_name.n IS NULL;\n"
             + "COMMIT;");
     }
 
@@ -286,18 +292,18 @@ public class HologresTransformerTest {
                 .build()
         );
         Table table = Table.builder()
-            .name("name")
+            .name("t_name")
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
         String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
         assertEquals(node1, "BEGIN;\n"
-            + "CREATE TABLE IF NOT EXISTS name (\n"
+            + "CREATE TABLE IF NOT EXISTS t_name (\n"
             + "   n VARCHAR NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('name', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('name', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN name.n IS NULL;\n"
+            + "CALL SET_TABLE_PROPERTY('t_name', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('t_name', 'time_to_live_in_seconds', '3153600000');\n"
+            + "COMMENT ON COLUMN t_name.n IS NULL;\n"
             + "COMMIT;");
     }
 
@@ -315,7 +321,7 @@ public class HologresTransformerTest {
         );
         columns.add(
             Column.builder()
-                .name("name")
+                .name("c_name")
                 .primaryKey(true)
                 .dataType("bigint")
                 .build()
@@ -328,23 +334,23 @@ public class HologresTransformerTest {
                 .build()
         );
         Table table = Table.builder()
-            .name("name")
+            .name("key_name")
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
         String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
         assertEquals(node1, "BEGIN;\n"
-            + "CREATE TABLE IF NOT EXISTS name (\n"
-            + "   id   VARCHAR NOT NULL,\n"
-            + "   name BIGINT NOT NULL,\n"
-            + "   age  BIGINT NOT NULL,\n"
-            + "   PRIMARY KEY(id,name)\n"
+            + "CREATE TABLE IF NOT EXISTS key_name (\n"
+            + "   id     VARCHAR NOT NULL,\n"
+            + "   c_name BIGINT NOT NULL,\n"
+            + "   age    BIGINT NOT NULL,\n"
+            + "   PRIMARY KEY(id,c_name)\n"
             + ") PARTITION BY LIST(id);\n"
-            + "CALL SET_TABLE_PROPERTY('name', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('name', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN name.id IS NULL;\n"
-            + "COMMENT ON COLUMN name.name IS NULL;\n"
-            + "COMMENT ON COLUMN name.age IS NULL;\n"
+            + "CALL SET_TABLE_PROPERTY('key_name', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('key_name', 'time_to_live_in_seconds', '3153600000');\n"
+            + "COMMENT ON COLUMN key_name.id IS NULL;\n"
+            + "COMMENT ON COLUMN key_name.c_name IS NULL;\n"
+            + "COMMENT ON COLUMN key_name.age IS NULL;\n"
             + "COMMIT;");
     }
 
@@ -393,8 +399,8 @@ public class HologresTransformerTest {
             + "   c3 TEXT NOT NULL,\n"
             + "   PRIMARY KEY(c1,c2)\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('t1', 'dictionary_encoding_columns', 'c1:auto,c2:auto');\n"
-            + "CALL SET_TABLE_PROPERTY('t1', 'segment_key', 'c1');\n"
+            + "CALL SET_TABLE_PROPERTY('t1', 'dictionary_encoding_columns', '\"c1:auto,c2:auto\"');\n"
+            + "CALL SET_TABLE_PROPERTY('t1', 'segment_key', '\"c1\"');\n"
             + "COMMENT ON COLUMN t1.c1 IS NULL;\n"
             + "COMMENT ON COLUMN t1.c2 IS NULL;\n"
             + "COMMENT ON COLUMN t1.c3 IS NULL;\n"

@@ -49,7 +49,7 @@ public class ShowObjects extends BaseQueryStatement {
 
     private final ShowObjectsType showType;
 
-    private final QualifiedName tableName;
+    private final List<QualifiedName> tableName;
 
     private final Offset offset;
 
@@ -61,13 +61,13 @@ public class ShowObjects extends BaseQueryStatement {
     }
 
     public ShowObjects(ConditionElement conditionElement,
-                       Identifier unit, ShowObjectsType showType, QualifiedName tableName) {
+                       Identifier unit, ShowObjectsType showType, List<QualifiedName> tableName) {
         this(null, null, conditionElement, false, unit, showType, tableName, null, null);
     }
 
     public ShowObjects(NodeLocation nodeLocation, String origin, ConditionElement conditionElement, Boolean full,
                        Identifier unit, ShowObjectsType showType,
-                       QualifiedName tableName, Offset offset, Limit limit) {
+                       List<QualifiedName> tableName, Offset offset, Limit limit) {
         super(nodeLocation, origin, unit);
         this.tableName = tableName;
         Preconditions.checkNotNull(showType, "show Type can't be null");

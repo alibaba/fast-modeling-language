@@ -19,6 +19,7 @@ package com.aliyun.fastmodel.transform.hologres.format;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresAstVisitor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,8 +33,9 @@ import static com.aliyun.fastmodel.transform.api.context.TransformContext.SEMICO
  */
 public class HologresFormatter {
 
-    public static DialectNode format(BaseStatement statement, HologresTransformContext context) {
-        HologresAstVisitor hologresVisitor = new HologresAstVisitor(context);
+    public static DialectNode format(BaseStatement statement, HologresTransformContext context,
+        HologresVersion version) {
+        HologresAstVisitor hologresVisitor = new HologresAstVisitor(context, version);
         Boolean process = hologresVisitor.process(statement, 0);
         StringBuilder builder = hologresVisitor.getBuilder();
         String result = builder.toString();

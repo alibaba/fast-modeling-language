@@ -20,9 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.formatter.ExpressionFormatter;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
-import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
@@ -50,10 +50,10 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.ColumnGroupCons
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.LevelConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
-import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
-import com.aliyun.fastmodel.transform.hive.context.RowFormat;
+import com.aliyun.fastmodel.transform.hive.parser.util.HiveReservedWordUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,7 +70,7 @@ public class HiveVisitor extends FastModelVisitor {
 
     private final HiveTransformContext context;
 
-    private boolean enableConstraint;
+    private final boolean enableConstraint;
 
     public HiveVisitor(HiveTransformContext context) {
         this.context = context;
@@ -85,7 +85,12 @@ public class HiveVisitor extends FastModelVisitor {
         if (!columnNotEmpty) {
             executable = false;
         }
-        builder.append("CREATE TABLE ");
+        boolean external = HiveHelper.isExternal(node);
+        if (external) {
+            builder.append("CREATE EXTERNAL TABLE ");
+        } else {
+            builder.append("CREATE TABLE ");
+        }
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
@@ -120,9 +125,6 @@ public class HiveVisitor extends FastModelVisitor {
         }
         if (node.getComment() != null) {
             builder.append(formatComment(node.getComment(), isEndNewLine(builder.toString())));
-        } else if (node.getAliasedNameValue() != null) {
-            Comment comment = new Comment(node.getAliasedNameValue());
-            builder.append(formatComment(comment, isEndNewLine(builder.toString())));
         }
         if (!node.isPartitionEmpty()) {
             builder.append(
@@ -132,9 +134,26 @@ public class HiveVisitor extends FastModelVisitor {
                     elementIndent)
             );
         }
-        builder.append(formatRowFormat(context, isEndNewLine(builder.toString())));
-        builder.append(formatFileFormat(context, isEndNewLine(builder.toString())));
-        builder.append(formatLocation(context, isEndNewLine(builder.toString())));
+        //append row format
+
+        String rowFormat = HiveHelper.appendRowFormat(node);
+        if (StringUtils.isNotBlank(rowFormat)) {
+            appendLineIfNecessary();
+            builder.append(rowFormat);
+        }
+        //append stored format
+        String storedFormat = HiveHelper.appendStoredFormat(node);
+        if (StringUtils.isNotBlank(storedFormat)) {
+            appendLineIfNecessary();
+            builder.append(storedFormat);
+        }
+
+        //append location
+        String location = HiveHelper.appendLocation(node);
+        if (StringUtils.isNotBlank(location)) {
+            appendLineIfNecessary();
+            builder.append(location);
+        }
         if (!node.isPropertyEmpty()) {
             String s = formatTblProperties(node.getProperties(), isEndNewLine(builder.toString()));
             builder.append(s);
@@ -143,10 +162,31 @@ public class HiveVisitor extends FastModelVisitor {
         return executable;
     }
 
+    private void appendLineIfNecessary() {
+        if (!isEndNewLine(builder.toString())) {
+            builder.append(StringUtils.LF);
+        }
+    }
+
     private String formatTblProperties(List<Property> properties, boolean isEndNewLine) {
+        List<Property> propertyList = properties.stream().filter(property -> {
+            String name = property.getName();
+            HivePropertyKey byValue = HivePropertyKey.getByValue(name);
+            //一种是系统自定义的属性，并且能够打印，一种是自定义的默认打印
+            return byValue == null || byValue.isSupportPrint();
+        }).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(propertyList)) {
+            return StringUtils.EMPTY;
+        }
+
+        if (!context.isPrintProperty()) {
+            return StringUtils.EMPTY;
+        }
+
         StringBuilder sb = new StringBuilder();
         if (!isEndNewLine) {
-            sb.append("\n");
+            sb.append(StringUtils.LF);
         }
         sb.append("TBLPROPERTIES (");
         String collect = properties.stream().map(x ->
@@ -176,67 +216,21 @@ public class HiveVisitor extends FastModelVisitor {
             }).collect(Collectors.joining(",\n"));
     }
 
-    /**
-     * 设置下额外的setting信息
-     */
-    private String formatRowFormat(HiveTransformContext context, boolean isEndNewLine) {
-        RowFormat rowFormat = context.getRowFormat();
-        if (rowFormat == null) {
-            return StringUtils.EMPTY;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        if (!isEndNewLine) {
-            stringBuilder.append("\n");
-        }
-        stringBuilder.append("DELIMITED ");
-        if (rowFormat.getFieldTerminated() != null) {
-            stringBuilder.append("FIELDS TERMINATED BY ").append(formatStringLiteral(rowFormat.getFieldTerminated()));
-            if (rowFormat.getEscaped() != null) {
-                stringBuilder.append(" ESCAPED BY ").append(formatStringLiteral(rowFormat.getEscaped()));
+    @Override
+    protected String formatColName(Identifier colName, Integer size) {
+        String value = colName.getValue();
+        if (!colName.isDelimited()) {
+            boolean reservedKeyWord = HiveReservedWordUtil.isReservedKeyWord(value);
+            //如果node是关键字，那么进行转义处理
+            if (reservedKeyWord) {
+                value = StripUtils.addPrefix(value);
+            } else {
+                value = formatExpression(colName);
             }
+        } else {
+            value = formatExpression(colName);
         }
-        if (rowFormat.getCollectionTerminated() != null) {
-            stringBuilder.append(" COLLECTION ITEMS TERMINATED BY ").append(
-                formatStringLiteral(rowFormat.getCollectionTerminated()));
-        }
-        if (rowFormat.getMapTerminated() != null) {
-            stringBuilder.append(" MAP KEYS TERMINATED BY ").append(formatStringLiteral(rowFormat.getMapTerminated()));
-        }
-        if (rowFormat.getLineTerminated() != null) {
-            stringBuilder.append(" LINES TERMINATED BY ").append(formatStringLiteral(rowFormat.getLineTerminated()));
-        }
-        if (rowFormat.getNullDefined() != null) {
-            stringBuilder.append(" NULL DEFINED AS ").append(formatStringLiteral(rowFormat.getNullDefined()));
-        }
-        return stringBuilder.toString();
-    }
-
-    private String formatLocation(HiveTransformContext context, boolean isEndNewLine) {
-        String location = context.getLocation();
-        if (StringUtils.isBlank(location)) {
-            return StringUtils.EMPTY;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        if (!isEndNewLine) {
-            stringBuilder.append("\n");
-        }
-        stringBuilder.append("LOCATION " + formatStringLiteral(location));
-        return stringBuilder.toString();
-    }
-
-    private String formatFileFormat(HiveTransformContext context, boolean isEndNewLine) {
-        String fileFormat = context.getFileFormat();
-        if (StringUtils.isBlank(fileFormat)) {
-            return StringUtils.EMPTY;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        if (!isEndNewLine) {
-            stringBuilder.append("\n");
-        }
-        if (StringUtils.isNotBlank(fileFormat)) {
-            stringBuilder.append("STORED AS ").append(fileFormat);
-        }
-        return stringBuilder.toString();
+        return StringUtils.rightPad(value, size);
     }
 
     /**
@@ -347,7 +341,7 @@ public class HiveVisitor extends FastModelVisitor {
             builder.append(" (").append(
                 insert.getColumns()
                     .stream()
-                    .map(ExpressionFormatter::formatExpression)
+                    .map(identifier -> formatColName(identifier, 0))
                     .collect(joining(","))
             ).append(")");
             builder.append(" \n ");
@@ -360,6 +354,15 @@ public class HiveVisitor extends FastModelVisitor {
     protected String getCode(QualifiedName qualifiedName) {
         QualifiedName join = StringJoinUtil.join(context.getDatabase(), context.getSchema(), qualifiedName.getSuffix());
         return formatName(join);
+    }
+
+    @Override
+    public String formatName(QualifiedName name) {
+        return name.getOriginalParts().stream()
+            .map(e -> {
+                return formatColName(e, 0);
+            })
+            .collect(joining("."));
     }
 
     @Override
@@ -452,7 +455,7 @@ public class HiveVisitor extends FastModelVisitor {
 
     @Override
     protected String formatExpression(BaseExpression baseExpression) {
-        return new DefaultExpressionVisitor().process(baseExpression);
+        return new HiveExpressionVisitor().process(baseExpression);
     }
 
 }

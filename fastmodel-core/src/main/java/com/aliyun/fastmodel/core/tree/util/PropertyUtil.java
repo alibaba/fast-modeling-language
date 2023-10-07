@@ -84,7 +84,7 @@ public class PropertyUtil {
         }
         Field[] declaredFields = clazz.getDeclaredFields();
         try {
-            T t = (T)clazz.getDeclaredConstructors()[0].newInstance();
+            T t = clazz.newInstance();
             for (Field f : declaredFields) {
                 Class<?> type = f.getType();
                 String s = UnderLineUtils.humpToUnderLine(f.getName());

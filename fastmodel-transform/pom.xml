@@ -42,6 +42,9 @@
         <module>fastmodel-transform-zen</module>
         <module>fastmodel-transform-graph</module>
         <module>fastmodel-transform-clickhouse</module>
+        <module>fastmodel-transform-spark</module>
+        <module>fastmodel-transform-adbmysql</module>
+        <module>fastmodel-transform-sqlite</module>
     </modules>
 
 

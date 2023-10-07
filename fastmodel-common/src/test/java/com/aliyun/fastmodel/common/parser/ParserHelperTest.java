@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 
@@ -53,7 +53,7 @@ import static org.mockito.Matchers.any;
 public class ParserHelperTest {
 
     @Test
-    public void testGetOrigin() throws Exception {
+    public void testGetOrigin() {
         ParserRuleContext parserRuleContext = Mockito.mock(ParserRuleContext.class);
         prepare(parserRuleContext);
         String result = ParserHelper.getOrigin(parserRuleContext);
@@ -73,7 +73,7 @@ public class ParserHelperTest {
     }
 
     @Test
-    public void testGetOrigin2() throws Exception {
+    public void testGetOrigin2() {
         Token token = getToken();
         String result = ParserHelper.getOrigin(token);
         assertEquals("result", result);
@@ -88,7 +88,7 @@ public class ParserHelperTest {
     }
 
     @Test
-    public void testGetOrigin3() throws Exception {
+    public void testGetOrigin3() {
         TerminalNode terminalNode = Mockito.mock(TerminalNode.class);
         Token token = getToken();
         given(terminalNode.getSymbol()).willReturn(token);
@@ -97,7 +97,7 @@ public class ParserHelperTest {
     }
 
     @Test
-    public void testGetLocation() throws Exception {
+    public void testGetLocation() {
         ParserRuleContext parserRuleContext = Mockito.mock(ParserRuleContext.class);
         Token token = getToken();
         given(parserRuleContext.getStart()).willReturn(token);
@@ -106,13 +106,13 @@ public class ParserHelperTest {
     }
 
     @Test
-    public void testGetLocation2() throws Exception {
+    public void testGetLocation2() {
         NodeLocation result = ParserHelper.getLocation(getToken());
         assertEquals(1, result.getColumn());
     }
 
     @Test
-    public void testGetLocation3() throws Exception {
+    public void testGetLocation3() {
         TerminalNode mock = Mockito.mock(TerminalNode.class);
         Token token = getToken();
         given(mock.getSymbol()).willReturn(token);
@@ -121,7 +121,7 @@ public class ParserHelperTest {
     }
 
     @Test
-    public void testVisitIfPresent() throws Exception {
+    public void testVisitIfPresent() {
         AbstractParseTreeVisitor mock = Mockito.mock(AbstractParseTreeVisitor.class);
         given(mock.visit(any(ParseTree.class))).willReturn(new Identifier("abc"));
         Optional<Identifier> result = ParserHelper.visitIfPresent(mock, new TerminalNodeImpl(new CommonToken(0)),
@@ -150,7 +150,7 @@ public class ParserHelperTest {
         Number number1 = ParserHelper.getNumber(doubleLiteral);
         double v = number1.doubleValue();
         Double value = doubleLiteral.getValue();
-        assertTrue(value.doubleValue() == v);
+        assertEquals(value.doubleValue(), v, 0.0);
 
         DecimalLiteral decimalLiteral = new DecimalLiteral("12134234234234234234");
         Number number2 = ParserHelper.getNumber(decimalLiteral);
@@ -158,7 +158,31 @@ public class ParserHelperTest {
 
         StringLiteral stringLiteral = new StringLiteral("1234");
         Number number3 = ParserHelper.getNumber(stringLiteral);
-        assertTrue(number3.getClass() == BigDecimal.class);
+        assertSame(number3.getClass(), BigDecimal.class);
+    }
+
+    @Test
+    public void testLower() {
+        ParserRuleContext parserRuleContext = new ParserRuleContext();
+        parserRuleContext.start = new CommonToken(0, "`");
+        parserRuleContext.stop = new CommonToken(0, "`");
+        Token symbol = new CommonToken(0, "`HOUR`");
+        Token t1 = new CommonToken(symbol);
+        parserRuleContext.addChild(t1);
+        Identifier identifier = ParserHelper.getIdentifier(parserRuleContext);
+        assertEquals(identifier.getValue(), "HOUR");
+    }
+
+    @Test
+    public void testLowerWithNo() {
+        ParserRuleContext parserRuleContext = new ParserRuleContext();
+        parserRuleContext.start = new CommonToken(0, "`");
+        parserRuleContext.stop = new CommonToken(0, "`");
+        Token symbol = new CommonToken(0, "HOUR");
+        Token t1 = new CommonToken(symbol);
+        parserRuleContext.addChild(t1);
+        Identifier identifier = ParserHelper.getIdentifier(parserRuleContext);
+        assertEquals(identifier.getValue(), "hour");
     }
 }
 

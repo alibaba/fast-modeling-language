@@ -11,7 +11,8 @@ package com.aliyun.fastmodel.transform.hologres.parser.tree.datatype;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * HologresDataTypeNameTest
@@ -90,5 +91,11 @@ public class HologresDataTypeNameTest {
     public void testGetDataType() {
         IDataTypeName byValue = HologresDataTypeName.getByValue("BIGINT[]");
         assertNotNull(byValue);
+    }
+
+    @Test
+    public void testGetBigSerial() {
+        IDataTypeName dataTypeName = HologresDataTypeName.getByValue("Bigserial");
+        assertNotNull(dataTypeName);
     }
 }

@@ -16,22 +16,24 @@
 
 package com.aliyun.aliyun.transform.zen.compare;
 
-import static org.junit.Assert.assertEquals;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.aliyun.aliyun.transform.zen.ZenTransformer;
 import com.aliyun.aliyun.transform.zen.parser.ZenParserImpl;
 import com.aliyun.fastmodel.core.tree.ListNode;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Desc:
@@ -40,7 +42,6 @@ import org.junit.Test;
  * @date 2021/9/26
  */
 public class ZenNodeReverseTest {
-
     ZenParserImpl zenParser = new ZenParserImpl();
     ZenTransformer zenTransformer = new ZenTransformer();
 
@@ -49,19 +50,26 @@ public class ZenNodeReverseTest {
     }
 
     @Test
+    public void testTransform() throws IOException {
+        String name = "/issue/issue.txt";
+        List<String> strings = transformTest1(name);
+        assertTrue(strings.isEmpty());
+    }
+
+    @Test
     public void testStruct() {
         String value = "a array<struct<id:tring>> 'comment'";
         DialectNode dialectNode = new DialectNode(value);
-        ListNode reverse = (ListNode) zenTransformer.reverse(dialectNode);
-        List<ColumnDefinition> list = (List<ColumnDefinition>) reverse.getChildren();
+        ListNode reverse = (ListNode)zenTransformer.reverse(dialectNode);
+        List<ColumnDefinition> list = (List<ColumnDefinition>)reverse.getChildren();
         assertEquals(1, list.size());
     }
 
     private List<String> transformTest1(String name) throws IOException {
         String zenText = IOUtils.toString(ZenNodeReverseTest.class.getResourceAsStream(name));
         DialectNode dialectNode = new DialectNode(zenText);
-        ListNode reverse = (ListNode) zenTransformer.reverse(dialectNode);
-        List<ColumnDefinition> list = (List<ColumnDefinition>) reverse.getChildren();
+        ListNode reverse = (ListNode)zenTransformer.reverse(dialectNode);
+        List<ColumnDefinition> list = (List<ColumnDefinition>)reverse.getChildren();
         Map<String, ColumnDefinition> maps = new HashMap<>();
         for (ColumnDefinition c : list) {
             maps.put(c.getColName().getValue(), c);

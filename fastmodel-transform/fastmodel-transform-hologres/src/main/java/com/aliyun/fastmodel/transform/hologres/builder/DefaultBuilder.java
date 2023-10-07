@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.format.HologresFormatter;
 import com.google.auto.service.AutoService;
 
@@ -37,6 +38,6 @@ public class DefaultBuilder implements StatementBuilder<HologresTransformContext
 
     @Override
     public DialectNode build(BaseStatement source, HologresTransformContext context) {
-        return HologresFormatter.format(source, context);
+        return HologresFormatter.format(source, context, HologresVersion.V1);
     }
 }

@@ -26,6 +26,7 @@ import com.aliyun.fastmodel.transform.api.builder.merge.MergeBuilder;
 import com.aliyun.fastmodel.transform.api.builder.merge.impl.CreateTableMergeBuilder;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.Dialect;
@@ -43,7 +44,7 @@ import com.google.auto.service.AutoService;
  * @author panguanjing
  * @date 2021/3/7
  */
-@Dialect(DialectName.Constants.HOLOGRES)
+@Dialect(value = DialectName.Constants.HOLOGRES, defaultDialect = true)
 @AutoService(Transformer.class)
 public class HologresTransformer implements Transformer<BaseStatement> {
 
@@ -80,7 +81,7 @@ public class HologresTransformer implements Transformer<BaseStatement> {
 
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
-        return hologresClientConverter.covertToNode(table);
+        return hologresClientConverter.covertToNode(table, TableConfig.builder().build());
     }
 
     @Override

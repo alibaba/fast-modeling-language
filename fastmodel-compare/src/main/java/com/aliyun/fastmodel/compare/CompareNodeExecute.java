@@ -32,6 +32,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateCodeTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDwsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateFactTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateOdsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;
 import com.google.common.collect.ImmutableList;
@@ -51,6 +52,7 @@ public class CompareNodeExecute {
     private CompareNodeExecute() {
         CreateTableCompareNode value = new CreateTableCompareNode();
         maps.put(CreateTable.class.getName(), value);
+        maps.put(CreateOdsTable.class.getName(), value);
         maps.put(CreateDimTable.class.getName(), value);
         maps.put(CreateFactTable.class.getName(), value);
         maps.put(CreateCodeTable.class.getName(), value);

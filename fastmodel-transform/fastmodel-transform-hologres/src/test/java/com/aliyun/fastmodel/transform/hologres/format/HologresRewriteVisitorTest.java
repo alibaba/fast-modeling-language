@@ -16,6 +16,7 @@ import com.aliyun.fastmodel.core.tree.relation.querybody.Table;
 import com.aliyun.fastmodel.core.tree.statement.select.Query;
 import com.aliyun.fastmodel.transform.api.context.setting.QuerySetting;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresRewriteVisitor;
 import org.junit.Test;
 
@@ -128,7 +129,7 @@ public class HologresRewriteVisitorTest {
 
     private String rewrite(HologresRewriteVisitor hologresRewriteVisitor, Query query) {
         Query node = (Query)hologresRewriteVisitor.visitQuery(query, null);
-        return HologresFormatter.format(node, HologresTransformContext.builder().appendSemicolon(true).build()).getNode();
+        return HologresFormatter.format(node, HologresTransformContext.builder().appendSemicolon(true).build(), HologresVersion.V1).getNode();
     }
 
     @Test
@@ -138,14 +139,14 @@ public class HologresRewriteVisitorTest {
             + "FROM\n"
             + "    public.table3 c\n"
             + "    JOIN (public.table1\n"
-            + "        JOIN public.table2 b ON name = b.name) ON (b.name = c.name);\n");
+            + "        JOIN public.table2 b ON c_name = b.c_name) ON (b.c_name = c.c_name);\n");
         HologresRewriteVisitor hologresRewriteVisitor = new HologresRewriteVisitor();
         String rewrite = rewrite(hologresRewriteVisitor, query);
         assertEquals(rewrite, "SELECT sub1.*\n"
             + "FROM\n"
             + "  table3 c\n"
             + " JOIN table1 sub1\n"
-            + " JOIN table2 b ON sub1.name = b.name ON b.name = c.name\n"
+            + " JOIN table2 b ON sub1.c_name = b.c_name ON b.c_name = c.c_name\n"
             + ";");
     }
 
@@ -245,9 +246,10 @@ public class HologresRewriteVisitorTest {
             + ";\n");
         HologresRewriteVisitor hologresRewriteVisitor = new HologresRewriteVisitor();
         String rewrite = rewrite(hologresRewriteVisitor, query);
-        assertEquals(rewrite, "SELECT to_char(timestamp, 'hh')\n"
+        assertEquals(rewrite, "SELECT to_char(\"timestamp\", 'hh')\n"
             + "FROM\n"
-            + "  test\n;");
+            + "  test\n"
+            + ";");
     }
 
     @Test
@@ -257,7 +259,7 @@ public class HologresRewriteVisitorTest {
             + ";");
         HologresRewriteVisitor hologresRewriteVisitor = new HologresRewriteVisitor();
         String rewrite = rewrite(hologresRewriteVisitor, query);
-        assertEquals(rewrite, "SELECT to_timestamp(time / 1000)\n"
+        assertEquals(rewrite, "SELECT to_timestamp(\"time\" / 1000)\n"
             + "FROM\n"
             + "  test\n"
             + ";");

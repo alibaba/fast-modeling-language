@@ -30,6 +30,7 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.Field;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
@@ -88,6 +89,7 @@ import com.aliyun.fastmodel.core.tree.statement.select.order.Ordering;
 import com.aliyun.fastmodel.core.tree.statement.select.order.SortItem;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -101,6 +103,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class ExpressionVisitor extends AstVisitor<String, Void> {
     public static final String COUNT = "count";
+    public static final String PREFIX = "`";
 
     private static final ThreadLocal<DecimalFormat> DOUBLE_FORMATTER = ThreadLocal.withInitial(
         () -> new DecimalFormat("0.###################E0###", new DecimalFormatSymbols(Locale.US)));
@@ -269,15 +272,14 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
     public String visitGenericDataType(GenericDataType node, Void context) {
         StringBuilder result = new StringBuilder();
         IDataTypeName typeName = node.getTypeName();
-        if (typeName == DataTypeEnums.CUSTOM) {
+        if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.CUSTOM.getValue())) {
             String format = getCustomDataTypeFormat(node);
             result.append(format);
         } else {
             result.append(typeName.getValue());
         }
         boolean argNotEmpty = node.getArguments() != null && !node.getArguments().isEmpty();
-        if (typeName == DataTypeEnums.ARRAY || typeName == DataTypeEnums.MAP
-            || typeName == DataTypeEnums.STRUCT) {
+        if (typeName.getDimension() == Dimension.MULTIPLE) {
             if (argNotEmpty) {
                 result.append(node.getArguments().stream()
                     .map(this::process)
@@ -300,20 +302,20 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
      * @return
      */
     protected String getCustomDataTypeFormat(GenericDataType node) {
-        return format("%s('%s')", DataTypeEnums.CUSTOM.name(), node.getName().toString());
+        return format("%s('%s')", DataTypeEnums.CUSTOM.name(), node.getName());
     }
 
     @Override
     public String visitRowDataType(RowDataType rowDataType, Void context) {
         StringBuilder builder = new StringBuilder();
-        builder.append(rowDataType.getTypeName().name());
-        builder.append("<");
-        List<Field> fields = rowDataType.getFields();
-        String s = fields.stream().map(x -> {
-            return formatField(x);
-        }).collect(joining(","));
-        builder.append(s);
-        builder.append(">");
+        builder.append(rowDataType.getTypeName().getValue());
+        if (rowDataType.getFields() != null && !rowDataType.getFields().isEmpty()) {
+            builder.append("<");
+            List<Field> fields = rowDataType.getFields();
+            String s = fields.stream().map(x -> formatField(x)).collect(joining(","));
+            builder.append(s);
+            builder.append(">");
+        }
         return builder.toString();
     }
 
@@ -364,7 +366,12 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
         if (!node.isDelimited()) {
             return node.getValue();
         } else {
-            return '`' + node.getValue() + '`';
+            String value = node.getValue();
+            //if value is start `, then
+            if (value.startsWith(PREFIX)) {
+                return value;
+            }
+            return PREFIX + node.getValue() + PREFIX;
         }
     }
 
@@ -446,7 +453,7 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
 
     @Override
     public String visitArithmeticBinaryExpression(ArithmeticBinaryExpression node,
-                                                  Void context) {
+        Void context) {
         String s = formatBinaryExpression(node.getOperator().getValue(), node.getLeft(), node.getRight());
         return append(s, node.isParenthesized());
     }

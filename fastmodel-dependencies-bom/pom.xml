@@ -26,9 +26,10 @@
     <version>${revision}</version>
 
     <properties>
-        <revision>0.5.3-preview1</revision>
+        <revision>0.5.8</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <dep.jline.version>3.17.1</dep.jline.version>
+        <dep.antlr.version>4.9.3</dep.antlr.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -41,7 +42,7 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>4.9.1</version>
+                <version>${dep.antlr.version}</version>
             </dependency>
 
             <dependency>

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.aliyun.fastmodel.common.parser.ThrowingErrorListener;
-import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.DomainLanguage;
 import com.aliyun.fastmodel.core.parser.FastModelParser;
@@ -33,6 +32,7 @@ import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser;
 import com.aliyun.fastmodel.parser.generate.FastModelLexer;
+import com.aliyun.fastmodel.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.parser.visitor.AnnotationProcessVisitor;
 import com.aliyun.fastmodel.parser.visitor.AstExtractVisitor;
 import com.google.auto.service.AutoService;

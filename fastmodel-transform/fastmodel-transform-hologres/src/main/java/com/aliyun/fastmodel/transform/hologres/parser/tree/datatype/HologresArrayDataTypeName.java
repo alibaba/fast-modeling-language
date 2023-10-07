@@ -9,6 +9,8 @@
 package com.aliyun.fastmodel.transform.hologres.parser.tree.datatype;
 
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
 import lombok.Data;
 
 /**
@@ -18,7 +20,7 @@ import lombok.Data;
  * @date 2022/6/9
  */
 @Data
-public class HologresArrayDataTypeName implements IDataTypeName {
+public class HologresArrayDataTypeName implements ISimpleDataTypeName {
 
     public static final String VALUE_SUFFIX = "[]";
 
@@ -55,4 +57,8 @@ public class HologresArrayDataTypeName implements IDataTypeName {
         return source.getValue() + VALUE_SUFFIX;
     }
 
+    @Override
+    public SimpleDataTypeName getSimpleDataTypeName() {
+        return SimpleDataTypeName.STRING;
+    }
 }

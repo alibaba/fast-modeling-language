@@ -9,6 +9,8 @@
 package com.aliyun.fastmodel.transform.hive.parser.tree.datatype;
 
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -17,96 +19,96 @@ import org.apache.commons.lang3.StringUtils;
  * @author panguanjing
  * @date 2022/8/7
  */
-public enum HiveDataTypeName implements IDataTypeName {
+public enum HiveDataTypeName implements ISimpleDataTypeName {
     /**
-     * 1.0 version
+     * BIGINT
      */
-    BIGINT("BIGINT", Dimension.ZERO),
+    BIGINT("BIGINT", Dimension.ZERO, SimpleDataTypeName.NUMBER),
     /**
      * double
      */
-    DOUBLE("DOUBLE", Dimension.ZERO),
+    DOUBLE("DOUBLE", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * DOUBLE_PRECISION
      */
-    DOUBLE_PRECISION("DOUBLE PRECISION", Dimension.ZERO),
+    DOUBLE_PRECISION("DOUBLE PRECISION", Dimension.ZERO, SimpleDataTypeName.NUMBER),
     /**
      * decimal
      */
-    DECIMAL("DECIMAL", Dimension.TWO),
+    DECIMAL("DECIMAL", Dimension.TWO, SimpleDataTypeName.NUMBER),
     /**
      * string
      */
-    STRING("STRING", Dimension.ZERO),
+    STRING("STRING", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * boolean
      */
-    BOOLEAN("BOOLEAN", Dimension.ZERO),
+    BOOLEAN("BOOLEAN", Dimension.ZERO, SimpleDataTypeName.BOOLEAN),
     /**
      * array
      */
-    ARRAY("ARRAY", Dimension.MULTIPLE),
+    ARRAY("ARRAY", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
     /**
      * map
      */
-    MAP("MAP", Dimension.MULTIPLE),
+    MAP("MAP", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
     /**
      *
      */
-    STRUCT("STRUCT", Dimension.MULTIPLE),
+    STRUCT("STRUCT", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
 
     /**
      * UNION_TYPE
      */
-    UNION_TYPE("UNIONTYPE", Dimension.MULTIPLE),
+    UNION_TYPE("UNIONTYPE", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
     /**
      * 2.0 version
      */
-    TINYINT("TINYINT", Dimension.ZERO),
+    TINYINT("TINYINT", Dimension.ZERO, SimpleDataTypeName.NUMBER),
     /**
      * smallint
      */
-    SMALLINT("SMALLINT", Dimension.ZERO),
+    SMALLINT("SMALLINT", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * int
      */
-    INT("INT", Dimension.ZERO),
+    INT("INT", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * INTEGER
      */
-    INTEGER("INTEGER", Dimension.ZERO),
+    INTEGER("INTEGER", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * binary
      */
-    BINARY("BINARY", Dimension.ZERO),
+    BINARY("BINARY", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * float
      */
-    FLOAT("FLOAT", Dimension.ZERO),
+    FLOAT("FLOAT", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * varchar
      */
-    VARCHAR("VARCHAR", Dimension.ONE),
+    VARCHAR("VARCHAR", Dimension.ONE, SimpleDataTypeName.STRING),
     /**
      * char
      */
-    CHAR("CHAR", Dimension.ONE),
+    CHAR("CHAR", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
      * date
      */
-    DATE("DATE", Dimension.ZERO),
+    DATE("DATE", Dimension.ZERO, SimpleDataTypeName.DATE),
     /**
      * timestamp
      */
-    TIMESTAMP("TIMESTAMP", Dimension.ZERO);
+    TIMESTAMP("TIMESTAMP", Dimension.ZERO, SimpleDataTypeName.DATE);
 
     /**
      * complex prefix
@@ -117,9 +119,12 @@ public enum HiveDataTypeName implements IDataTypeName {
 
     private final Dimension dimension;
 
-    HiveDataTypeName(String value, Dimension dimension) {
+    private final SimpleDataTypeName simpleDataTypeName;
+
+    HiveDataTypeName(String value, Dimension dimension, SimpleDataTypeName simpleDataTypeName) {
         this.value = value;
         this.dimension = dimension;
+        this.simpleDataTypeName = simpleDataTypeName;
     }
 
     @Override
@@ -156,4 +161,8 @@ public enum HiveDataTypeName implements IDataTypeName {
         throw new IllegalArgumentException("unsupported dataType with value: " + value);
     }
 
+    @Override
+    public SimpleDataTypeName getSimpleDataTypeName() {
+        return simpleDataTypeName;
+    }
 }

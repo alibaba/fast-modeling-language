@@ -1,5 +1,6 @@
 <!-- docs/_sidebar.md -->
 
+* [首页](zh-cn/README.md)
 * [入门](zh-cn/guide.md)
 * [与SQL的差异](zh-cn/difference.md)
 * [基本元素](zh-cn/basic.md)
@@ -15,7 +16,7 @@
     * [数据质量](zh-cn/model/quality.md)
     * [维度定义](zh-cn/model/dimension.md)
 * 数据标准
-    * [数据标准](zh-cn/standard/standard_dict.md)
+    * [数据标准和标准集](zh-cn/standard/standard_dict.md)
     * [标准代码](zh-cn/standard/code_table.md)
     * [度量单位](zh-cn/standard/measure_unit.md)
 * 指标管理
@@ -29,9 +30,10 @@
     * [查看引用](zh-cn/references/show_references.md)
     * [移动引用](zh-cn/references/move_references.md)
 * 命令语句
-    * [导入导出](zh-cn/command/impexp.md)
+    * [渲染导入导出](zh-cn/command/impexp.md)
 * 逆向
     * [逆向建模](zh-cn/reverse/model.md)
+    * [逆向生成指标](zh-cn/reverse/indicator.md)
 * 发布
     * [模型发布](zh-cn/publish/model.md)
 * DDL转换

@@ -46,4 +46,8 @@ public class DistributionKey extends BaseClientProperty<List<String>> {
         this.setValue(list);
     }
 
+    @Override
+    public List<String> toColumnList() {
+        return getValue();
+    }
 }

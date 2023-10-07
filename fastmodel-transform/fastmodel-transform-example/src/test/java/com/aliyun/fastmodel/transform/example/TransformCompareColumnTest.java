@@ -281,7 +281,7 @@ public class TransformCompareColumnTest extends BaseTransformCaseTest {
     }
 
     /**
-     * 这个地方有个问题，先添加列，再删除分区列，会导致添加失败
+     * FIXME 这个地方有个问题，先添加列，再删除分区列，会导致添加失败
      */
     @Test
     public void beforePartitionAfterNoPartition() {

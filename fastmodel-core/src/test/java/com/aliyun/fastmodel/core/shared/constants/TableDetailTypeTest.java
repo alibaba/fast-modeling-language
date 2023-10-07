@@ -43,7 +43,12 @@ public class TableDetailTypeTest {
         TableDetailType r
             = TableDetailType.getByComment("普通维度表");
         assertEquals(r.getComment(), "普通维度表");
+    }
 
+    @Test
+    public void testOds() {
+        TableDetailType tableDetailType = TableDetailType.getByCode("ods", TableType.ODS);
+        assertEquals(TableDetailType.ODS, tableDetailType);
     }
 }
 

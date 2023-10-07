@@ -15,7 +15,6 @@ import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.property.StringProperty;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  * BasePropertyConverter
@@ -51,6 +50,11 @@ public abstract class BasePropertyConverter implements PropertyConverter {
      */
     protected abstract Map<String, Function<String, BaseClientProperty>> getFunctionMap();
 
+    /**
+     * if key not define then return default
+     *
+     * @return
+     */
     protected boolean returnDefaultWhenNotExist() {
         return true;
     }

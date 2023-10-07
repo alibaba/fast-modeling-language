@@ -29,11 +29,14 @@ import lombok.Getter;
 public class HologresTransformContext extends TransformContext {
 
     public static final String COLUMN = "column";
+
     public static final long DEFAULT_SECONDS = 3153600000L;
 
     private String orientation = COLUMN;
 
     private Long timeToLiveInSeconds = DEFAULT_SECONDS;
+
+    private boolean caseSensitive;
 
     public HologresTransformContext(TransformContext context) {
         super(context);
@@ -41,6 +44,7 @@ public class HologresTransformContext extends TransformContext {
             HologresTransformContext hologresTransformContext = (HologresTransformContext)context;
             orientation = hologresTransformContext.getOrientation();
             timeToLiveInSeconds = hologresTransformContext.getTimeToLiveInSeconds();
+            caseSensitive = hologresTransformContext.isCaseSensitive();
         }
     }
 
@@ -48,6 +52,7 @@ public class HologresTransformContext extends TransformContext {
         super(builder);
         orientation = builder.getOrientation();
         timeToLiveInSeconds = builder.getTimeToLiveInSeconds();
+        caseSensitive = builder.isCaseSensitive();
     }
 
     public static Builder builder() {
@@ -61,6 +66,8 @@ public class HologresTransformContext extends TransformContext {
 
         private Long timeToLiveInSeconds = DEFAULT_SECONDS;
 
+        private boolean caseSensitive;
+
         @Override
         public HologresTransformContext build() {
             return new HologresTransformContext(this);
@@ -73,6 +80,11 @@ public class HologresTransformContext extends TransformContext {
 
         public Builder timeToLiveInSeconds(Long timeToLiveInSeconds) {
             this.timeToLiveInSeconds = timeToLiveInSeconds;
+            return this;
+        }
+
+        public Builder caseSensitive(boolean caseSensitive) {
+            this.caseSensitive = caseSensitive;
             return this;
         }
 

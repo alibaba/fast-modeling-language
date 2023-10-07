@@ -9,10 +9,11 @@
 package com.aliyun.fastmodel.transform.hologres.client.property;
 
 import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 
 /**
  * bit map column
@@ -20,7 +21,7 @@ import com.google.common.base.Splitter;
  * @author panguanjing
  * @date 2022/6/13
  */
-public class BitMapColumn extends BaseClientProperty<List<String>> {
+public class BitMapColumn extends BaseClientProperty<List<ColumnStatus>> {
 
     public static final String BITMAP_COLUMN = "bitmap_columns";
 
@@ -30,11 +31,31 @@ public class BitMapColumn extends BaseClientProperty<List<String>> {
 
     @Override
     public String valueString() {
-        return Joiner.on(",").join(this.getValue());
+        List<String> list = this.getValue().stream().map(
+            s -> {
+                StringJoiner stringJoiner = new StringJoiner(":");
+                if (s.getStatus() != null) {
+                    return stringJoiner.add(s.getColumnName()).add(s.getStatus().getValue()).toString();
+                } else {
+                    return s.getColumnName();
+                }
+            }
+        ).collect(Collectors.toList());
+        return Joiner.on(",").join(list);
     }
 
     @Override
     public void setValueString(String value) {
-        this.setValue(Splitter.on(",").splitToList(value));
+        List<ColumnStatus> columnStatuses = ColumnStatus.of(value, null);
+        this.setValue(columnStatuses);
+    }
+
+    @Override
+    public List<String> toColumnList() {
+        List<ColumnStatus> value = this.getValue();
+        if (value == null || value.isEmpty()) {
+            return super.toColumnList();
+        }
+        return value.stream().map(ColumnStatus::getColumnName).collect(Collectors.toList());
     }
 }

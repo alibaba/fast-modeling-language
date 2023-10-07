@@ -112,7 +112,7 @@ public enum DataTypeEnums implements IDataTypeName {
     /**
      * json
      */
-    JSON(Dimension.ZERO),
+    JSON(Dimension.MULTIPLE),
 
     /**
      * 自定义

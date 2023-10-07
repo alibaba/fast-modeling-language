@@ -33,14 +33,6 @@ import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
  */
 public interface FastModelParser extends LanguageParser<Node, Void> {
 
-    /**
-     * parse node from text
-     *
-     * @param text
-     * @param context
-     * @return {@link Node}
-     * @throws ParseException
-     */
     @Override
     default Node parseNode(String text, Void context) throws ParseException {
         return parseStatement(text);

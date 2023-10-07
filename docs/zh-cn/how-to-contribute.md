@@ -1,5 +1,5 @@
-## FML包结构
 
+## FML包结构
 ```plantuml
 @startuml
 package core <<核心模型>>{
@@ -58,6 +58,24 @@ package core <<核心模型>>{
 
   FastModelParser --> ParseException
 
+
+   package compare <<比较>>{
+        abstract class BaseCompareNode {
+            compareNode(b : Statement , after:Statement, strategy:CompareStrategy) : List<Statement>
+        }
+
+
+        class CreateTableCompareNode
+
+
+        CreateTableCompareNode --|> BaseCompareNode
+
+        enum CompareStrategy <<比对策略>>
+
+        BaseCompareNode -> Statement
+   }
+
+
    package formatter<<格式器>>{
 
         class ExpressionFormatter
@@ -83,24 +101,8 @@ package core <<核心模型>>{
        }
 
    }
-  
+    compare --> tree
 
-}
-
-package compare <<比较>>{
-        abstract class BaseCompareNode {
-            compareNode(b : Statement , after:Statement, strategy:CompareStrategy) : List<Statement>
-        }
-
-
-        class CreateTableCompareNode
-
-
-        CreateTableCompareNode --|> BaseCompareNode
-
-        enum CompareStrategy <<比对策略>>
-
-        BaseCompareNode -> Statement
 }
 
 
@@ -153,6 +155,7 @@ transformer --> core
 compare --> core
 @enduml
 ```
+
 
 ## FML核心对象
 

@@ -17,10 +17,10 @@
 package com.aliyun.fastmodel.transform.mysql.parser;
 
 import com.aliyun.fastmodel.common.parser.ThrowingErrorListener;
-import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.google.auto.service.AutoService;
 import org.antlr.v4.runtime.CharStreams;

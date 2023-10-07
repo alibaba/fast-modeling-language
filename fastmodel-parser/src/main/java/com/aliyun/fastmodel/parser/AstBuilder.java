@@ -34,6 +34,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.Field;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.JsonDataType;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
@@ -164,6 +165,7 @@ import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.IntervalLiter
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.IntervalValueContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.IsCondExpressionContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.IsConditionContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.JsonTypeContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.KeyPropertyContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.KeyValuePropertyContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.LateralContext;
@@ -723,6 +725,15 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitJsonType(JsonTypeContext ctx) {
+        if (ctx.typeList() != null) {
+            List<Field> list = visit(ctx.typeList().colonType(), Field.class);
+            return new JsonDataType(getLocation(ctx), getOrigin(ctx), list);
+        }
+        return new JsonDataType(getLocation(ctx), getOrigin(ctx), null);
+    }
+
+    @Override
     public Node visitColonType(ColonTypeContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
         BaseDataType baseDataType = (BaseDataType)visit(ctx.typeDbCol());
@@ -1153,7 +1164,8 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
 
     @Override
     public Node visitString(StringContext ctx) {
-        return new StringLiteral(getLocation(ctx), getOrigin(ctx), StripUtils.strip(ctx.getText()));
+        String text = ctx.getText();
+        return new StringLiteral(getLocation(ctx), getOrigin(ctx), StripUtils.strip(text));
     }
 
     @Override

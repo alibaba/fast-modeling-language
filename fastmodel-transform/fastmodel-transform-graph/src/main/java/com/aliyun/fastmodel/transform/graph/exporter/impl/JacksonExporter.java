@@ -34,7 +34,7 @@ import com.google.auto.service.AutoService;
 @AutoService(Exporter.class)
 public class JacksonExporter implements Exporter {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public JacksonExporter() {
 

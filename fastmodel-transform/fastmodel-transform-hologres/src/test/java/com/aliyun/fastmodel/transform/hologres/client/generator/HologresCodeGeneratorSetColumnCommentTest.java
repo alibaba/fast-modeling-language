@@ -61,7 +61,9 @@ public class HologresCodeGeneratorSetColumnCommentTest {
         DdlGeneratorResult generate = codeGenerator.generate(request);
         String result =
             generate.getDialectNodes().stream().filter(DialectNode::isExecutable).map(DialectNode::getNode).collect(Collectors.joining("\n"));
-        assertEquals(result, "COMMENT ON COLUMN a.c1 IS 'abc';");
+        assertEquals(result, "BEGIN;\n"
+            + "COMMENT ON COLUMN a.c1 IS 'abc';\n"
+            + "COMMIT;");
     }
 
     @Test
@@ -89,6 +91,8 @@ public class HologresCodeGeneratorSetColumnCommentTest {
         DdlGeneratorResult generate = codeGenerator.generate(request);
         String result =
             generate.getDialectNodes().stream().filter(DialectNode::isExecutable).map(DialectNode::getNode).collect(Collectors.joining("\n"));
-        assertEquals(result, "COMMENT ON COLUMN a.c1 IS NULL;");
+        assertEquals(result, "BEGIN;\n"
+            + "COMMENT ON COLUMN a.c1 IS NULL;\n"
+            + "COMMIT;");
     }
 }

@@ -31,6 +31,11 @@ import lombok.NoArgsConstructor;
 public class Table {
 
     /**
+     * 是否外部表
+     */
+    private boolean external;
+
+    /**
      * database 名字
      */
     private String database;

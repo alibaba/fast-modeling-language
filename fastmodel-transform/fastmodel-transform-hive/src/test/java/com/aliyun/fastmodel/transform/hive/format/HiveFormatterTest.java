@@ -23,7 +23,6 @@ import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
@@ -34,8 +33,8 @@ import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
-import com.aliyun.fastmodel.transform.hive.context.RowFormat;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -76,8 +75,7 @@ public class HiveFormatterTest {
         ).properties(properties).partition(
             partitionedBy
         ).build();
-        HiveTransformContext context = HiveTransformContext.builder()
-            .fileFormat("JSON").location("/home/admin").build();
+        HiveTransformContext context = HiveTransformContext.builder().build();
         String format = HiveFormatter.format(createTable, context).getNode();
         assertEquals(format, "CREATE TABLE IF NOT EXISTS b\n"
             + "(\n"
@@ -88,26 +86,8 @@ public class HiveFormatterTest {
             + "(\n"
             + "   c1 STRING COMMENT 'abc'\n"
             + ")\n"
-            + "STORED AS JSON\n"
-            + "LOCATION '/home/admin'\n"
             + "TBLPROPERTIES ('a'='b','a1'='b1')");
-        context.setRowFormat(new RowFormat(
-            ",", null, null, null, null, "-"
-        ));
-        format = HiveFormatter.format(createTable, context).getNode();
-        assertEquals("CREATE TABLE IF NOT EXISTS b\n"
-            + "(\n"
-            + "   c2 STRING COMMENT 'abc'\n"
-            + ")\n"
-            + "COMMENT 'comment'\n"
-            + "PARTITIONED BY\n"
-            + "(\n"
-            + "   c1 STRING COMMENT 'abc'\n"
-            + ")\n"
-            + "DELIMITED FIELDS TERMINATED BY ',' NULL DEFINED AS '-'\n"
-            + "STORED AS JSON\n"
-            + "LOCATION '/home/admin'\n"
-            + "TBLPROPERTIES ('a'='b','a1'='b1')", format);
+
     }
 
     @Test
@@ -149,10 +129,42 @@ public class HiveFormatterTest {
         CreateDimTable createDimTable = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).aliasedName(
             new AliasedName("table_alias")).build();
         DialectNode dialectNode = HiveFormatter.format(createDimTable, HiveTransformContext.builder().build());
-        assertEquals(dialectNode.getNode(), "CREATE TABLE b COMMENT 'table_alias'");
+        assertEquals(dialectNode.getNode(), "CREATE TABLE b");
         createDimTable = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).aliasedName(
             new AliasedName("table_alias")).comment(new Comment("table_comment")).build();
         dialectNode = HiveFormatter.format(createDimTable, HiveTransformContext.builder().build());
         assertEquals(dialectNode.getNode(), "CREATE TABLE b COMMENT 'table_comment'");
+    }
+
+    @Test
+    public void testFormatHive() {
+        List<Property> property = Lists.newArrayList();
+        property.add(new Property(HivePropertyKey.STORAGE_FORMAT.getValue(), "TEXTFILE"));
+        property.add(new Property(HivePropertyKey.EXTERNAL_TABLE.getValue(), "true"));
+        property.add(new Property(HivePropertyKey.FIELDS_TERMINATED.getValue(), "\\001"));
+        property.add(new Property(HivePropertyKey.LINES_TERMINATED.getValue(), "\\002"));
+        List<ColumnDefinition> columns = Lists.newArrayList();
+        columns.add(
+            ColumnDefinition.builder()
+                .colName(new Identifier("c1"))
+                .dataType(DataTypeUtil.simpleType(DataTypeEnums.STRING))
+                .comment(new Comment("abc"))
+                .build()
+        );
+        CreateDimTable createDimTable = CreateDimTable.builder()
+            .tableName(QualifiedName.of("a.b"))
+            .columns(columns)
+            .properties(property)
+            .aliasedName(new AliasedName("table_alias")).build();
+        DialectNode format = HiveFormatter.format(createDimTable, HiveTransformContext.builder().build());
+        assertEquals(format.getNode(), "CREATE EXTERNAL TABLE b\n"
+            + "(\n"
+            + "   c1 STRING COMMENT 'abc'\n"
+            + ")\n"
+            + "ROW FORMAT DELIMITED\n"
+            + "FIELDS TERMINATED BY '\\001'\n"
+            + "LINES TERMINATED BY '\\002'\n"
+            + "STORED AS TEXTFILE");
+
     }
 }

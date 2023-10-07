@@ -17,11 +17,13 @@
 package com.aliyun.fastmodel.transform.hive.parser;
 
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Desc:
@@ -85,5 +87,20 @@ public class HiveLanguageParserTest {
             + "   b BIGINT COMMENT 'comment abc'\n"
             + ")\n"
             + "WITH('business_process'='default')");
+    }
+
+    @Test
+    public void testParseIssue() {
+        CreateTable o = hiveLanguageParser.parseNode("create table __test__test (a bigint);");
+        assertEquals(o.toString(), "CREATE DIM TABLE `__test__test` \n"
+            + "(\n"
+            + "   a BIGINT\n"
+            + ")");
+    }
+
+    @Test
+    public void parseDataType() {
+        BaseDataType baseDataType = hiveLanguageParser.parseDataType("array<string>", ReverseContext.builder().build());
+        assertNotNull(baseDataType);
     }
 }

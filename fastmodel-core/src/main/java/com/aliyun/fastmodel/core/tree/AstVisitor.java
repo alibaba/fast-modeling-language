@@ -130,6 +130,8 @@ import com.aliyun.fastmodel.core.tree.statement.rule.strategy.VolStrategy;
 import com.aliyun.fastmodel.core.tree.statement.script.ImportObject;
 import com.aliyun.fastmodel.core.tree.statement.script.RefRelation;
 import com.aliyun.fastmodel.core.tree.statement.show.ShowObjects;
+import com.aliyun.fastmodel.core.tree.statement.show.ShowSingleStatistic;
+import com.aliyun.fastmodel.core.tree.statement.show.ShowStatistic;
 import com.aliyun.fastmodel.core.tree.statement.showcreate.Output;
 import com.aliyun.fastmodel.core.tree.statement.showcreate.ShowCreate;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
@@ -191,6 +193,7 @@ public abstract class AstVisitor<R, C> implements IAstVisitor<R, C> {
      * @param context   上下文
      * @return R
      */
+    @Override
     public R visitStatement(BaseStatement statement, C context) {
         return visitNode(statement, context);
     }
@@ -1097,6 +1100,14 @@ public abstract class AstVisitor<R, C> implements IAstVisitor<R, C> {
 
     public R visitShowReferences(ShowReferences showReferences, C context) {
         return visitBaseQueryStatement(showReferences, context);
+    }
+
+    public R visitShowSingleStatistic(ShowSingleStatistic showSingleStatistic, C context) {
+        return visitBaseQueryStatement(showSingleStatistic, context);
+    }
+
+    public R visitShowStatistic(ShowStatistic showStatistic, C context) {
+        return visitBaseQueryStatement(showStatistic, context);
     }
 }
 

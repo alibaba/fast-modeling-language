@@ -55,7 +55,7 @@ public class RowDataType extends BaseDataType {
     }
 
     @Override
-    public DataTypeEnums getTypeName() {
+    public IDataTypeName getTypeName() {
         return DataTypeEnums.STRUCT;
     }
 }

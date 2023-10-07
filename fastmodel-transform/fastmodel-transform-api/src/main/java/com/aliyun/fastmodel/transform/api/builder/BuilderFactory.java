@@ -16,13 +16,14 @@
 
 package com.aliyun.fastmodel.transform.api.builder;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.ServiceLoader;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
+import com.google.common.collect.ArrayListMultimap;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Builder Factory的工厂
@@ -36,7 +37,7 @@ public class BuilderFactory<T extends TransformContext> {
 
     private static final BuilderFactory FACTORY = new BuilderFactory();
 
-    private final Map<String, StatementBuilder> map = new HashMap<>();
+    private final ArrayListMultimap<String, StatementBuilder> map = ArrayListMultimap.create();
 
     private BuilderFactory() {
         ServiceLoader<StatementBuilder> load = ServiceLoader.load(
@@ -47,10 +48,11 @@ public class BuilderFactory<T extends TransformContext> {
                 BuilderAnnotation.class);
             Class<?>[] values = annotation.values();
             for (Class<?> v : values) {
-                String key = String.format(FORMAT, annotation.dialect(), v.getName());
+                String key = String.format(FORMAT, annotation.dialect() + annotation.version(), v.getName());
                 map.put(key, statementBuilder);
             }
         }
+
     }
 
     /**
@@ -71,20 +73,32 @@ public class BuilderFactory<T extends TransformContext> {
      * @param source 获取制定的builder
      * @return StatementBuilder
      */
-    public StatementBuilder getBuilder(BaseStatement source,
-                                       DialectMeta dialectMeta, T context) {
-        String key = String.format(FORMAT, dialectMeta.toString(),
-            source.getClass().getName());
-        StatementBuilder statementBuilder = map.get(key);
-        if (statementBuilder != null && statementBuilder.isMatch(source, context)) {
-            return statementBuilder;
+    public StatementBuilder getBuilder(BaseStatement source, DialectMeta dialectMeta, T context) {
+        String key = String.format(FORMAT, dialectMeta.toString(), source.getClass().getName());
+        List<StatementBuilder> statementBuilder = map.get(key);
+        //走子类判断
+        if (!statementBuilder.isEmpty()) {
+            int size = 0;
+            StatementBuilder resultBuilder = null;
+            for (StatementBuilder builder : statementBuilder) {
+                if (builder.isMatch(source, context)) {
+                    resultBuilder = builder;
+                    size++;
+                }
+            }
+            if (size > 1) {
+                throw new IllegalArgumentException("find more than 1 handler:" + size + ";key:=" + key);
+            }
+            if (size == 1) {
+                return resultBuilder;
+            }
         }
+        //走基类判断
         key = String.format(FORMAT, dialectMeta, BaseStatement.class.getName());
         statementBuilder = map.get(key);
-        if (statementBuilder != null) {
-            return statementBuilder;
+        if (CollectionUtils.isEmpty(statementBuilder) || statementBuilder.size() > 1) {
+            throw new IllegalArgumentException("find not equals 1 handler:" + statementBuilder.size() + ";key:" + key);
         }
-        key = String.format(FORMAT, DialectMeta.createDefault(dialectMeta.getDialectName()), BaseStatement.class.getName());
-        return map.get(key);
+        return statementBuilder.get(0);
     }
 }

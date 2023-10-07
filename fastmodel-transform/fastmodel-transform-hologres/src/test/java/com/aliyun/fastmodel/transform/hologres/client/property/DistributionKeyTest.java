@@ -32,4 +32,11 @@ public class DistributionKeyTest {
         assertEquals(distributionKey.getValue().size(), 2);
         assertEquals(distributionKey.getValue().get(0), "c1");
     }
+
+    @Test
+    public void testToColumnList() {
+        DistributionKey distributionKey = new DistributionKey();
+        distributionKey.setValueString("c1,c2");
+        assertEquals(2, distributionKey.toColumnList().size());
+    }
 }

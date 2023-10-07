@@ -16,6 +16,7 @@
 
 package com.aliyun.fastmodel.parser.visitor;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.aliyun.fastmodel.core.tree.Node;
@@ -31,6 +32,8 @@ import com.aliyun.fastmodel.core.tree.statement.select.Offset;
 import com.aliyun.fastmodel.core.tree.statement.show.ConditionElement;
 import com.aliyun.fastmodel.core.tree.statement.show.LikeCondition;
 import com.aliyun.fastmodel.core.tree.statement.show.ShowObjects;
+import com.aliyun.fastmodel.core.tree.statement.show.ShowSingleStatistic;
+import com.aliyun.fastmodel.core.tree.statement.show.ShowStatistic;
 import com.aliyun.fastmodel.core.tree.statement.show.WhereCondition;
 import com.aliyun.fastmodel.core.tree.statement.showcreate.Output;
 import com.aliyun.fastmodel.core.tree.statement.showcreate.ShowCreate;
@@ -39,6 +42,10 @@ import com.aliyun.fastmodel.parser.annotation.SubVisitor;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.QualifiedNameContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.ShowCreateContext;
 import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.ShowObjectsContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.ShowStatisticContext;
+import com.aliyun.fastmodel.parser.generate.FastModelGrammarParser.ShowTypeContext;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getLocation;
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getOrigin;
@@ -71,20 +78,13 @@ public class ShowVisitor extends AstBuilder {
         } else if (ctx.KW_WHERE() != null) {
             conditionElement = new WhereCondition((BaseExpression)visit(ctx.expression()));
         }
-        QualifiedNameContext context = ctx.qualifiedName();
-        QualifiedName qualifiedName = null;
-        Identifier identifier = null;
-        ShowObjectsType type = null;
+
         Identifier visit = (Identifier)visit(ctx.type);
-        type = ShowObjectsType.getByCode(visit.getValue());
-        if (context != null) {
-            qualifiedName = getQualifiedName(context);
-            if (isSubElement(type)) {
-                identifier = qualifiedName.getFirstIdentifierIfSizeOverOne();
-            } else {
-                identifier = new Identifier(qualifiedName.getFirst());
-            }
-        }
+        List<QualifiedName> qualifiedName = getQualifiedNames(ctx);
+
+        ShowObjectsType type = ShowObjectsType.getByCode(visit.getValue());
+        Identifier identifier = getIdentifier(qualifiedName, type);
+
         Optional<Offset> offset = Optional.empty();
         Optional<Limit> limit = Optional.empty();
         if (ctx.KW_OFFSET() != null) {
@@ -104,6 +104,53 @@ public class ShowVisitor extends AstBuilder {
             offset.orElse(null),
             limit.orElse(null)
         );
+    }
+
+    private Identifier getIdentifier(List<QualifiedName> qualifiedName, ShowObjectsType type) {
+        if (CollectionUtils.isEmpty(qualifiedName)) {
+            return null;
+        }
+        Identifier identifier = null;
+        QualifiedName first = qualifiedName.get(0);
+        if (isSubElement(type)) {
+            identifier = first.getFirstIdentifierIfSizeOverOne();
+        } else {
+            identifier = new Identifier(first.getFirst());
+        }
+        return identifier;
+    }
+
+    private List<QualifiedName> getQualifiedNames(ShowObjectsContext ctx) {
+        List<QualifiedNameContext> context = ctx.qualifiedName();
+        List<QualifiedName> qualifiedName = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(context)) {
+            for (QualifiedNameContext qualifiedNameContext : context) {
+                QualifiedName name = getQualifiedName(qualifiedNameContext);
+                qualifiedName.add(name);
+            }
+        }
+        return qualifiedName;
+    }
+
+    @Override
+    public Node visitShowStatistic(ShowStatisticContext ctx) {
+        if (ctx.singleStatisticObject() != null) {
+            ShowTypeContext showTypeContext = ctx.singleStatisticObject().showType();
+            Identifier visit = (Identifier)visit(showTypeContext);
+            QualifiedName qualifiedName = getQualifiedName(ctx.singleStatisticObject().qualifiedName());
+            return new ShowSingleStatistic(
+                getLocation(ctx),
+                getOrigin(ctx),
+                null,
+                ShowType.getByCode(visit.getValue()),
+                qualifiedName
+            );
+        } else {
+            ShowObjectsType type = null;
+            Identifier visit = (Identifier)visit(ctx.showObjectTypes());
+            type = ShowObjectsType.getByCode(visit.getValue());
+            return new ShowStatistic(getLocation(ctx), getOrigin(ctx), null, type);
+        }
     }
 
     @Override

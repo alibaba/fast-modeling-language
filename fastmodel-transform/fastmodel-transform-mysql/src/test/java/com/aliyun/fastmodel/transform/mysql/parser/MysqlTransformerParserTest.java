@@ -104,4 +104,11 @@ public class MysqlTransformerParserTest {
         Node node = mysqlTransformerParser.parseNode(sql);
         assertNull(node);
     }
+
+    @Test(expected = ClassCastException.class)
+    public void testParseNoError() {
+        Node node = mysqlTransformerParser.parseNode("SELECT * from abc;\n"
+            + " --abc");
+        assertNotNull(node);
+    }
 }

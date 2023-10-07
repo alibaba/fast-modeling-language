@@ -21,10 +21,14 @@ import java.util.List;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.DomainLanguage;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.Comment;
+import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.ArithmeticBinaryExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.statement.indicator.CreateAtomicIndicator;
+import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -96,4 +100,26 @@ public class NodeParserTest {
             + ")");
     }
 
+    @Test
+    public void testParseWithSingleQuotation() {
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .comment(new Comment("abc 'type'"))
+            .build();
+        String c = createTable.toString();
+        BaseStatement baseStatement = nodeParser.parseStatement(c);
+        assertEquals("CREATE DIM TABLE abc COMMENT 'abc ''type'''", baseStatement.toString());
+    }
+
+    @Test
+    public void testParseWithJson() {
+        String fml = "create dim table a (a json comment 'abc', b json<a:string>) comment 'abc';";
+        CreateDimTable createDimTable = nodeParser.parseStatement(fml);
+        assertEquals(2, createDimTable.getColumnDefines().size());
+        ColumnDefinition columnDefinition = createDimTable.getColumnDefines().get(0);
+        assertEquals("JSON", columnDefinition.getDataType().getTypeName().getValue());
+        ColumnDefinition columnDefinition1 = createDimTable.getColumnDefines().get(1);
+        assertEquals("JSON<a:STRING>", columnDefinition1.getDataType().toString());
+
+    }
 }

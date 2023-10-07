@@ -13,7 +13,7 @@ import java.util.Arrays;
 import com.aliyun.fastmodel.transform.hologres.client.property.TableOrientation.Orientation;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Desc:
@@ -35,5 +35,6 @@ public class TableOrientationTest {
         TableOrientation tableOrientation = new TableOrientation();
         tableOrientation.setValueString("row,column");
         assertEquals(tableOrientation.getValue().size(), 2);
+        assertEquals(0, tableOrientation.toColumnList().size());
     }
 }

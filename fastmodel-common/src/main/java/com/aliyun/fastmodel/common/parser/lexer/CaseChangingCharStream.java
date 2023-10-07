@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
 
 /**
+ * Desc:
  * https://github.com/antlr/antlr4/blob/master/doc/resources/CaseChangingCharStream.java
  * 因为antlr当在语法文件中，使用大小写的时候，生成的vocabulary里面是空的，所以使用caseChangeCharStream的另外一种方式进行处理。
  * 具体可以查看：

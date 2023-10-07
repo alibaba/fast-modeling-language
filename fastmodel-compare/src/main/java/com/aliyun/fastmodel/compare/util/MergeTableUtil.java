@@ -17,6 +17,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateCodeTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDwsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateFactTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateOdsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable.TableBuilder;
 import com.aliyun.fastmodel.core.tree.statement.table.type.ITableType;
@@ -41,6 +42,7 @@ public class MergeTableUtil {
         builderMap.put(TableType.DWS, () -> CreateDwsTable.builder());
         builderMap.put(TableType.DIM, () -> CreateDimTable.builder());
         builderMap.put(TableType.FACT, () -> CreateFactTable.builder());
+        builderMap.put(TableType.ODS, () -> CreateOdsTable.builder());
         builderMap.put(TableType.CODE, () -> CreateCodeTable.builder());
     }
 

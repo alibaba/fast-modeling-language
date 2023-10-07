@@ -52,6 +52,11 @@ public enum TableType implements ITableType {
      * 数据汇总表，用于指标中的dws表定义
      */
     ADS("ads", "ADS Table"),
+
+    /**
+     * 贴源表
+     */
+    ODS("ods", "ODS Table"),
     ;
     /**
      * 编码

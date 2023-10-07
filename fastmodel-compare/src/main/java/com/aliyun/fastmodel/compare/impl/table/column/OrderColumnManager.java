@@ -9,7 +9,6 @@
 package com.aliyun.fastmodel.compare.impl.table.column;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.aliyun.fastmodel.compare.util.CompareUtil;
@@ -18,8 +17,6 @@ import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.SetColumnOrder;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import com.sun.org.apache.xpath.internal.operations.Or;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 

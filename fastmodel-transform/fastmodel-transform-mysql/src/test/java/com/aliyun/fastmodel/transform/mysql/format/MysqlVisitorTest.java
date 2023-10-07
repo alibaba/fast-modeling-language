@@ -141,4 +141,52 @@ public class MysqlVisitorTest {
         String code = mysqlVisitor.getCode(QualifiedName.of("a.b.c"));
         assertEquals(code, "abc.c");
     }
+
+    @Test
+    public void testConvertDataType() {
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .columns(ImmutableList.of(
+                ColumnDefinition.builder()
+                    .colName(new Identifier("c1"))
+                    .dataType(DataTypeUtil.simpleType(DataTypeEnums.STRUCT))
+                    .aliasedName(new AliasedName("a"))
+                    .comment(new Comment("comment"))
+                    .build()
+            ))
+            .build();
+        MysqlVisitor mysqlVisitor = new MysqlVisitor(MysqlTransformContext.builder()
+            .database("abc")
+            .build());
+        mysqlVisitor.visitCreateTable(createTable, 0);
+        String s = mysqlVisitor.getBuilder().toString();
+        assertEquals(s, "CREATE TABLE abc\n"
+            + "(\n"
+            + "   c1 JSON COMMENT 'comment'\n"
+            + ")");
+    }
+
+    @Test
+    public void testConvertDataTypeBoolean() {
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .columns(ImmutableList.of(
+                ColumnDefinition.builder()
+                    .colName(new Identifier("c1"))
+                    .dataType(DataTypeUtil.simpleType(DataTypeEnums.BOOLEAN))
+                    .aliasedName(new AliasedName("a"))
+                    .comment(new Comment("comment"))
+                    .build()
+            ))
+            .build();
+        MysqlVisitor mysqlVisitor = new MysqlVisitor(MysqlTransformContext.builder()
+            .database("abc")
+            .build());
+        mysqlVisitor.visitCreateTable(createTable, 0);
+        String s = mysqlVisitor.getBuilder().toString();
+        assertEquals(s, "CREATE TABLE abc\n"
+            + "(\n"
+            + "   c1 CHAR(1) COMMENT 'comment'\n"
+            + ")");
+    }
 }

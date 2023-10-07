@@ -102,6 +102,11 @@ public enum ShowObjectsType {
     DICTS("DICTS"),
 
     /**
+     * naming dict
+     */
+    NAMING_DICTS("NAMING DICTS"),
+
+    /**
      * business Processes
      */
     BUSINESS_PROCESSES("BUSINESS_PROCESSES"),
@@ -154,7 +159,12 @@ public enum ShowObjectsType {
     /**
      * 维度属性
      */
-    DIM_ATTRIBUTES("DIM_ATTRIBUTES");
+    DIM_ATTRIBUTES("DIM_ATTRIBUTES"),
+
+    /**
+     * 物化信息
+     */
+    MATERIALIZED_VIEWS("MATERIALIZED VIEWS");
 
     /**
      * 对应的code信息

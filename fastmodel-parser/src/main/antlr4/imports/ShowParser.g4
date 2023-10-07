@@ -4,6 +4,7 @@ showStatements:
      showCreate
      | showObjects
      | describe
+     | showStatistic
    ;
 
 showCreate:
@@ -15,12 +16,21 @@ output:
 
 showObjects:
     KW_SHOW (KW_FULL)? (type=showObjectTypes)
-    ((KW_FROM | KW_IN) qualifiedName)?
+    ((KW_FROM | KW_IN) qualifiedName (COMMA qualifiedName)* )?
     ((KW_LIKE string) | (KW_WHERE expression))?
     (KW_OFFSET offset=INTEGER_VALUE)?
     (KW_LIMIT limit=INTEGER_VALUE)?
     ;
 
+
+showStatistic:
+    KW_SHOW KW_STATISTIC
+    (showObjectTypes | singleStatisticObject)
+;
+
+singleStatisticObject:
+    showType qualifiedName
+;
 
 describe:
     (KW_DESC | KW_DESCRIBE) type=showType qualifiedName
@@ -30,7 +40,7 @@ showObjectTypes:
     tableType? KW_TABLES
     | indicatorType? KW_INDICATORS
     | KW_DOMAINS
-    | KW_DICTS
+    | dictType? KW_DICTS
     | KW_TIMEPERIODS
     | KW_ADJUNCTS
     | KW_MEASUREUNITS
@@ -45,12 +55,17 @@ showObjectTypes:
     | KW_DIM_ATTRIBUTES
     | KW_CODES
     | KW_COLUMNS
+    | KW_MATERIALIZED KW_VIEWS
+;
+
+dictType:
+    KW_NAMING
 ;
 
 
 showType:
     KW_TABLE
-    | KW_INDICATOR
+    | indicatorType? KW_INDICATOR
     | KW_DOMAIN
     | KW_DICT
     | KW_TIMEPERIOD

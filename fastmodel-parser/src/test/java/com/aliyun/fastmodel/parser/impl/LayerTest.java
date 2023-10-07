@@ -24,6 +24,7 @@ import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
+import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.layer.AddChecker;
 import com.aliyun.fastmodel.core.tree.statement.layer.Checker;
 import com.aliyun.fastmodel.core.tree.statement.layer.CreateLayer;
@@ -122,5 +123,18 @@ public class LayerTest {
         String fml = "alter layer t1 set alias 'alias'";
         SetLayerAlias setLayerAlias = (SetLayerAlias)nodeParser.parse(new DomainLanguage(fml));
         assertEquals(setLayerAlias.getAliasedName(), new AliasedName("alias"));
+    }
+
+    @Test
+    public void testLayerCreate() {
+        CreateLayer createLayer = new CreateLayer(
+            CreateElement.builder()
+                .qualifiedName(QualifiedName.of("autotest", "`DWS`"))
+                .notExists(false)
+                .build(),
+            null
+        );
+        String fml = createLayer.toString();
+        assertEquals(fml, "CREATE LAYER autotest.`DWS`");
     }
 }

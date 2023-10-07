@@ -42,7 +42,7 @@ public class DiagramGenerator {
      * @param outputStream 流内容
      * @throws VisualParseException
      */
-    public static void exportPng(String uml, OutputStream outputStream) throws VisualParseException {
+    public static void exportPNG(String uml, OutputStream outputStream) throws VisualParseException {
         List<BlockUml> blocks = new SourceStringReader(uml).getBlocks();
         if (blocks.isEmpty()) {
             throw new VisualParseException("format is invalid");

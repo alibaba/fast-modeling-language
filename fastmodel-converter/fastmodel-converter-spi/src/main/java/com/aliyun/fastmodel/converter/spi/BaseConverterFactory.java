@@ -95,9 +95,9 @@ public abstract class BaseConverterFactory {
     }
 
     /**
-     * get the converter from base statement
+     * 根据engineMeta获取
      *
-     * @param baseStatement statement
+     * @param dialectMeta {@link DialectMeta}
      * @return {@link Transformer}
      */
     public abstract StatementConverter create(BaseStatement baseStatement);

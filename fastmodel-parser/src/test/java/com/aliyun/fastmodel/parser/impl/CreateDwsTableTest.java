@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 public class CreateDwsTableTest extends BaseTest {
 
     @Test
-    public void testCreaetDws1() {
+    public void testCreateDws1() {
         String fml = "CREATE DWS TABLE IF NOT EXISTS dws_shop_1 "
             + "(a BIGINT REL_DIMENSION REFERENCES dim_shop.shop_code, b STRING REL_INDICATOR REFERENCES (ind1,ind2), "
             + "c DATE STAT_TIME WITH ('pattern'='yyyymmdd')) "
@@ -50,7 +50,7 @@ public class CreateDwsTableTest extends BaseTest {
     }
 
     @Test
-    public void testCreaetDws1TableConstraint() {
+    public void testCreateDws1TableConstraint() {
         String fml = "CREATE DWS TABLE IF NOT EXISTS dws_shop_1 "
             + "("
             + "\n a BIGINT REL_DIMENSION REFERENCES dim_shop.shop_code, "

@@ -30,8 +30,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class CreateDerivativeCompositeIndicatorTest {
 
-    @Test(expected = NullPointerException.class)
-    public void testCheckReference() {
+    @Test
+    public void testReferenceNull() {
         CreateDerivativeCompositeIndicator derivativeCompositeIndicator = new CreateDerivativeCompositeIndicator(
             CreateElement.builder().qualifiedName(QualifiedName.of("a.b")).build(),
             null, null, null

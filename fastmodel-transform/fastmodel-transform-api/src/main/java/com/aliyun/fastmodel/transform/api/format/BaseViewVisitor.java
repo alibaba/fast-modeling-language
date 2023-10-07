@@ -25,6 +25,7 @@ import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.context.setting.ViewSetting;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.collect.Lists;
+import lombok.Getter;
 
 import static java.util.stream.Collectors.joining;
 
@@ -38,6 +39,7 @@ public abstract class BaseViewVisitor<T extends TransformContext> extends FastMo
     /**
      * context
      */
+    @Getter
     protected final T context;
 
     public BaseViewVisitor(T context) {
@@ -106,7 +108,8 @@ public abstract class BaseViewVisitor<T extends TransformContext> extends FastMo
      * @param columnDefines
      * @return
      */
-    private Query sampleQuery(List<ColumnDefinition> columnDefines) {
+    protected
+    Query sampleQuery(List<ColumnDefinition> columnDefines) {
         List<BaseExpression> baseExpressions = columnDefines.stream().map(this::toSampleExpression).collect(Collectors.toList());
         return QueryUtil.simpleQuery(QueryUtil.selectList(baseExpressions));
     }

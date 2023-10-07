@@ -9,11 +9,15 @@
 package com.aliyun.fastmodel.compare.util;
 
 import com.aliyun.fastmodel.core.tree.statement.constants.TableType;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateAdsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateDwsTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateFactTable;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateOdsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable.TableBuilder;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Desc:
@@ -27,5 +31,13 @@ public class MergeTableUtilTest {
     public void getSuppier() {
         TableBuilder suppier = MergeTableUtil.getSuppier(TableType.DIM);
         assertEquals(suppier.getClass(), CreateDimTable.builder().getClass());
+        suppier = MergeTableUtil.getSuppier(TableType.ODS);
+        assertEquals(suppier.getClass(), CreateOdsTable.builder().getClass());
+        suppier = MergeTableUtil.getSuppier(TableType.ADS);
+        assertEquals(suppier.getClass(), CreateAdsTable.builder().getClass());
+        suppier = MergeTableUtil.getSuppier(TableType.FACT);
+        assertEquals(suppier.getClass(), CreateFactTable.builder().getClass());
+        suppier = MergeTableUtil.getSuppier(TableType.DWS);
+        assertEquals(suppier.getClass(), CreateDwsTable.builder().getClass());
     }
 }

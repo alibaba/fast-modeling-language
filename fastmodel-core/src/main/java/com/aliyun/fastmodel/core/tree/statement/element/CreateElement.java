@@ -67,6 +67,9 @@ public class CreateElement extends AbstractNode {
     @Getter
     private final QualifiedName qualifiedName;
 
+    /**
+     * create or replace
+     */
     @Getter
     private final Boolean createOrReplace;
 
@@ -103,8 +106,14 @@ public class CreateElement extends AbstractNode {
 
     public static class ElementBuilder {
 
+        /**
+         * comment备注
+         */
         private Comment comment;
 
+        /**
+         * properties属性
+         */
         private List<Property> properties;
 
         /**

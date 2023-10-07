@@ -40,6 +40,8 @@ public class ReservedIdentifierTest {
         assertTrue(order);
         boolean order1 = ReservedIdentifier.isKeyWord("ORDER");
         assertTrue(order1);
+        boolean json = ReservedIdentifier.isKeyWord("json");
+        assertTrue(json);
     }
 
     @Test

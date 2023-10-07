@@ -16,6 +16,7 @@ import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.format.HologresFormatter;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresRewriteVisitor;
 import com.google.auto.service.AutoService;
@@ -35,6 +36,6 @@ public class QueryBuilder implements StatementBuilder<HologresTransformContext> 
         //将别名加上source
         HologresRewriteVisitor hologresQueryVisitor = new HologresRewriteVisitor(context);
         Node node = hologresQueryVisitor.process(source);
-        return HologresFormatter.format((BaseStatement)node, context);
+        return HologresFormatter.format((BaseStatement)node, context, HologresVersion.V1);
     }
 }

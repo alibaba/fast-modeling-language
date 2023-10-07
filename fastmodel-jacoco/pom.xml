@@ -163,6 +163,18 @@
             <version>${project.parent.version}</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-spark</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-adbmysql</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -185,7 +197,6 @@
                 <version>0.8.5</version>
                 <configuration>
                     <dataFile>${project.artifactId}/target/jacoco.exec</dataFile>
-                    <destFile>${project.artifactId}/target/jacoco.exec</destFile>
                     <excludes>
                         <exclude>com/aliyun/fastmodel/parser/generate/*</exclude>
                         <exclude>com/aliyun/fastmodel/transform/mc/parser/Odps*</exclude>
@@ -196,6 +207,10 @@
                         <exclude>com/aliyun/fastmodel/transform/hive/parser/HiveLexer*</exclude>
                         <exclude>com/aliyun/fastmodel/transform/hologres/parser/PostgreSQL*</exclude>
                         <exclude>com/aliyun/fastmodel/transform/clickhouse/parser/ClickHouse*</exclude>
+                        <exclude>com/aliyun/fastmodel/transform/spark/parser/SparkParser*</exclude>
+                        <exclude>com/aliyun/fastmodel/transform/spark/parser/SparkLexer*</exclude>
+                        <exclude>com/aliyun/fastmodel/transform/adbmysql/parser/AdbMysqlParser*</exclude>
+                        <exclude>com/aliyun/fastmodel/transform/adbmysql/parser/AdbMysqlLexer*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

@@ -12,6 +12,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.Field;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.JsonDataType;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
@@ -1343,4 +1344,14 @@ public interface IAstVisitor<R, C> {
         return visitLiteral(hexLiteral, context);
     }
 
+    /**
+     * visit dataType
+     *
+     * @param jsonDataType
+     * @param context
+     * @return
+     */
+    default R visitJsonDataType(JsonDataType jsonDataType, C context) {
+        return visitRowDataType(jsonDataType, context);
+    }
 }

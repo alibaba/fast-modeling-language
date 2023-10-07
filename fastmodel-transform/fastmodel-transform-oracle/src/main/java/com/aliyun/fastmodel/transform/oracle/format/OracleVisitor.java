@@ -86,11 +86,6 @@ public class OracleVisitor extends FastModelVisitor {
         if (node.getComment() != null) {
             builder.append("\n");
             builder.append(commentTable(getCode(node.getQualifiedName()), node.getCommentValue()));
-        } else {
-            if (node.getAliasedNameValue() != null) {
-                builder.append("\n");
-                builder.append(commentTable(getCode(node.getQualifiedName()), node.getAliasedNameValue()));
-            }
         }
         if (!columnEmpty) {
             List<String> commentString = Lists.newArrayList();

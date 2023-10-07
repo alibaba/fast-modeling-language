@@ -40,6 +40,11 @@ public enum DialectName implements IDialectName {
     HIVE(Constants.HIVE),
 
     /**
+     * Clickhouse引擎
+     */
+    CLICKHOUSE(Constants.CLICKHOUSE),
+
+    /**
      * PRESTO
      */
     PRESTO(Constants.PRESTO),
@@ -102,7 +107,12 @@ public enum DialectName implements IDialectName {
     /**
      * 渲染图的结构
      */
-    GRAPH(Constants.GRAPH);
+    GRAPH(Constants.GRAPH),
+
+    /**
+     * Sqlite
+     */
+    SQLITE(Constants.SQLITE);
     @Getter
     private final String value;
 
@@ -127,7 +137,7 @@ public enum DialectName implements IDialectName {
         public static final String ADB_MYSQL = "ADB_MYSQL";
         public static final String ADB_PG = "ADB_PG";
         public static final String POSTGRESQL = "POSTGRESQL";
-
+        public static final String SQLITE = "SQLITE";
         public static final String JSON = "JSON";
     }
 

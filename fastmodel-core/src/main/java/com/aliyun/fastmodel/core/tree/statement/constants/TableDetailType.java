@@ -93,7 +93,11 @@ public enum TableDetailType implements ITableDetailType {
     /**
      * ADS table
      */
-    ADS(TableType.ADS, "ADS", "普通应用表");
+    ADS(TableType.ADS, "ADS", "普通应用表"),
+    /**
+     * ADS table
+     */
+    ODS(TableType.ODS, "ODS", "贴源表");;
 
     @Getter
     private final TableType parent;

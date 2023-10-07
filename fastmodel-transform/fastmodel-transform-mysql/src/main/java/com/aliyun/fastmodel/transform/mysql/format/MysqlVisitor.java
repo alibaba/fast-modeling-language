@@ -28,6 +28,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -57,6 +58,7 @@ import com.aliyun.fastmodel.transform.mysql.context.MysqlTransformContext;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import static java.util.stream.Collectors.joining;
 
@@ -307,13 +309,12 @@ public class MysqlVisitor extends FastModelVisitor {
             return dataTypeTransformer.convert(dataType);
         }
         IDataTypeName typeName = dataType.getTypeName();
-        if (typeName == DataTypeEnums.STRING) {
+        if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.STRING.getValue())) {
             return new GenericDataType(new Identifier(DataTypeEnums.VARCHAR.name()),
                 ImmutableList.of(new NumericParameter(mysqlTransformContext.getVarcharLength().toString())));
-        } else if (typeName == DataTypeEnums.ARRAY || typeName == DataTypeEnums.MAP
-            || typeName == DataTypeEnums.STRUCT) {
+        } else if (typeName.getDimension() ==  Dimension.MULTIPLE) {
             return new GenericDataType(new Identifier(DataTypeEnums.JSON.name()));
-        } else if (typeName == DataTypeEnums.BOOLEAN) {
+        } else if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.BOOLEAN.getValue())) {
             return new GenericDataType(new Identifier(DataTypeEnums.CHAR.name()),
                 ImmutableList.of(new NumericParameter("1")));
         }

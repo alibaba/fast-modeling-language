@@ -16,14 +16,19 @@
 
 package com.aliyun.fastmodel.parser.impl;
 
+import java.util.List;
+
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.statement.constants.ShowObjectsType;
+import com.aliyun.fastmodel.core.tree.statement.constants.ShowType;
 import com.aliyun.fastmodel.core.tree.statement.select.Limit;
 import com.aliyun.fastmodel.core.tree.statement.select.Offset;
 import com.aliyun.fastmodel.core.tree.statement.show.LikeCondition;
 import com.aliyun.fastmodel.core.tree.statement.show.ShowObjects;
+import com.aliyun.fastmodel.core.tree.statement.show.ShowSingleStatistic;
+import com.aliyun.fastmodel.core.tree.statement.show.ShowStatistic;
 import com.aliyun.fastmodel.core.tree.statement.show.WhereCondition;
 import com.aliyun.fastmodel.parser.BaseTest;
 import org.junit.Test;
@@ -183,7 +188,7 @@ public class ShowObjectsTest extends BaseTest {
         String sql = "show columns from dim_shop";
         ShowObjects showObjects = parse(sql, ShowObjects.class);
         assertEquals(showObjects.getShowType(), ShowObjectsType.COLUMNS);
-        assertEquals(showObjects.getTableName(), QualifiedName.of("dim_shop"));
+        assertEquals(showObjects.getTableName().get(0), QualifiedName.of("dim_shop"));
     }
 
     @Test
@@ -205,7 +210,7 @@ public class ShowObjectsTest extends BaseTest {
         String fml = "show codes from code_table_1";
         ShowObjects showObjects = parse(fml, ShowObjects.class);
         assertEquals(showObjects.getShowType(), ShowObjectsType.CODES);
-        assertEquals(showObjects.getTableName(), QualifiedName.of("code_table_1"));
+        assertEquals(showObjects.getTableName().get(0), QualifiedName.of("code_table_1"));
     }
 
     @Test
@@ -265,4 +270,65 @@ public class ShowObjectsTest extends BaseTest {
         assertEquals(showObjects.getShowType(), ShowObjectsType.ADS_TABLES);
     }
 
+    @Test
+    public void testShowStatisticTables() {
+        String fml = "show statistic tables;";
+        ShowStatistic showStatistic = parse(fml, ShowStatistic.class);
+        assertEquals(showStatistic.getObjectsType(), ShowObjectsType.TABLES);
+    }
+
+    @Test
+    public void testShowStatisticAtomicIndicators() {
+        String fml = "show statistic atomic indicators;";
+        ShowStatistic showStatistic = parse(fml, ShowStatistic.class);
+        assertEquals(showStatistic.getObjectsType(), ShowObjectsType.ATOMIC_INDICATORS);
+    }
+
+    @Test
+    public void testShowStatisticSingleTable() {
+        String fml = "show statistic table abc;";
+        ShowSingleStatistic showStatistic = parse(fml, ShowSingleStatistic.class);
+        assertEquals(showStatistic.getShowType(), ShowType.TABLE);
+        assertEquals(showStatistic.getQualifiedName(), QualifiedName.of("abc"));
+        fml = "show statistic table a.abc;";
+        showStatistic = parse(fml, ShowSingleStatistic.class);
+        assertEquals(showStatistic.getShowType(), ShowType.TABLE);
+        assertEquals(showStatistic.getQualifiedName(), QualifiedName.of("a.abc"));
+
+    }
+
+    @Test
+    public void testShowStatisticAtomic() {
+        String fml = "show statistic indicator abc;";
+        ShowSingleStatistic showStatistic = parse(fml, ShowSingleStatistic.class);
+        assertEquals(showStatistic.getShowType(), ShowType.INDICATOR);
+        assertEquals(showStatistic.getQualifiedName(), QualifiedName.of("abc"));
+    }
+
+    @Test
+    public void testShowNamingDicts() {
+        String fml = "show naming dicts";
+        ShowObjects showObjects = parse(fml, ShowObjects.class);
+        assertEquals(showObjects.getShowType(), ShowObjectsType.NAMING_DICTS);
+    }
+
+    @Test
+    public void testShowObjectsQualifiedName() {
+        String fml = "show columns from a.b, b.c;";
+        ShowObjects showObjects = parse(fml, ShowObjects.class);
+        assertEquals(showObjects.getShowType(), ShowObjectsType.COLUMNS);
+        List<QualifiedName> tableName = showObjects.getTableName();
+        assertEquals(2, tableName.size());
+        assertEquals(showObjects.getBaseUnit(), new Identifier("a"));
+    }
+
+    @Test
+    public void testShowMaterializedViews() {
+        String fml = "show MATERIALIZED VIEWS where logic_table in ('a','b','c');";
+        ShowObjects showObjects = parse(fml, ShowObjects.class);
+        assertEquals(showObjects.getShowType(), ShowObjectsType.MATERIALIZED_VIEWS);
+        assertNotNull(showObjects.getConditionElement());
+        WhereCondition whereCondition = (WhereCondition)showObjects.getConditionElement();
+        assertEquals(whereCondition.getBaseExpression().toString(), "logic_table IN ('a', 'b', 'c')");
+    }
 }

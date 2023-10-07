@@ -16,12 +16,15 @@
 
 package com.aliyun.fastmodel.transform.hive.parser;
 
+import java.util.function.Function;
+
 import com.aliyun.fastmodel.common.parser.ThrowingErrorListener;
 import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.google.auto.service.AutoService;
 import org.antlr.v4.runtime.CharStreams;
@@ -42,6 +45,10 @@ public class HiveLanguageParser implements LanguageParser<Node, ReverseContext> 
 
     @Override
     public Node parseNode(String text, ReverseContext context) throws ParseException {
+        return getNode(text, context, HiveParser::statements);
+    }
+
+    private Node getNode(String text, ReverseContext context, Function<HiveParser, ParserRuleContext> functionalInterface) {
         String code = StripUtils.appendSemicolon(text);
         CodePointCharStream charStream = CharStreams.fromString(code);
         CaseChangingCharStream caseChangingCharStream = new CaseChangingCharStream(charStream, true);
@@ -49,18 +56,23 @@ public class HiveLanguageParser implements LanguageParser<Node, ReverseContext> 
         lexer.removeErrorListeners();
         lexer.addErrorListener(LISTENER);
         CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
-        HiveParser fastModelGrammarParser = new HiveParser(commonTokenStream);
-        fastModelGrammarParser.removeErrorListeners();
-        fastModelGrammarParser.addErrorListener(LISTENER);
+        HiveParser hiveParser = new HiveParser(commonTokenStream);
+        hiveParser.removeErrorListeners();
+        hiveParser.addErrorListener(LISTENER);
         ParserRuleContext tree;
         try {
-            fastModelGrammarParser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-            tree = fastModelGrammarParser.statements();
+            hiveParser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+            tree = functionalInterface.apply(hiveParser);
         } catch (Throwable e) {
             commonTokenStream.seek(0);
-            fastModelGrammarParser.getInterpreter().setPredictionMode(PredictionMode.LL);
-            tree = fastModelGrammarParser.statements();
+            hiveParser.getInterpreter().setPredictionMode(PredictionMode.LL);
+            tree = functionalInterface.apply(hiveParser);
         }
         return tree.accept(new HiveAstBuilder(context));
+    }
+
+    @Override
+    public BaseDataType parseDataType(String code, ReverseContext context) throws ParseException {
+        return (BaseDataType)getNode(code, context, HiveParser::colType);
     }
 }

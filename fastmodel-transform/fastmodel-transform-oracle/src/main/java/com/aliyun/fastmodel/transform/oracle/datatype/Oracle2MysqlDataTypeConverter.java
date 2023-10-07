@@ -81,7 +81,6 @@ public class Oracle2MysqlDataTypeConverter implements DataTypeConverter {
             put("UROWID", "VARCHAR");
         }
     };
-    public static final String ZERO_OBJECT = "0";
 
     @Override
     public BaseDataType convert(BaseDataType baseDataType) {
@@ -172,7 +171,7 @@ public class Oracle2MysqlDataTypeConverter implements DataTypeConverter {
         List<DataTypeParameter> arguments = genericDataType.getArguments();
         boolean argSizeIsOne = arguments.size() == 1;
         boolean argSizeIsTwoAndTwoIsZero = arguments.size() == 2 && ((NumericParameter)arguments.get(1)).getValue()
-            .equals(ZERO_OBJECT);
+            .equals("0");
         boolean argSizeTwo = arguments.size() == 2;
         if (argSizeIsOne || argSizeIsTwoAndTwoIsZero) {
             NumericParameter n = (NumericParameter)arguments.get(0);

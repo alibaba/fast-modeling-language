@@ -562,7 +562,8 @@ public class FastModelVisitorTest {
     @Test
     public void testVisitShowConditionFromColumn() {
         ShowObjects showObjects = new ShowObjects(
-            null, new Identifier("a"), ShowObjectsType.COLUMNS, QualifiedName.of("dim_shop")
+            null, new Identifier("a"), ShowObjectsType.COLUMNS,
+            Lists.newArrayList(QualifiedName.of("dim_shop"))
         );
         fastModelVisitor.visitShowObjects(showObjects, 0);
         String s = fastModelVisitor.getBuilder().toString();

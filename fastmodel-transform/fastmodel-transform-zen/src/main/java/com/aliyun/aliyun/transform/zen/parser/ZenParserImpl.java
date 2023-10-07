@@ -19,11 +19,11 @@ package com.aliyun.aliyun.transform.zen.parser;
 import java.util.function.Function;
 
 import com.aliyun.fastmodel.common.parser.ThrowingErrorListener;
-import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.transform.zen.parser.FastModelZenLexer;
 import com.aliyun.fastmodel.transform.zen.parser.FastModelZenParser;
 import com.google.auto.service.AutoService;

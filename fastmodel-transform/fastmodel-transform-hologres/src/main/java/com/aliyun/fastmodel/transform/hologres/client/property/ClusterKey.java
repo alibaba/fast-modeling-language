@@ -43,4 +43,8 @@ public class ClusterKey extends BaseClientProperty<List<String>> {
         this.setValue(Splitter.on(",").splitToList(value));
     }
 
+    @Override
+    public List<String> toColumnList() {
+        return getValue();
+    }
 }

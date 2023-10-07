@@ -22,7 +22,6 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.statement.constants.IndicatorType;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
-import com.google.common.base.Preconditions;
 import lombok.Getter;
 
 /**
@@ -53,7 +52,6 @@ public class CreateDerivativeCompositeIndicator extends CreateIndicator {
                                               QualifiedName references) {
         super(element, dataType, indicatorExpr,
             IndicatorType.DERIVATIVE_COMPOSITE);
-        Preconditions.checkNotNull(references, "derivative indicator must set reference");
         this.references = references;
     }
 

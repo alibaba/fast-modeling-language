@@ -39,7 +39,7 @@ public class Identifier extends BaseExpression {
     private final String value;
     private final boolean delimited;
 
-    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z_0-9]([a-zA-Z0-9_:@])*");
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9]([a-zA-Z0-9_:@])*");
     private static final Pattern DIGIT_PATTERN = Pattern.compile("[0-9]*");
 
     public Identifier(NodeLocation location, String origin, String value) {

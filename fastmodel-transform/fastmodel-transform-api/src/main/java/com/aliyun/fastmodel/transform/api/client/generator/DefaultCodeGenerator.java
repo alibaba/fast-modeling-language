@@ -79,7 +79,7 @@ public class DefaultCodeGenerator implements CodeGenerator {
         Table tableClientDTO = request.getAfter();
         DialectMeta dialectMeta = request.getConfig().getDialectMeta();
         Transformer<Node> transformer = TransformerFactory.getInstance().get(dialectMeta);
-        Preconditions.checkNotNull(transformer, "can't find the tranformer with dialectMeta:" + dialectMeta);
+        Preconditions.checkNotNull(transformer, "can't find the transformer with dialectMeta:" + dialectMeta);
         //将传入的request转为node
         Node reverse = function.apply(transformer, request);
         Node node = transformer.reverseTable(tableClientDTO, ReverseContext.builder().build());
@@ -90,7 +90,7 @@ public class DefaultCodeGenerator implements CodeGenerator {
         List<DialectNode> dialectNodes = compare.stream().map(
             statement -> {
                 TransformContext build = TransformContext.builder().database(request.getAfter().getDatabase())
-                    .appendSemicolon(true)
+                    .appendSemicolon(request.getConfig().isAppendSemicolon())
                     .schema(request.getAfter().getSchema()).build();
                 return transformer.transform(statement,
                     build);

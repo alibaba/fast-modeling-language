@@ -34,29 +34,21 @@ public class HiveTransformContext extends TransformContext {
 
     private boolean enableConstraint;
 
-    private String location;
-
-    private String fileFormat;
-
-    private RowFormat rowFormat;
+    private boolean printProperty;
 
     public HiveTransformContext(TransformContext parent) {
         super(parent);
         if (parent instanceof HiveTransformContext) {
             HiveTransformContext transformContext = (HiveTransformContext)parent;
             enableConstraint = transformContext.isEnableConstraint();
-            location = transformContext.getLocation();
-            fileFormat = transformContext.getFileFormat();
-            rowFormat = transformContext.getRowFormat();
+            this.printProperty = true;
         }
     }
 
     protected HiveTransformContext(Builder tBuilder) {
         super(tBuilder);
         enableConstraint = tBuilder.enableConstraint;
-        location = tBuilder.location;
-        fileFormat = tBuilder.fileFormat;
-        rowFormat = tBuilder.rowFormat;
+        this.printProperty = tBuilder.printProperty;
     }
 
     public static Builder builder() {
@@ -66,29 +58,16 @@ public class HiveTransformContext extends TransformContext {
     public static class Builder extends TransformContext.Builder<Builder> {
         private boolean enableConstraint;
 
-        private String location;
-
-        private String fileFormat;
-
-        private RowFormat rowFormat;
+        //默认是打印
+        private boolean printProperty = true;
 
         public Builder enableConstraint(boolean enableConstraint) {
             this.enableConstraint = enableConstraint;
             return this;
         }
 
-        public Builder location(String location) {
-            this.location = location;
-            return this;
-        }
-
-        public Builder fileFormat(String fileFormat) {
-            this.fileFormat = fileFormat;
-            return this;
-        }
-
-        public Builder rowFormat(RowFormat rowFormat) {
-            this.rowFormat = rowFormat;
+        public Builder printProperty(boolean printProperty) {
+            this.printProperty = printProperty;
             return this;
         }
 

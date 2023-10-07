@@ -171,7 +171,17 @@ public enum StatementType implements IStatementType {
     /**
      * 命令
      */
-    COMMAND("command", "Command");
+    COMMAND("command", "Command"),
+
+    /**
+     * 显示单个统计信息
+     */
+    SHOW_SINGLE_STATISTIC("showSingleStatistic", "ShowSingleStatistic"),
+
+    /**
+     * 显示统计信息
+     */
+    SHOW_STATISTIC("showStatistic", "ShowStatistic");
 
     private final String code;
 
@@ -182,10 +192,12 @@ public enum StatementType implements IStatementType {
         this.code = code;
     }
 
+    @Override
     public String getShortCode() {
         return shortCode;
     }
 
+    @Override
     public String getCode() {
         return code;
     }

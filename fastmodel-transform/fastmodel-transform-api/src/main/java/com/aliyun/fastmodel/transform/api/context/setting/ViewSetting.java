@@ -31,6 +31,11 @@ public class ViewSetting {
     private boolean transformToView;
 
     /**
+     * 是否转为物化视图
+     */
+    private boolean transformToMaterializedView;
+
+    /**
      * 是否直接使用代码, 那么在转换的手，将以queryCode作为拼接
      */
     private boolean useQueryCode;

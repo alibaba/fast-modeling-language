@@ -8,7 +8,8 @@
 
 package com.aliyun.fastmodel.transform.hologres.parser.tree.datatype;
 
-import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -18,134 +19,139 @@ import org.apache.commons.lang3.StringUtils;
  * @author panguanjing
  * @date 2022/6/9
  */
-public enum HologresDataTypeName implements IDataTypeName {
+public enum HologresDataTypeName implements ISimpleDataTypeName {
     /**
      * integer
      */
-    INTEGER("INTEGER", "INT4", Dimension.ZERO),
+    INTEGER("INTEGER", "INT4", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * integer2
      */
-    INTEGER2("INTEGER", "INT", Dimension.ZERO),
+    INTEGER2("INTEGER", "INT", Dimension.ZERO, SimpleDataTypeName.NUMBER),
     /**
      * bigint
      */
-    BIGINT("BIGINT", "INT8", Dimension.ZERO),
+    BIGINT("BIGINT", "INT8", Dimension.ZERO, SimpleDataTypeName.NUMBER),
     /**
      * boolean
      */
-    BOOLEAN("BOOLEAN", "BOOL", Dimension.ZERO),
+    BOOLEAN("BOOLEAN", "BOOL", Dimension.ZERO, SimpleDataTypeName.BOOLEAN),
     /**
      * real
      */
-    REAL("REAL", "FLOAT4", Dimension.ZERO),
+    REAL("REAL", "FLOAT4", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * double
      */
-    DOUBLE_PRECISION("DOUBLE PRECISION", "FLOAT8", Dimension.ZERO),
+    DOUBLE_PRECISION("DOUBLE PRECISION", "FLOAT8", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * text
      */
-    TEXT("TEXT", "VARCHAR", Dimension.ZERO),
+    TEXT("TEXT", "VARCHAR", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * time stamptz
      */
-    TIMESTAMPTZ("TIMESTAMP WITH TIME ZONE", "TIMESTAMPTZ", Dimension.ZERO),
+    TIMESTAMPTZ("TIMESTAMP WITH TIME ZONE", "TIMESTAMPTZ", Dimension.ZERO, SimpleDataTypeName.DATE),
 
     /**
      * decimal
      */
-    DECIMAL("DECIMAL", "NUMERIC", Dimension.TWO),
+    DECIMAL("DECIMAL", "NUMERIC", Dimension.TWO, SimpleDataTypeName.NUMBER),
 
     /**
      * date
      */
-    DATE("DATE", "", Dimension.ZERO),
+    DATE("DATE", "", Dimension.ZERO, SimpleDataTypeName.DATE),
 
     /**
      * timestamp
      */
-    TIMESTAMP("TIMESTAMP", "", Dimension.ZERO),
+    TIMESTAMP("TIMESTAMP", "", Dimension.ZERO, SimpleDataTypeName.DATE),
 
     /**
      * char
      */
-    CHAR("CHAR", "BPCHAR", Dimension.ONE),
+    CHAR("CHAR", "BPCHAR", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
      * varchar
      */
-    VARCHAR("VARCHAR", "", Dimension.ONE),
+    VARCHAR("VARCHAR", "", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
-     * serial
+     * serial:https://help.aliyun.com/document_detail/187391.html
      */
-    SERIAL("SERIAL", "", Dimension.ZERO),
+    SERIAL("SERIAL", "", Dimension.ZERO, SimpleDataTypeName.NUMBER),
+
+    /**
+     * 自增序列字段:https://help.aliyun.com/document_detail/187391.html
+     */
+    BIGSERIAL("BIGSERIAL", "", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
      * small int
      */
-    SMALLINT("SMALLINT", "INT2", Dimension.ZERO),
+    SMALLINT("SMALLINT", "INT2", Dimension.ZERO, SimpleDataTypeName.NUMBER),
     /**
      * json
      */
-    JSON("JSON", "", Dimension.ZERO),
+    JSON("JSON", "", Dimension.ZERO, SimpleDataTypeName.STRING),
     /**
      * jsonb
      */
-    JSONB("JSONB", "", Dimension.ZERO),
+    JSONB("JSONB", "", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * BYTEA
      */
-    BYTEA("BYTEA", "", Dimension.ZERO),
+    BYTEA("BYTEA", "", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * roaring bitmap
      */
-    ROARING_BITMAP("ROARINGBITMAP", "", Dimension.ZERO),
+    ROARING_BITMAP("ROARINGBITMAP", "", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * bit
      */
-    BIT("BIT", "", Dimension.ONE),
+    BIT("BIT", "", Dimension.ONE, SimpleDataTypeName.STRING),
     /**
      * timez
      */
-    TIMETZ("TIMETZ", "", Dimension.ZERO),
+    TIMETZ("TIMETZ", "", Dimension.ZERO, SimpleDataTypeName.DATE),
     /**
      * time
      */
-    TIME("TIME", "", Dimension.ZERO),
+    TIME("TIME", "", Dimension.ZERO, SimpleDataTypeName.DATE),
     /**
      * inet
      */
-    INET("INET", "", Dimension.ZERO),
+    INET("INET", "", Dimension.ZERO, SimpleDataTypeName.STRING),
     /**
      * money
      */
-    MONEY("MONEY", "", Dimension.ZERO),
+    MONEY("MONEY", "", Dimension.ZERO, SimpleDataTypeName.STRING),
 
     /**
      * varbit
      */
-    VARBIT("VARBIT", "", Dimension.ONE),
+    VARBIT("VARBIT", "", Dimension.ONE, SimpleDataTypeName.STRING),
     /**
      * interval
      */
-    INTERVAL("INTERVAL", "", Dimension.ZERO),
+    INTERVAL("INTERVAL", "", Dimension.ZERO, SimpleDataTypeName.STRING),
     /**
      * oid
      */
-    OID("OID", "", Dimension.ZERO),
+    OID("OID", "", Dimension.ZERO, SimpleDataTypeName.STRING),
     /**
      * uuid
      */
-    UUID("UUID", "", Dimension.ZERO);
+    UUID("UUID", "", Dimension.ZERO, SimpleDataTypeName.STRING);
 
     /**
      * value
@@ -162,10 +168,14 @@ public enum HologresDataTypeName implements IDataTypeName {
      */
     private final Dimension dimension;
 
-    HologresDataTypeName(String value, String alias, Dimension dimension) {
+
+    private final SimpleDataTypeName simpleDataTypeName;
+
+    HologresDataTypeName(String value, String alias, Dimension dimension, SimpleDataTypeName simpleDataTypeName) {
         this.value = value;
         this.alias = alias;
         this.dimension = dimension;
+        this.simpleDataTypeName =simpleDataTypeName;
     }
 
     /**
@@ -174,7 +184,7 @@ public enum HologresDataTypeName implements IDataTypeName {
      * @param value 值或者别名
      * @return {@link HologresDataTypeName}
      */
-    public static IDataTypeName getByValue(String value) {
+    public static ISimpleDataTypeName getByValue(String value) {
         int index = value.indexOf(HologresArrayDataTypeName.VALUE_SUFFIX);
         if (index > 0) {
             return HologresArrayDataTypeName.getByValue(value);
@@ -217,4 +227,8 @@ public enum HologresDataTypeName implements IDataTypeName {
         return this.dimension;
     }
 
+    @Override
+    public SimpleDataTypeName getSimpleDataTypeName() {
+        return simpleDataTypeName;
+    }
 }

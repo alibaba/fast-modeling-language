@@ -36,3 +36,11 @@ uploads/
 deploy.sh
 /fastmodel-parser/src/test/resources/lsp/gen/
 /**/package-lock.json
+/fastmodel-parser/gen/lsp/FastModelGrammarParser.java
+/fastmodel-parser/gen/lsp/FastModelGrammarParserBaseListener.java
+/fastmodel-parser/gen/lsp/FastModelGrammarParserBaseVisitor.java
+/fastmodel-parser/gen/lsp/FastModelGrammarParserListener.java
+/fastmodel-parser/gen/lsp/FastModelGrammarParserVisitor.java
+/fastmodel-parser/src/test/resources/lsp/FastModelLexer.g4
+/fastmodel-parser/gen/lsp/FastModelLexer.java
+/fastmodel-parser/src/test/resources/lsp/keyword.txt

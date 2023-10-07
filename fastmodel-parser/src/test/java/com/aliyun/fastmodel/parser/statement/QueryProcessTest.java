@@ -83,7 +83,7 @@ public class QueryProcessTest extends BaseTest {
             + "LEFT JOIN (\n"
             + "      SELECT\n"
             + "        *\n"
-            + "      , 'dd' AS `hour`\n"
+            + "      , 'dd' AS `HOUR`\n"
             + "      FROM\n"
             + "        antods.ods_kn_prize\n"
             + "      WHERE dt = '20210117'\n"

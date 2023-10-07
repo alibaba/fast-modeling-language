@@ -8,6 +8,9 @@
 
 package com.aliyun.fastmodel.transform.api.client.dto.property;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 import lombok.Data;
 
 /**
@@ -42,4 +45,13 @@ public abstract class BaseClientProperty<T> {
      * @return
      */
     public abstract void setValueString(String value);
+
+    /**
+     * 是否columnList properties
+     *
+     * @return
+     */
+    public List<String> toColumnList() {
+        return ImmutableList.of();
+    }
 }

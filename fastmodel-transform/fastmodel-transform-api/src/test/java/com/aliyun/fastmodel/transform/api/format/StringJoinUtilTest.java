@@ -51,4 +51,10 @@ public class StringJoinUtilTest {
         QualifiedName join = StringJoinUtil.join("a", null, "");
         assertEquals(join.toString(), "a");
     }
+
+    @Test
+    public void testJoinName() {
+        QualifiedName join = StringJoinUtil.join("a", null, "ab.bcd");
+        assertEquals(join.toString(), "a.ab.bcd");
+    }
 }

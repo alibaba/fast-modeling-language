@@ -25,7 +25,7 @@ import org.jline.reader.Completer;
 import org.jline.reader.impl.completer.StringsCompleter;
 
 /**
- * completion
+ * Desc:
  *
  * @author panguanjing
  * @date 2021/1/26
@@ -33,10 +33,14 @@ import org.jline.reader.impl.completer.StringsCompleter;
 public class Completion {
 
     private static final Set<String> COMMANDS = ImmutableSet.of(
+        "SELECT",
+        "SHOW UNITS",
+        "SHOW BUSINESSPROCESSES",
+        "SHOW TABLES",
+        "SHOW ATOMIC INDICATORS",
+        "SHOW ATOMIC COMPOSITE INDICATORS",
         "SHOW LAYERS",
         "SHOW DOMAINS",
-        "SHOW TABLES",
-        "SHOW INDICATORS",
         "SHOW ADJUNCTS",
         "SHOW TIMEPERIODS",
         "CREATE DIM TABLE",
@@ -54,8 +58,8 @@ public class Completion {
 
     public static Completer commandCompleter() {
         return new StringsCompleter(ImmutableSet.<String>builder().addAll(
-                COMMANDS
-            ).addAll(COMMANDS.stream().map(value -> value.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet()))
+            COMMANDS
+        ).addAll(COMMANDS.stream().map(value -> value.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet()))
             .build());
     }
 }

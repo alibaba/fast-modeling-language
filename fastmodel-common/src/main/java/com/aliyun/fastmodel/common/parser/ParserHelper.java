@@ -57,6 +57,9 @@ public class ParserHelper {
         int endIndex = stop.getStopIndex();
         Interval interval = new Interval(startIndex, endIndex);
         CharStream input = start.getInputStream();
+        if (input == null) {
+            return null;
+        }
         return input.getText(interval);
     }
 
@@ -141,14 +144,15 @@ public class ParserHelper {
             return null;
         }
         //大小写忽略处理
-        String text = ctx.getText().toLowerCase(Locale.ROOT);
+        String text = ctx.getText();
         if (text.startsWith(REGEX)) {
             return getIdentifier(text, REGEX, ctx);
         }
         if (text.startsWith(DQUOTA)) {
             return getIdentifier(text, DQUOTA, ctx);
         }
-        return new Identifier(getLocation(ctx), getOrigin(ctx), text);
+        //if text not start with ' or ""
+        return new Identifier(getLocation(ctx), getOrigin(ctx), text.toLowerCase(Locale.ROOT));
     }
 
     private static Identifier getIdentifier(String text, String regex, ParserRuleContext ctx) {

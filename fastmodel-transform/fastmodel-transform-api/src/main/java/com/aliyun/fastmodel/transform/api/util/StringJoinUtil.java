@@ -8,7 +8,11 @@
 
 package com.aliyun.fastmodel.transform.api.util;
 
+import java.util.ArrayList;
+
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -30,19 +34,24 @@ public class StringJoinUtil {
      */
     public static QualifiedName join(String first, String second, String arg) {
         if (StringUtils.isBlank(arg)) {
-            return QualifiedName.of(arg);
+            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(arg));
+            return QualifiedName.of(originalParts);
         }
         boolean firstNotBlank = StringUtils.isNotBlank(first);
         boolean secondNotBlank = StringUtils.isNotBlank(second);
         if (firstNotBlank && secondNotBlank) {
-            return QualifiedName.of(first, second, arg);
+            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(first), new Identifier(second), new Identifier(arg));
+            return QualifiedName.of(originalParts);
         }
         if (firstNotBlank) {
-            return QualifiedName.of(first, arg);
+            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(first), new Identifier(arg));
+            return QualifiedName.of(originalParts);
         }
         if (secondNotBlank) {
-            return QualifiedName.of(second, arg);
+            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(second), new Identifier(arg));
+            return QualifiedName.of(originalParts);
         }
-        return QualifiedName.of(arg);
+        ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(arg));
+        return QualifiedName.of(originalParts);
     }
 }

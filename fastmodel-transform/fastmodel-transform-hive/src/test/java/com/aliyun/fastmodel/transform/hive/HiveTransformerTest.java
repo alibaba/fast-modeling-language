@@ -23,7 +23,6 @@ import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
-import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
 import com.aliyun.fastmodel.core.tree.statement.table.AddConstraint;
@@ -102,7 +101,7 @@ public class HiveTransformerTest {
             Lists.newArrayList(new Identifier("c1"))
         ));
         List<Property> properties = ImmutableList.of(new Property("abc", "value1"));
-        HiveTransformContext context = HiveTransformContext.builder().enableConstraint(true).build();
+        HiveTransformContext context = HiveTransformContext.builder().enableConstraint(true).printProperty(true).build();
         DialectNode abc = hiveTransformer.transform(CreateDimTable.builder().tableName(QualifiedName.of("a.b"))
                 .ifNotExist(
                     true
@@ -263,7 +262,7 @@ public class HiveTransformerTest {
             "WITH PROPERTIES('type' = 'tx_fact')";
         NodeParser nodeParser = new NodeParser();
         CreateFactTable createFactTable = nodeParser.parseNode(createTableSql);
-        DialectNode transform = hiveTransformer.transform(createFactTable);
+        DialectNode transform = hiveTransformer.transform(createFactTable, HiveTransformContext.builder().printProperty(true).build());
         assertEquals(transform.getNode(), "CREATE TABLE fact_emp_change\n"
             + "(\n"
             + "   change_id BIGINT COMMENT '事务变化Id',\n"

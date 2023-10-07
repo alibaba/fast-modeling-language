@@ -40,6 +40,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDwsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateFactTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateIndex;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateOdsTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable.TableBuilder;
 import com.aliyun.fastmodel.core.tree.statement.table.DropConstraint;
@@ -179,6 +180,8 @@ public class TableVisitor extends AstBuilder {
             return CreateDwsTable.builder();
         } else if (parent == TableType.CODE) {
             return CreateCodeTable.builder();
+        } else if (parent == TableType.ODS) {
+            return CreateOdsTable.builder();
         }
         throw new ParseException("unsupported table type with:" + parent);
     }
@@ -431,6 +434,8 @@ public class TableVisitor extends AstBuilder {
                 return TableDetailType.ADVANCED_DWS;
             case FastModelLexer.KW_ADS:
                 return TableDetailType.ADS;
+            case FastModelLexer.KW_ODS:
+                return TableDetailType.ODS;
             default:
                 throw new IllegalArgumentException("can't find the DetailType:" + type.getType());
         }

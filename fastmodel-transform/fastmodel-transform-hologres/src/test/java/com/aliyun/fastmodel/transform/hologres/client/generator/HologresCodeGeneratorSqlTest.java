@@ -60,7 +60,9 @@ public class HologresCodeGeneratorSqlTest {
         DdlGeneratorResult generate = codeGenerator.generate(request);
         List<DialectNode> dialectNodes = generate.getDialectNodes();
         String dialectNode = dialectNodes.stream().filter(DialectNode::isExecutable).map(DialectNode::getNode).collect(Collectors.joining("\n"));
-        assertEquals(dialectNode, "COMMENT ON COLUMN a.c1 IS 'comment';\n"
+        assertEquals(dialectNode, "BEGIN;\n"
+            + "COMMENT ON COLUMN a.c1 IS 'comment';\n"
+            + "COMMIT;\n"
             + "BEGIN;\n"
             + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
             + "COMMIT;");
@@ -96,7 +98,7 @@ public class HologresCodeGeneratorSqlTest {
             + "CREATE TABLE IF NOT EXISTS \"a\" (\n"
             + "   \"c1.abc\" DOUBLE PRECISION NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('\"a\"', 'time_to_live_in_seconds', '1000');\n"
+            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
             + "COMMENT ON COLUMN \"a\".\"c1.abc\" IS 'comment';\n"
             + "COMMIT;");
     }
@@ -131,7 +133,42 @@ public class HologresCodeGeneratorSqlTest {
             + "CREATE TABLE IF NOT EXISTS \"a\" (\n"
             + "   \"c1.abc\" DOUBLE PRECISION NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('\"a\"', 'time_to_live_in_seconds', '1000');\n"
+            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
+            + "COMMENT ON COLUMN \"a\".\"c1.abc\" IS 'comment';\n"
+            + "COMMIT;");
+    }
+
+    @Test
+    public void testGeneratorBigSerial() {
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        List<Column> columns = Lists.newArrayList(
+            Column.builder()
+                .name("\"c1.abc\"")
+                .dataType("BIGSERIAL")
+                .comment("comment")
+                .build()
+        );
+        Table table = Table.builder()
+            .name("\"a\"")
+            .columns(columns)
+            .lifecycleSeconds(1000L)
+            .build();
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(DialectMeta.DEFAULT_HOLO)
+            .caseSensitive(false)
+            .build();
+        DdlGeneratorSqlRequest request = DdlGeneratorSqlRequest.builder()
+            .after(table)
+            .config(config)
+            .build();
+        DdlGeneratorResult generate = codeGenerator.generate(request);
+        List<DialectNode> dialectNodes = generate.getDialectNodes();
+        String dialectNode = dialectNodes.stream().filter(DialectNode::isExecutable).map(DialectNode::getNode).collect(Collectors.joining("\n"));
+        assertEquals(dialectNode, "BEGIN;\n"
+            + "CREATE TABLE IF NOT EXISTS \"a\" (\n"
+            + "   \"c1.abc\" BIGSERIAL NOT NULL\n"
+            + ");\n"
+            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
             + "COMMENT ON COLUMN \"a\".\"c1.abc\" IS 'comment';\n"
             + "COMMIT;");
     }

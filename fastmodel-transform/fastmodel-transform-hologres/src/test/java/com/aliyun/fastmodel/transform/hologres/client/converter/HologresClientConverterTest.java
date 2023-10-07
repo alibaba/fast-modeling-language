@@ -31,10 +31,11 @@ import com.aliyun.fastmodel.transform.api.client.dto.constraint.OutlineConstrain
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn;
-import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn.ColumnStatus;
-import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn.Status;
+import com.aliyun.fastmodel.transform.hologres.client.property.ColumnStatus;
+import com.aliyun.fastmodel.transform.hologres.client.property.Status;
 import com.aliyun.fastmodel.transform.hologres.client.property.DistributionKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
@@ -104,7 +105,7 @@ public class HologresClientConverterTest {
             .properties(properties)
             .constraints(constraints)
             .build();
-        CreateTable node = (CreateTable)hologresClientConverter.covertToNode(table);
+        CreateTable node = (CreateTable)hologresClientConverter.covertToNode(table, TableConfig.builder().build());
         assertEquals(node.isNotExists(), true);
         assertEquals(node.getQualifiedName().toString(), "database.name");
         assertEquals(node.getColumnDefines().size(), 3);
@@ -134,7 +135,7 @@ public class HologresClientConverterTest {
             .columns(columns)
             .name("name")
             .build();
-        Node node = hologresClientConverter.covertToNode(table);
+        Node node = hologresClientConverter.covertToNode(table, TableConfig.builder().build());
         CreateTable createTable = (CreateTable)node;
         List<ColumnDefinition> columnDefines = createTable.getColumnDefines();
         assertEquals(columnDefines.get(0).getDataType(),

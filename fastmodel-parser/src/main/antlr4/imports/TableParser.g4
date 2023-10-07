@@ -51,6 +51,7 @@ createTableStatement
         | type=KW_CODE
         | dwDetailType? type=KW_DWS
         | type=KW_ADS
+        | type=KW_ODS
         ;
 
     dwDetailType:
@@ -170,7 +171,7 @@ createTableStatement
             : (KW_CONSTRAINT identifier)? KW_PRIMARY KW_KEY columnParenthesesList
             ;
 
-        columnDefinition
+    columnDefinition
             : identifier alias? colType category? columnConstraintType* defaultValue? comment? (KW_WITH tableProperties)? referencesObjects?
             ;
 

@@ -733,10 +733,9 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         OptionalInt max = list.stream().map(ColumnDefinition::getColName).mapToInt(
             x -> formatExpression(x).length()
         ).max();
-        String columnList = list.stream()
+        return list.stream()
             .map(element -> elementIndent + formatColumnDefinition(element, max.getAsInt()))
             .collect(joining(",\n"));
-        return columnList;
     }
 
     protected String formatColName(Identifier colName, Integer size) {
@@ -1150,9 +1149,10 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             builder.append("FULL ");
         }
         builder.append(showObjects.getShowType().getCode());
-        QualifiedName tableName = showObjects.getTableName();
-        if (tableName != null) {
-            builder.append(" FROM ").append(formatName(tableName));
+        List<QualifiedName> tableName = showObjects.getTableName();
+        if (tableName != null && !tableName.isEmpty()) {
+            String formatName = formatNames(tableName);
+            builder.append(" FROM ").append(formatName);
         } else {
             if (showObjects.getBaseUnit() != null) {
                 builder.append(" FROM ").append(formatExpression(showObjects.getBaseUnit()));
@@ -1162,6 +1162,12 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             process(showObjects.getConditionElement());
         }
         return true;
+    }
+
+    private String formatNames(List<QualifiedName> tableName) {
+        return tableName.stream()
+            .map(e -> formatName(e))
+            .collect(joining(","));
     }
 
     @Override
@@ -1984,9 +1990,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     public String formatName(QualifiedName name) {
         return name.getOriginalParts().stream()
-            .map(e -> {
-                return formatExpression(e);
-            })
+            .map(this::formatExpression)
             .collect(joining("."));
     }
 
@@ -2003,11 +2007,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     protected void appendAliasColumns(StringBuilder builder, List<Identifier> columns) {
         if ((columns != null) && (!columns.isEmpty())) {
             String formattedColumns = columns.stream()
-                .map(e -> {
-                    return formatExpression(e);
-                })
+                .map(this::formatExpression)
                 .collect(Collectors.joining(", "));
-
             builder.append(" (")
                 .append(formattedColumns)
                 .append(')');
