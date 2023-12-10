@@ -17,7 +17,7 @@ a certain kind of engine.
 - Transforms models into varies syntax with the Transform API for common engines, such as: Hive, Hologres, Mysql.
 - Supports JDBC Driver mode, interact with the model engine.
 
-Relation Document: https://alibaba.github.io/fast-modeling-language/
+Relation Document(Continuously updating): https://alibaba.github.io/fast-modeling-language/
 
 ### Parser Example
 
