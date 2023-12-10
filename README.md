@@ -1,4 +1,4 @@
-> 语言： [中文](https://alibaba.github.io/fast-modeling-language/) | English
+> 语言： [中文](https://github.com/alibaba/fast-modeling-language/blob/main/README_zh_CN.md) | English
 
 # Fast Modeling Language
 
