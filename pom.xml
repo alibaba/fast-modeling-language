@@ -76,17 +76,19 @@
             <name>Rubinhuang9239</name>
             <url>https://github.com/Rubinhuang9239</url>
         </developer>
+        <developer>
+            <id>zhaoyuguang</id>
+            <name>zhaoyuguang</name>
+            <url>https://github.com/zhaoyuguang</url>
+        </developer>
     </developers>
 
     <distributionManagement>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/alibaba/fast-modeling-language</url>
         </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
     </distributionManagement>
 
     <dependencyManagement>
