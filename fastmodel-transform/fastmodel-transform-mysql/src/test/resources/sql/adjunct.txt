@@ -1,7 +1,3 @@
-/******************************************/
-/*   DatabaseName = model-engine   */
-/*   TableName = adjunct   */
-/******************************************/
 CREATE TABLE `adjunct` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
   `gmt_create` datetime NOT NULL COMMENT '创建时间',

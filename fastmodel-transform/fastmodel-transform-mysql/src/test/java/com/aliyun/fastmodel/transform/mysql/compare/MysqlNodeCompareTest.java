@@ -43,19 +43,6 @@ public class MysqlNodeCompareTest {
         System.out.println(compare.stream().map(BaseStatement::toString).collect(Collectors.joining("\n")));
     }
 
-    @Test
-    public void testCompareBeforeAfterDdl() throws IOException {
-        DialectNode before = new DialectNode(getNode("/sql/compare/before.txt"));
-        DialectNode after = new DialectNode(getNode("/sql/compare/after.txt"));
-        List<BaseStatement> compare = mysqlNodeCompare.compare(before, after);
-        DialectNode transform = mysqlV8Transformer.transform(new CompositeStatement(compare));
-        String node = transform.getNode();
-        List<String> list = IOUtils.readLines(new StringReader(node));
-        List<String> collect = list.stream().filter(x -> {
-            return !x.startsWith("--");
-        }).collect(Collectors.toList());
-        FileUtils.writeLines(new File("diff.sql"), collect);
-    }
 
     private String getNode(String s) throws IOException {
         return IOUtils.resourceToString(s, StandardCharsets.UTF_8);
