@@ -31,6 +31,16 @@
         <dep.jline.version>3.17.1</dep.jline.version>
         <dep.antlr.version>4.9.3</dep.antlr.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/alibaba/fast-modeling-language</url>
+        </repository>
+    </distributionManagement>
+
+
     <dependencyManagement>
         <dependencies>
             <dependency>
