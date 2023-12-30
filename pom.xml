@@ -59,7 +59,7 @@
         <java.compile.version>8</java.compile.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.version>0.8.5</jacoco.version>
-        <revision>0.5.8</revision>
+        <revision>0.5.8-jdk8</revision>
         <maven_flatten_version>1.4.1</maven_flatten_version>
         <dep.antlr.version>4.9.3</dep.antlr.version>
     </properties>
