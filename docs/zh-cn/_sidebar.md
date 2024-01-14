@@ -1,6 +1,5 @@
 <!-- docs/_sidebar.md -->
 
-* [首页](zh-cn/README.md)
 * [入门](zh-cn/guide.md)
 * [与SQL的差异](zh-cn/difference.md)
 * [基本元素](zh-cn/basic.md)
