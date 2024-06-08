@@ -47,16 +47,14 @@ Transformer
 无
 
 
-## 0.5.8
+## 0.5.9
 新功能（new features）
 Core
-• 新增Create ODS TABLE
-• 新增Show Statics语句
+• 新增支持JDK11编译
 
 
 Transformer
-• 新增FML到Sqlite的转换
-• 新增FML到Adb Mysql的转换
+• 新增FML到StarRocks的转换
 
 向下兼容（compatibility）
 • 暂无
