@@ -16,10 +16,6 @@
 
 package com.aliyun.fastmodel.core.tree.statement.table;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 import com.aliyun.fastmodel.core.semantic.table.CreateTableSemanticCheck;
 import com.aliyun.fastmodel.core.tree.AliasedName;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
@@ -30,7 +26,6 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.BaseCreate;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
-import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.element.MultiComment;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -39,6 +34,10 @@ import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 创建表的语句

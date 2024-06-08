@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * code generator
@@ -208,7 +209,7 @@ public class HiveCodeGeneratorModelTest {
         DdlTableResult reverse = defaultCodeGenerator.reverse(request);
         Table table = reverse.getTable();
         assertEquals(table.getDatabase(), "d1");
-        assertEquals(table.getSchema(), "c1");
+        assertNull(table.getSchema());
         assertEquals(table.getName(), "a");
         assertEquals(table.getColumns().size(), 1);
     }

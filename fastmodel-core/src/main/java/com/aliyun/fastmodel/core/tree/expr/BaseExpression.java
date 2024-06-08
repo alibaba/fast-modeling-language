@@ -26,6 +26,7 @@ import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 表达式对象:
@@ -64,6 +65,18 @@ public abstract class BaseExpression extends AbstractNode {
     @Override
     public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitExpression(this, context);
+    }
+
+    /**
+     * 优先从origin里获取，如果没有，那么读取toString内容
+     *
+     * @return
+     */
+    public String getOrigin() {
+        if (StringUtils.isNotBlank(origin)) {
+            return origin;
+        }
+        return toString();
     }
 
     @Override

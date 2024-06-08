@@ -17,11 +17,13 @@
 package com.aliyun.fastmodel.core.tree.datatype;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * RowDataType : 一行的类型
@@ -52,6 +54,18 @@ public class RowDataType extends BaseDataType {
     @Override
     public List<? extends Node> getChildren() {
         return fields;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        RowDataType rowDataType = (RowDataType)o;
+        boolean e = StringUtils.equalsIgnoreCase(this.getTypeName().getValue(), rowDataType.getTypeName().getValue());
+        if (!e) {
+            return false;
+        }
+        return Objects.equals(fields, rowDataType.getFields());
     }
 
     @Override

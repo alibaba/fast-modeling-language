@@ -112,7 +112,14 @@ public enum DialectName implements IDialectName {
     /**
      * Sqlite
      */
-    SQLITE(Constants.SQLITE);
+    SQLITE(Constants.SQLITE),
+
+    /**
+     * StarRocks
+     */
+    STARROCKS(Constants.STARROCKS)
+
+    ;
     @Getter
     private final String value;
 
@@ -139,6 +146,7 @@ public enum DialectName implements IDialectName {
         public static final String POSTGRESQL = "POSTGRESQL";
         public static final String SQLITE = "SQLITE";
         public static final String JSON = "JSON";
+        public static final String STARROCKS = "STAR_ROCKS";
     }
 
     public static DialectName getByCode(String name) {

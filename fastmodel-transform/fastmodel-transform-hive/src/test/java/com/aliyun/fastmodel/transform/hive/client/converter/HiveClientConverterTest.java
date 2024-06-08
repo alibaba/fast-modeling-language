@@ -188,7 +188,7 @@ public class HiveClientConverterTest {
         Table table1 = hiveClientConverter.convertToTable(table, HiveTransformContext.builder().build());
         assertTrue(table1.isExternal());
         List<BaseClientProperty> properties1 = table1.getProperties();
-        BaseClientProperty baseClientProperty = properties1.get(0);
+        BaseClientProperty baseClientProperty = properties1.get(1);
         assertEquals(baseClientProperty.getKey(), HivePropertyKey.STORAGE_FORMAT.getValue());
     }
 
@@ -211,7 +211,7 @@ public class HiveClientConverterTest {
             .properties(properties)
             .build();
         Node node = hiveClientConverter.covertToNode(table, TableConfig.builder().build());
-        assertEquals(node.toString(), "CREATE DIM TABLE IF NOT EXISTS abc \n"
+        assertEquals(node.toString(), "CREATE TABLE IF NOT EXISTS abc \n"
             + "(\n"
             + "   n1 BIGINT NOT NULL\n"
             + ")\n"

@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +66,21 @@ public class PropertyUtil {
             list.add(property);
         }
         return list;
+    }
+
+    /**
+     * get properties
+     *
+     * @param properties
+     * @param propertyKey
+     * @return
+     */
+    public static String getPropertyValue(List<Property> properties, String propertyKey) {
+        if (properties == null || properties.isEmpty()) {
+            return null;
+        }
+        Map<String, String> stringStringMap = toMap(properties);
+        return stringStringMap.get(propertyKey);
     }
 
     /**

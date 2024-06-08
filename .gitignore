@@ -44,3 +44,5 @@ deploy.sh
 /fastmodel-parser/src/test/resources/lsp/FastModelLexer.g4
 /fastmodel-parser/gen/lsp/FastModelLexer.java
 /fastmodel-parser/src/test/resources/lsp/keyword.txt
+/fastmodel-transform/fastmodel-transform-adbmysql/src/main/antlr4/com/aliyun/fastmodel/transform/adbmysql/parser/gen/AdbMysqlLexer.java
+/fastmodel-transform/fastmodel-transform-mysql/src/main/antlr4/com/aliyun/fastmodel/transform/mysql/parser/gen/MySqlLexer.java

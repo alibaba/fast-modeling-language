@@ -10,6 +10,9 @@ package com.aliyun.fastmodel.transform.hive.client;
 
 import java.util.List;
 
+import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.transform.api.Transformer;
+import com.aliyun.fastmodel.transform.api.TransformerFactory;
 import com.aliyun.fastmodel.transform.api.client.CodeGenerator;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.request.DdlGeneratorModelRequest;
@@ -20,6 +23,8 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
+import com.aliyun.fastmodel.transform.api.context.ReverseContext;
+import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hive.client.property.FieldsTerminated;
@@ -94,6 +99,213 @@ public class HiveCodeGeneratorExternalTest {
     }
 
     @Test
+    public void testGeneratorHiveTable() {
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        String createTableDdl = "CREATE TABLE `default.test_ziliang_v1`(\n" +
+                "  `a` string COMMENT 'aa1')\n" +
+                "COMMENT '123'\n" +
+                "PARTITIONED BY ( \n" +
+                "  `ds` string COMMENT '')\n" +
+                "ROW FORMAT SERDE \n" +
+                "  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' \n" +
+                "STORED AS INPUTFORMAT \n" +
+                "  'org.apache.hadoop.mapred.TextInputFormat' \n" +
+                "OUTPUTFORMAT \n" +
+                "  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
+                "LOCATION\n" +
+                "  'hdfs://master-1-1.c-aac6b952af7280c8.cn-shanghai.emr.aliyuncs.com:9000/user/hive/warehouse/test_ziliang_v1'\n" +
+                "TBLPROPERTIES (\n" +
+                "  'bucketing_version'='2', \n" +
+                "  'transient_lastDdlTime'='1698806349')";
+        DialectNode dialectNode = new DialectNode(createTableDdl);
+        ReverseContext build = ReverseContext.builder().build();
+        Transformer transformer = TransformerFactory.getInstance().get(DialectMeta.getHive());
+        Node reverse = transformer.reverse(dialectNode, build);
+        Table table = transformer.transformTable(reverse, TransformContext.builder().build());
+
+
+        TableConfig config = TableConfig.builder()
+                .dialectMeta(DialectMeta.DEFAULT_HIVE)
+                .caseSensitive(false)
+                .build();
+        DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
+                .after(table)
+                .config(config)
+                .build();
+        DdlGeneratorResult generate = codeGenerator.generate(request);
+        List<DialectNode> dialectNodes = generate.getDialectNodes();
+        DialectNode dialectNode1 = dialectNodes.get(0);
+        assertEquals(dialectNode1.getNode(), "CREATE TABLE `default.test_ziliang_v1`\n" +
+                "(\n" +
+                "   a STRING COMMENT 'aa1'\n" +
+                ")\n" +
+                "COMMENT '123'\n" +
+                "PARTITIONED BY\n" +
+                "(\n" +
+                "   ds STRING COMMENT ''\n" +
+                ")\n" +
+                "ROW FORMAT SERDE\n" +
+                "'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'\n" +
+                "STORED AS \n" +
+                "INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\n" +
+                "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
+                "LOCATION 'hdfs://master-1-1.c-aac6b952af7280c8.cn-shanghai.emr.aliyuncs.com:9000/user/hive/warehouse/test_ziliang_v1'\n" +
+                "TBLPROPERTIES ('bucketing_version'='2','transient_lastDdlTime'='1698806349','hive.row_format_serde'='org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe','hive.stored_input_format'='org.apache.hadoop.mapred.TextInputFormat','hive.stored_output_format'='org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat','hive.location'='hdfs://master-1-1.c-aac6b952af7280c8.cn-shanghai.emr.aliyuncs.com:9000/user/hive/warehouse/test_ziliang_v1');");
+    }
+
+    @Test
+    public void testGenerateHiveExternalTable() {
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        String createTableDdl = "CREATE EXTERNAL TABLE `oss_share_feedback`(\n" +
+                "  `uid` string, \n" +
+                "  `os` string, \n" +
+                "  `source_id` string, \n" +
+                "  `type` string, \n" +
+                "  `target_key` string, \n" +
+                "  `created_time` string, \n" +
+                "  `updated_time` string)\n" +
+                "PARTITIONED BY ( \n" +
+                "  `pt_month` string, \n" +
+                "  `pt_day` string)\n" +
+                "ROW FORMAT SERDE \n" +
+                "  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' \n" +
+                "WITH SERDEPROPERTIES ( \n" +
+                "  'field.delim'='\\t', \n" +
+                "  'line.delim'='\\n', \n" +
+                "  'serialization.format'='\\t') \n" +
+                "STORED AS INPUTFORMAT \n" +
+                "  'org.apache.hadoop.mapred.TextInputFormat' \n" +
+                "OUTPUTFORMAT \n" +
+                "  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
+                "LOCATION\n" +
+                "  'oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'\n" +
+                "TBLPROPERTIES (\n" +
+                "  'transient_lastDdlTime'='1495603307');";
+        DialectNode dialectNode = new DialectNode(createTableDdl);
+        ReverseContext build = ReverseContext.builder().build();
+        Transformer transformer = TransformerFactory.getInstance().get(DialectMeta.getHive());
+        Node reverse = transformer.reverse(dialectNode, build);
+        Table table = transformer.transformTable(reverse, TransformContext.builder().build());
+
+
+        TableConfig config = TableConfig.builder()
+                .dialectMeta(DialectMeta.DEFAULT_HIVE)
+                .caseSensitive(false)
+                .build();
+        DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
+                .after(table)
+                .config(config)
+                .build();
+        DdlGeneratorResult generate = codeGenerator.generate(request);
+        List<DialectNode> dialectNodes = generate.getDialectNodes();
+        DialectNode dialectNode1 = dialectNodes.get(0);
+        assertEquals(dialectNode1.getNode(), "CREATE EXTERNAL TABLE oss_share_feedback\n" +
+                "(\n" +
+                "   uid          STRING,\n" +
+                "   os           STRING,\n" +
+                "   source_id    STRING,\n" +
+                "   type         STRING,\n" +
+                "   target_key   STRING,\n" +
+                "   created_time STRING,\n" +
+                "   updated_time STRING\n" +
+                ")\n" +
+                "PARTITIONED BY\n" +
+                "(\n" +
+                "   pt_month STRING,\n" +
+                "   pt_day   STRING\n" +
+                ")\n" +
+                "ROW FORMAT SERDE\n" +
+                "'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'\n" +
+                "WITH SERDEPROPERTIES (\n" +
+                "   'field.delim' = '\\t',\n" +
+                "   'line.delim' = '\\n',\n" +
+                "   'serialization.format' = '\\t'\n" +
+                ")\n" +
+                "STORED AS \n" +
+                "INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\n" +
+                "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
+                "LOCATION 'oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'\n" +
+                "TBLPROPERTIES ('transient_lastDdlTime'='1495603307','hive.table_external'='true'," +
+                "'hive.row_format_serde'='org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'," +
+                "'hive.serde_props.field.delim'='\\t','hive.serde_props.line.delim'='\\n'," +
+                "'hive.serde_props.serialization.format'='\\t'," +
+                "'hive.stored_input_format'='org.apache.hadoop.mapred.TextInputFormat'," +
+                "'hive.stored_output_format'='org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'," +
+                "'hive.location'='oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'," +
+                "'hive.table_external'='true');");
+    }
+
+    @Test
+    public void testGenerateHiveExternalTable2() {
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        String createTableDdl = "CREATE EXTERNAL TABLE `oss_share_feedback`(\n" +
+                "  `uid` string, \n" +
+                "  `os` string, \n" +
+                "  `source_id` string, \n" +
+                "  `type` string, \n" +
+                "  `target_key` string, \n" +
+                "  `created_time` string, \n" +
+                "  `updated_time` string)\n" +
+                "PARTITIONED BY ( \n" +
+                "  `pt_month` string, \n" +
+                "  `pt_day` string)\n" +
+                "ROW FORMAT delimited \n" +
+                "fields terminated by ','" +
+                "STORED AS INPUTFORMAT \n" +
+                "  'org.apache.hadoop.mapred.TextInputFormat' \n" +
+                "OUTPUTFORMAT \n" +
+                "  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
+                "LOCATION\n" +
+                "  'oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'\n" +
+                "TBLPROPERTIES (\n" +
+                "  'transient_lastDdlTime'='1495603307');";
+        DialectNode dialectNode = new DialectNode(createTableDdl);
+        ReverseContext build = ReverseContext.builder().build();
+        Transformer transformer = TransformerFactory.getInstance().get(DialectMeta.getHive());
+        Node reverse = transformer.reverse(dialectNode, build);
+        Table table = transformer.transformTable(reverse, TransformContext.builder().build());
+
+
+        TableConfig config = TableConfig.builder()
+                .dialectMeta(DialectMeta.DEFAULT_HIVE)
+                .caseSensitive(false)
+                .build();
+        DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
+                .after(table)
+                .config(config)
+                .build();
+        DdlGeneratorResult generate = codeGenerator.generate(request);
+        List<DialectNode> dialectNodes = generate.getDialectNodes();
+        DialectNode dialectNode1 = dialectNodes.get(0);
+        assertEquals(dialectNode1.getNode(), "CREATE EXTERNAL TABLE oss_share_feedback\n" +
+                "(\n" +
+                "   uid          STRING,\n" +
+                "   os           STRING,\n" +
+                "   source_id    STRING,\n" +
+                "   type         STRING,\n" +
+                "   target_key   STRING,\n" +
+                "   created_time STRING,\n" +
+                "   updated_time STRING\n" +
+                ")\n" +
+                "PARTITIONED BY\n" +
+                "(\n" +
+                "   pt_month STRING,\n" +
+                "   pt_day   STRING\n" +
+                ")\n" +
+                "ROW FORMAT DELIMITED\n" +
+                "FIELDS TERMINATED BY ','\n" +
+                "STORED AS \n" +
+                "INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\n" +
+                "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
+                "LOCATION 'oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'\n" +
+                "TBLPROPERTIES ('transient_lastDdlTime'='1495603307','hive.table_external'='true'," +
+                "'hive.fields_terminated'=',','hive.stored_input_format'='org.apache.hadoop.mapred.TextInputFormat'," +
+                "'hive.stored_output_format'='org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'," +
+                "'hive.location'='oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'," +
+                "'hive.table_external'='true');");
+    }
+
+    @Test
     public void testGenerator1() {
         DefaultCodeGenerator defaultCodeGenerator = new DefaultCodeGenerator();
         String ddlString
@@ -109,7 +321,7 @@ public class HiveCodeGeneratorExternalTest {
             .dialectMeta(DialectMeta.DEFAULT_HIVE).build();
         DdlTableResult reverse = defaultCodeGenerator.reverse(request);
         Table table = reverse.getTable();
-        assertEquals(table.getSchema(), "default");
+        assertEquals(table.getDatabase(), "default");
     }
 
     @Test

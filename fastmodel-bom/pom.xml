@@ -47,42 +47,13 @@
                 <artifactId>fastmodel-compare</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
                 <artifactId>fastmodel-parser</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-template</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-hive</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-hologres</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-fml</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-plantuml</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
                 <artifactId>fastmodel-driver-model</artifactId>
@@ -97,15 +68,10 @@
 
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-processor</artifactId>
+                <artifactId>fastmodel-ide-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-excel</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
@@ -115,7 +81,13 @@
 
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-converter-dqc</artifactId>
+                <artifactId>fastmodel-transform-fml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-plantuml</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -169,7 +141,40 @@
 
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-ide-spi</artifactId>
+                <artifactId>fastmodel-transform-starrocks</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-template</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-hive</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-hologres</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-fml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-plantuml</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

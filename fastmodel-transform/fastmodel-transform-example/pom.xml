@@ -122,6 +122,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-sqlite</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>

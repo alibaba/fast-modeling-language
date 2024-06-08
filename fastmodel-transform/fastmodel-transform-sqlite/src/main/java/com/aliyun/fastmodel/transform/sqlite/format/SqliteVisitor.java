@@ -2,6 +2,7 @@ package com.aliyun.fastmodel.transform.sqlite.format;
 
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.datatype.DataTypeConverter;
@@ -74,4 +75,8 @@ public class SqliteVisitor extends FastModelVisitor {
         }
     }
 
+    @Override
+    protected String formatExpression(BaseExpression baseExpression) {
+        return new SqliteExpressionVisitor().process(baseExpression);
+    }
 }

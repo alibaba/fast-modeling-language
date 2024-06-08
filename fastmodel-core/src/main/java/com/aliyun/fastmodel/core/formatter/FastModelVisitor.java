@@ -177,7 +177,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
-    private static final String INDENT = "   ";
+    protected static final String INDENT = "   ";
     public static final String CONSTRAINT = "CONSTRAINT ";
     public static final String SUFFIX = ";";
     public static final String NEW_LINE = "\n";
@@ -414,18 +414,20 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitCreateTable(CreateTable node, Integer indent) {
-        builder.append("CREATE ");
+        builder.append("CREATE");
         if (node.getCreateOrReplace() != null && node.getCreateOrReplace()) {
-            builder.append("OR REPLACE ");
+            builder.append(" OR REPLACE");
         }
-        ITableDetailType tableDetailType = node.getTableDetailType() == null ? TableDetailType.NORMAL_DIM
-            : node.getTableDetailType();
-        boolean isNormalOrTransaction = tableDetailType == TableDetailType.NORMAL_DIM
-            || tableDetailType == TableDetailType.TRANSACTION_FACT;
-        if (!isNormalOrTransaction && !tableDetailType.isSingle()) {
-            builder.append(tableDetailType.getCode()).append(" ");
+        ITableDetailType tableDetailType = null;
+        if (node.getTableDetailType() != null) {
+            tableDetailType = node.getTableDetailType();
+            boolean isNormalOrTransaction = tableDetailType == TableDetailType.NORMAL_DIM
+                || tableDetailType == TableDetailType.TRANSACTION_FACT;
+            if (!isNormalOrTransaction && !tableDetailType.isSingle()) {
+                builder.append(" ").append(tableDetailType.getCode());
+            }
+            builder.append(" ").append(tableDetailType.getParent());
         }
-        builder.append(tableDetailType.getParent());
         builder.append(" TABLE ");
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
@@ -606,7 +608,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             builder.append(indentString(ident)).append("PRIMARY KEY(");
         }
         builder.append(
-            primaryConstraint.getColNames().stream().map(ExpressionFormatter::formatExpression).collect(joining(",")));
+            primaryConstraint.getColNames().stream().map(this::formatExpression).collect(joining(",")));
         builder.append(")");
         if (primaryConstraint.getEnable() != null) {
             if (!primaryConstraint.getEnable()) {
@@ -1214,7 +1216,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     @Override
     public Boolean visitDropCol(DropCol dropCol, Integer context) {
         builder.append("ALTER TABLE ").append(getCode(dropCol.getQualifiedName()));
-        builder.append(" DROP COLUMN ").append(ExpressionFormatter.formatExpression(dropCol.getColumnName()));
+        builder.append(" DROP COLUMN ").append(formatExpression(dropCol.getColumnName()));
         return true;
     }
 
@@ -1947,7 +1949,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return stringBuilder.toString();
     }
 
-    public String indentString(int indent) {
+    protected String indentString(int indent) {
         return Strings.repeat(INDENT, indent);
     }
 
@@ -1980,7 +1982,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return Joiner.on(", ").join(resultStrings.build());
     }
 
-    public String formatStringLiteral(String s) {
+    protected String formatStringLiteral(String s) {
         if (s == null) {
             return null;
         }

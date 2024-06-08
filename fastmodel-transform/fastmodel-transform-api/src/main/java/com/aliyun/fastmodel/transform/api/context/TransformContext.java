@@ -53,6 +53,11 @@ public class TransformContext {
     private String schema;
 
     /**
+     * pretty Format
+     */
+    private boolean prettyFormat;
+
+    /**
      * dataTypeTransformer, 类型转换器处理
      */
     private DataTypeConverter dataTypeTransformer;
@@ -82,6 +87,7 @@ public class TransformContext {
         this.database = context.getDatabase();
         this.schema = context.getSchema();
         this.querySetting = context.getQuerySetting();
+        this.prettyFormat = context.isPrettyFormat();
     }
 
     /**
@@ -98,6 +104,7 @@ public class TransformContext {
         this.querySetting = tBuilder.querySetting;
         this.database = tBuilder.database;
         this.schema = tBuilder.schema;
+        this.prettyFormat = tBuilder.prettyFormat;
     }
 
     /**
@@ -138,6 +145,11 @@ public class TransformContext {
          */
         private QuerySetting querySetting = new QuerySetting();
 
+        /**
+         * 是否格式化输出
+         */
+        private boolean prettyFormat = true;
+
         public T dataTypeTransformer(DataTypeConverter dataTypeTransformer) {
             this.dataTypeTransformer = dataTypeTransformer;
             return (T)this;
@@ -165,6 +177,11 @@ public class TransformContext {
 
         public T schema(String schema) {
             this.schema = schema;
+            return (T)this;
+        }
+
+        public T prettyFormat(boolean prettyFormat) {
+            this.prettyFormat = prettyFormat;
             return (T)this;
         }
 

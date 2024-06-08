@@ -59,4 +59,9 @@ public class SqliteTransformerTest {
             + "   d_column     REAL\n"
             + ")", transform.getNode());
     }
+
+    @Test
+    public void testTransformWithDoubleQuote() {
+        
+    }
 }

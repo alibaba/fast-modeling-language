@@ -35,5 +35,5 @@ public enum ConstraintScope {
     /**
      * 未定义
      */
-    UNDEFIND;
+    UNDEFINED;
 }

@@ -32,7 +32,7 @@ import lombok.Getter;
  * @date 2021/8/29
  */
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class CustomConstraint extends BaseConstraint {
 
     private final String customType;

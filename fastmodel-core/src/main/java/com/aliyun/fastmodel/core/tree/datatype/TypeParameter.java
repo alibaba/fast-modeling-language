@@ -17,6 +17,7 @@
 package com.aliyun.fastmodel.core.tree.datatype;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -46,5 +47,13 @@ public class TypeParameter extends DataTypeParameter {
     @Override
     public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitTypeParameter(this, context);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        TypeParameter typeParameter = (TypeParameter)o;
+        return Objects.equals(type, typeParameter.getType());
     }
 }

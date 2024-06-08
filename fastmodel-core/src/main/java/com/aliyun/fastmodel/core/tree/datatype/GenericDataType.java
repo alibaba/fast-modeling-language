@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.core.tree.datatype;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -25,8 +26,8 @@ import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 通用数据类型
@@ -35,7 +36,6 @@ import lombok.Getter;
  * @date 2020/10/30
  */
 @Getter
-@EqualsAndHashCode(callSuper = false)
 public class GenericDataType extends BaseDataType {
 
     private final String name;
@@ -77,6 +77,20 @@ public class GenericDataType extends BaseDataType {
     @Override
     public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitGenericDataType(this, context);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        GenericDataType that = (GenericDataType)o;
+        boolean e = StringUtils.equalsIgnoreCase(this.getTypeName().getValue(), that.getTypeName().getValue());
+        if (!e) {
+            return false;
+        }
+        List<DataTypeParameter> arguments = this.getArguments();
+        List<DataTypeParameter> arguments1 = that.getArguments();
+        return Objects.equals(arguments, arguments1);
     }
 
     @Override

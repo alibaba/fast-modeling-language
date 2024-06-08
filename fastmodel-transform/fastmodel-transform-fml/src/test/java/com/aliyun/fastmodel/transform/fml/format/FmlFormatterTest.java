@@ -28,7 +28,6 @@ import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
-import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -119,7 +118,7 @@ public class FmlFormatterTest {
             .constraints(constraints)
             .build();
         DialectNode dialectNode = FmlFormatter.formatNode(createTable,FmlTransformContext.builder().appendSemicolon(true).build());
-        assertEquals(dialectNode.getNode(), "CREATE DIM TABLE bc \n"
+        assertEquals(dialectNode.getNode(), "CREATE TABLE bc \n"
             + "(\n"
             + "   c1 BIGINT,\n"
             + "   CONSTRAINT c2 REDUNDANT c1 REFERENCES p.t.c2\n"

@@ -44,7 +44,7 @@ public class NodeParserTest {
 
     NodeParser nodeParser = new NodeParser();
 
-    @Test(expected = ParseException.class)
+    @Test
     public void testMultiParse() {
         String sql = "create table a (a bigint) comment 'comment'";
         List<BaseStatement> statements = nodeParser.multiParse(new DomainLanguage(sql));
@@ -108,7 +108,7 @@ public class NodeParserTest {
             .build();
         String c = createTable.toString();
         BaseStatement baseStatement = nodeParser.parseStatement(c);
-        assertEquals("CREATE DIM TABLE abc COMMENT 'abc ''type'''", baseStatement.toString());
+        assertEquals("CREATE TABLE abc COMMENT 'abc ''type'''", baseStatement.toString());
     }
 
     @Test
@@ -121,5 +121,12 @@ public class NodeParserTest {
         ColumnDefinition columnDefinition1 = createDimTable.getColumnDefines().get(1);
         assertEquals("JSON<a:STRING>", columnDefinition1.getDataType().toString());
 
+    }
+
+    @Test
+    public void testParseOnlyTable() {
+        String fml = "create table a (a bigint) comment 'abc';";
+        CreateTable createTable = nodeParser.parseStatement(fml);
+        assertEquals("a", createTable.getQualifiedName().toString());
     }
 }

@@ -35,14 +35,33 @@ public enum HivePropertyKey implements PropertyKey {
     /**
      * location
      */
-    LOCATION("hive.location")
+    LOCATION("hive.location"),
+
+    /**
+     * row format serde
+     */
+    ROW_FORMAT_SERDE("hive.row_format_serde"),
+
+    /**
+     * STORED AS INPUTFORMAT
+     */
+    STORED_INPUT_FORMAT("hive.stored_input_format"),
+
+    /**
+     * STORED AS OUTPUTFORMAT
+     */
+    STORED_OUTPUT_FORMAT("hive.stored_output_format"),
+
+    /**
+     * WITH SERDEPROPERTIES
+     */
+    SERDE_PROPS("hive.serde_props")
 
     ;
 
     /**
      * 是否需要print
      */
-    @Getter
     private final String value;
 
     /**

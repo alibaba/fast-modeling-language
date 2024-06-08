@@ -48,12 +48,12 @@ public class TemplateDefineTest {
         TemplateDefine templateIdByFunction = TemplateDefine.getTemplateIdByFunction(
             new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, new TableOrColumn(
                 QualifiedName.of("a.b")), baseDataType), CheckerType.FIX_STRATEGY_CHECK);
-        assertEquals(templateIdByFunction.getTemplateId(), new Integer(5));
+        assertEquals(templateIdByFunction.getTemplateId(), Integer.valueOf(5));
 
         templateIdByFunction = TemplateDefine.getTemplateIdByFunction(
             new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, new TableOrColumn(
                 QualifiedName.of("a.b")), baseDataType), CheckerType.DYNAMIC_STRATEGY_CHECK);
-        assertEquals(templateIdByFunction.getTemplateId(), new Integer(306));
+        assertEquals(templateIdByFunction.getTemplateId(), Integer.valueOf(306));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class TemplateDefineTest {
             new ColumnFunction(BaseFunctionName.NULL_COUNT, new TableOrColumn(
                 QualifiedName.of("a.b")), DataTypeUtil.simpleType(DataTypeEnums.BIGINT)),
             CheckerType.FIX_STRATEGY_CHECK);
-        assertEquals(templateIdByFunction.getTemplateId(), new Integer(11));
+        assertEquals(templateIdByFunction.getTemplateId(), Integer.valueOf(11));
     }
 
     @Test
@@ -71,6 +71,6 @@ public class TemplateDefineTest {
             new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
                 ImmutableList.of(new LongLiteral("1"), new LongLiteral("7"), new LongLiteral("30"))),
             CheckerType.VOL_STRATEGY_CHECK);
-        assertEquals(new Integer(33), templateIdByFunction.getTemplateId());
+        assertEquals(Integer.valueOf(33), templateIdByFunction.getTemplateId());
     }
 }

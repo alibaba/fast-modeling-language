@@ -8,6 +8,9 @@
 
 package com.aliyun.fastmodel.transform.api.client.dto.table;
 
+import java.util.List;
+
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -70,4 +73,9 @@ public class Column {
      * partition key index, zero-base
      */
     private Integer partitionKeyIndex;
+
+    /**
+     * column properties
+     */
+    private List<BaseClientProperty> properties;
 }

@@ -45,6 +45,7 @@
         <module>fastmodel-transform-spark</module>
         <module>fastmodel-transform-adbmysql</module>
         <module>fastmodel-transform-sqlite</module>
+        <module>fastmodel-transform-starrocks</module>
     </modules>
 
 

@@ -69,7 +69,7 @@ public class SparkVisitor extends FastModelVisitor {
             appendNumBuckets(node);
 
             //append row format
-            String rowFormat = HiveHelper.appendRowFormat(node);
+            String rowFormat = HiveHelper.appendRowFormat(node, elementIndent);
             if (StringUtils.isNotBlank(rowFormat)) {
                 appendLineIfNecessary();
                 builder.append(rowFormat);

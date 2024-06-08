@@ -38,10 +38,10 @@ public class HiveTransformContext extends TransformContext {
 
     public HiveTransformContext(TransformContext parent) {
         super(parent);
+        this.printProperty = true;
         if (parent instanceof HiveTransformContext) {
             HiveTransformContext transformContext = (HiveTransformContext)parent;
             enableConstraint = transformContext.isEnableConstraint();
-            this.printProperty = true;
         }
     }
 

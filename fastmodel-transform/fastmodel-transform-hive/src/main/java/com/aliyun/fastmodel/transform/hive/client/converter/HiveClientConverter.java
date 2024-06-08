@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
@@ -44,11 +45,11 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2022/8/5
  */
 public class HiveClientConverter extends BaseClientConverter<HiveTransformContext> {
-    private final HivePropertyConverter maxComputePropertyConverter;
+    private final HivePropertyConverter hivePropertyConverter;
     private final HiveLanguageParser hiveLanguageParser;
 
     public HiveClientConverter() {
-        maxComputePropertyConverter = new HivePropertyConverter();
+        hivePropertyConverter = new HivePropertyConverter();
         hiveLanguageParser = new HiveLanguageParser();
     }
 
@@ -70,13 +71,17 @@ public class HiveClientConverter extends BaseClientConverter<HiveTransformContex
 
     @Override
     public PropertyConverter getPropertyConverter() {
-        return maxComputePropertyConverter;
+        return hivePropertyConverter;
     }
 
     @Override
-    protected List<ColumnDefinition> toColumnDefinition(List<Column> columns) {
+    protected List<ColumnDefinition> toColumnDefinition(Table table, List<Column> columns) {
         //mc是columns分开的处理
-        return columns.stream().filter(column -> !column.isPartitionKey()).map(this::toColumnDefinition).collect(Collectors.toList());
+        return columns.stream().filter(column -> !column.isPartitionKey()).map(
+            c -> {
+                return toColumnDefinition(table, c);
+            }
+        ).collect(Collectors.toList());
     }
 
     @Override
@@ -125,5 +130,20 @@ public class HiveClientConverter extends BaseClientConverter<HiveTransformContex
         } catch (ParseException e) {
             throw new IllegalArgumentException("not support dataTypeName with:" + dataTypeName);
         }
+    }
+
+    @Override
+    protected String toSchema(CreateTable createTable, HiveTransformContext transformContext) {
+        return null;
+    }
+
+    @Override
+    protected String toDatabase(CreateTable createTable, String database) {
+        QualifiedName qualifiedName = createTable.getQualifiedName();
+        boolean isSecondSchema = qualifiedName.isJoinPath() && qualifiedName.getOriginalParts().size() == SECOND_INDEX;
+        if (isSecondSchema) {
+            return qualifiedName.getFirst();
+        }
+        return database;
     }
 }

@@ -19,8 +19,8 @@ package com.aliyun.fastmodel.core.tree;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 备注描述信息
@@ -29,7 +29,6 @@ import lombok.Getter;
  * @date 2020/11/6
  */
 @Getter
-@EqualsAndHashCode(callSuper = false)
 public class Comment extends AbstractNode {
 
     private final String comment;
@@ -51,5 +50,13 @@ public class Comment extends AbstractNode {
     @Override
     public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         return visitor.visitComment(this, context);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        Comment c = (Comment)o;
+        return StringUtils.equals(comment, c.getComment());
     }
 }

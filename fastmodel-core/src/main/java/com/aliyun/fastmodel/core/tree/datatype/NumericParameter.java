@@ -23,6 +23,7 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Desc:
@@ -31,7 +32,6 @@ import lombok.Getter;
  * @date 2020/10/30
  */
 @Getter
-@EqualsAndHashCode(callSuper = false)
 public class NumericParameter extends DataTypeParameter {
 
     private final String value;
@@ -48,5 +48,13 @@ public class NumericParameter extends DataTypeParameter {
     @Override
     public List<? extends Node> getChildren() {
         return ImmutableList.of();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        NumericParameter numericParameter = (NumericParameter)o;
+        return StringUtils.equalsIgnoreCase(value, numericParameter.getValue());
     }
 }

@@ -14,7 +14,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -23,6 +25,7 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -47,7 +50,6 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -79,9 +81,9 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             comment = new Comment(table.getComment());
         }
         List<BaseConstraint> constraints = toConstraint(table.getColumns(), table.getConstraints());
-        PartitionedBy partitionedBy = toPartitionedBy(table.getColumns());
+        PartitionedBy partitionedBy = toPartitionedBy(table, table.getColumns());
         List<Property> properties = toProperty(table, table.getProperties());
-        List<ColumnDefinition> columnDefines = toColumnDefinition(table.getColumns());
+        List<ColumnDefinition> columnDefines = toColumnDefinition(table, table.getColumns());
         return CreateTable.builder()
             .ifNotExist(table.isIfNotExist())
             .tableName(of)
@@ -112,6 +114,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         List<BaseClientProperty> properties = toBaseClientProperty(createTable);
         return Table.builder()
             .ifNotExist(createTable.isNotExists())
+            .external(isExternal(createTable))
             .database(database)
             .schema(schema).name(suffix)
             .comment(createTable.getCommentValue())
@@ -140,7 +143,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return transformContext.getSchema();
     }
 
-    private String toDatabase(CreateTable createTable, String database) {
+    protected String toDatabase(CreateTable createTable, String database) {
         QualifiedName qualifiedName = createTable.getQualifiedName();
         boolean isThirdSchema = qualifiedName.isJoinPath() && qualifiedName.getOriginalParts().size() == THIRD_INDEX;
         if (isThirdSchema) {
@@ -185,6 +188,16 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     }
 
     /**
+     * is external
+     *
+     * @param createTable
+     * @return
+     */
+    protected Boolean isExternal(CreateTable createTable) {
+        return false;
+    }
+
+    /**
      * toTableColumns
      *
      * @param createTable
@@ -209,8 +222,10 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         //原有的列中是否含有分区列，如果含有，那么设置下分区信息
         for (Column c : list) {
             if (contains(partitionColumns, c)) {
+                Integer partitionKeyIndex = getPartitionKeyIndex(partitionColumns, c);
                 c.setPartitionKey(true);
-                c.setPartitionKeyIndex(index++);
+                c.setPartitionKeyIndex(partitionKeyIndex);
+                index++;
             }
         }
         //如果list不包含分区列，那么将分区列加入到原有的列中
@@ -223,6 +238,17 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             }
         }
         return list;
+    }
+
+    private Integer getPartitionKeyIndex(List<ColumnDefinition> partitionColumns, Column c) {
+        int i = -1;
+        OptionalInt first = IntStream.range(0, partitionColumns.size()).filter(
+            index -> {
+                ColumnDefinition columnDefinition = partitionColumns.get(index);
+                return (Objects.equals(new Identifier(c.getName()), columnDefinition.getColName()));
+            }
+        ).findFirst();
+        return first.isPresent() ? first.getAsInt() : -1;
     }
 
     /**
@@ -264,28 +290,36 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     /**
      * to column definition
      *
+     * @param table
      * @param columns
      * @return
      */
-    protected List<ColumnDefinition> toColumnDefinition(List<Column> columns) {
+    protected List<ColumnDefinition> toColumnDefinition(Table table, List<Column> columns) {
         if (columns == null) {
             return Lists.newArrayList();
         }
-        return columns.stream().map(this::toColumnDefinition).collect(Collectors.toList());
+        return columns.stream().map(c -> toColumnDefinition(table, c)).collect(Collectors.toList());
     }
 
-    protected ColumnDefinition toColumnDefinition(Column c) {
+    protected ColumnDefinition toColumnDefinition(Table table, Column c) {
         String id = c.getId();
+        List<Property> all = Lists.newArrayList();
         Property property = null;
         if (StringUtils.isNotBlank(id)) {
             property = new Property(ColumnPropertyDefaultKey.uuid.name(), id);
+            all.add(property);
+        }
+        List<BaseClientProperty> properties = c.getProperties();
+        if (properties != null) {
+            List<Property> columnProperty = toProperty(table, properties);
+            all.addAll(columnProperty);
         }
         return ColumnDefinition.builder()
             .colName(new Identifier(c.getName()))
             .comment(new Comment(c.getComment())).dataType(getDataType(c))
             .notNull(BooleanUtils.isFalse(c.isNullable()))
             .primary(c.isPrimaryKey())
-            .properties(property != null ? Lists.newArrayList(property) : ImmutableList.of()).build();
+            .properties(all).build();
     }
 
     /**
@@ -305,7 +339,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      */
     protected List<Property> toProperty(Table table, List<BaseClientProperty> properties) {
         if (properties == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         return properties.stream().map(p -> new Property(p.getKey(), p.valueString())).collect(Collectors.toList());
     }
@@ -313,10 +347,11 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     /**
      * to partition by
      *
+     * @param table
      * @param columns
      * @return
      */
-    protected PartitionedBy toPartitionedBy(List<Column> columns) {
+    protected PartitionedBy toPartitionedBy(Table table, List<Column> columns) {
         if (CollectionUtils.isEmpty(columns)) {
             return null;
         }
@@ -395,10 +430,16 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .primaryKey(BooleanUtils.isTrue(c.getPrimary()))
             .partitionKey(partitionKey)
             .partitionKeyIndex(partitionKeyIndex).build();
+        IDataTypeName typeName = dataType.getTypeName();
+        Dimension dimension = typeName.getDimension();
+        if (dimension == Dimension.MULTIPLE) {
+            //如果是多纬度的类型，直接设置类型文本
+            column.setDataType(dataType.getOrigin());
+            return column;
+        }
         if (!(dataType instanceof GenericDataType)) {return column;}
         GenericDataType genericDataType = (GenericDataType)dataType;
         List<DataTypeParameter> arguments = genericDataType.getArguments();
-        Dimension dimension = genericDataType.getTypeName().getDimension();
         //if only one
         if (dimension == Dimension.TWO) {
             //because is decimal, so must type parameter is numeric

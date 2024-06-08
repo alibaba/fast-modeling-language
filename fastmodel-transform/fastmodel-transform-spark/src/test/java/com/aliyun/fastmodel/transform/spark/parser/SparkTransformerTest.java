@@ -84,7 +84,7 @@ public class SparkTransformerTest {
     public void testReverse() {
         SparkTransformer sparkTransformer = new SparkTransformer();
         BaseStatement reverse = sparkTransformer.reverse(new DialectNode("create table a (b bigint) comment 'abc';"));
-        assertEquals(reverse.toString(), "CREATE DIM TABLE a \n"
+        assertEquals(reverse.toString(), "CREATE TABLE a \n"
             + "(\n"
             + "   b BIGINT\n"
             + ")\n"

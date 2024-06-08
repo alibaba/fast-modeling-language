@@ -16,6 +16,7 @@
 
 package com.aliyun.fastmodel.compare.table;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,11 @@ import com.aliyun.fastmodel.compare.impl.table.ColumnCompare;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
+import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
+import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnCategory;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
@@ -285,6 +290,35 @@ public class ColumnCompareTest {
         assertEquals(1, baseStatementList.size());
         String join = Joiner.on("\n").join(baseStatementList);
         assertEquals(join, "ALTER TABLE dim_shop CHANGE COLUMN c1 c1 BIGINT WITH ('code_table'='')");
+    }
+
+    @Test
+    public void testCompareWithMultiDataType() {
+        ArrayList<DataTypeParameter> anInt = Lists.newArrayList(new TypeParameter(DataTypeUtil.simpleType("int", null)));
+        BaseDataType build = new GenericDataType("array", anInt);
+        List<ColumnDefinition> leftList = ImmutableList.of(
+            ColumnDefinition.builder().colName(new Identifier("col1"))
+                .dataType(build)
+                .build()
+        );
+        BaseDataType build2 = new GenericDataType("ARRAY", anInt);
+        List<ColumnDefinition> rightList = ImmutableList.of(
+            ColumnDefinition.builder().colName(new Identifier("col1"))
+                .dataType(build2)
+                .build()
+        );
+
+        CreateTable before = CreateTable.builder()
+            .columns(leftList)
+            .tableName(QualifiedName.of("dim_shop")).build();
+
+        CreateTable after = CreateTable.builder()
+            .columns(rightList)
+            .tableName(QualifiedName.of("dim_shop")).build();
+
+        List<BaseStatement> baseStatementList = columnCompare.compareTableElement(before, after);
+        String join = Joiner.on("\n").join(baseStatementList);
+        assertEquals("", join);
     }
 
     @Test

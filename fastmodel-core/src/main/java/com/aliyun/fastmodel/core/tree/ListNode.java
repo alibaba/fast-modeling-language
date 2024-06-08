@@ -35,6 +35,11 @@ public class ListNode extends AbstractNode {
 
     public ListNode(List<? extends Node> children) {this.children = children;}
 
+    public ListNode(NodeLocation location, List<? extends Node> children) {
+        super(location);
+        this.children = children;
+    }
+
     @Override
     public List<? extends Node> getChildren() {
         return children;

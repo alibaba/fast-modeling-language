@@ -729,7 +729,7 @@ tableStatements:
 ;
 
 createTableStatement
-    : KW_CREATE (replace)? tableType KW_TABLE
+    : KW_CREATE (replace)? tableType? KW_TABLE
       ifNotExists?
       tableName
       alias?

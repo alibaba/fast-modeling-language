@@ -28,7 +28,10 @@ import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
+import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
+import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
+import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
 import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
@@ -43,6 +46,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -512,6 +516,7 @@ public class CreateTableCompareNodeTest {
             CompareStrategy.INCREMENTAL);
         assertEquals(1, baseStatements.size());
     }
+
 
     private CreateDimTable getCreateDimTable(Comment comment) {
         CreateDimTable before = CreateDimTable.builder().tableName(QualifiedName.of("dim_shop")).columns(

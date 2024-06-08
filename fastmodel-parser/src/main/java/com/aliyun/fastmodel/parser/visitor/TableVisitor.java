@@ -129,12 +129,12 @@ public class TableVisitor extends AstBuilder {
         tableParamObject.builderColumns(ctx, this);
         QualifiedName tableName = getQualifiedName(ctx.tableName());
         List<Property> properties = getProperties(ctx.setProperties());
-        TableDetailType tableDetailType = getDetailType(ctx.tableType());
         Comment comment = visitIfPresent(ctx.comment(), Comment.class).orElse(null);
         AliasedName aliasedName = visitIfPresent(ctx.alias(), AliasedName.class).orElse(null);
 
         boolean notExists = ctx.ifNotExists() != null;
-        TableType parent = tableDetailType.getParent();
+        TableDetailType tableDetailType = getDetailType(ctx.tableType());
+        TableType parent = tableDetailType != null ? tableDetailType.getParent() : null;
         boolean replace = ctx.replace() != null;
 
         //if like define use
@@ -170,6 +170,9 @@ public class TableVisitor extends AstBuilder {
     }
 
     private TableBuilder<? extends TableBuilder> getTableBuilder(TableType parent) {
+        if (parent == null) {
+            return CreateTable.builder();
+        }
         if (parent == TableType.DIM) {
             return CreateDimTable.builder();
         } else if (parent == TableType.ADS) {
@@ -262,7 +265,7 @@ public class TableVisitor extends AstBuilder {
 
     @Override
     public Node visitUniqueConstraint(UniqueConstraintContext ctx) {
-        Identifier constraintName = null;
+        Identifier constraintName;
         if (ctx.identifier() != null) {
             constraintName = (Identifier)visit(ctx.identifier());
         } else {
@@ -408,6 +411,9 @@ public class TableVisitor extends AstBuilder {
     }
 
     private TableDetailType getDetailType(TableTypeContext typeContext) {
+        if (typeContext == null) {
+            return null;
+        }
         Token type = typeContext.type;
         switch (type.getType()) {
             case FastModelLexer.KW_FACT:

@@ -26,10 +26,10 @@
     <version>${revision}</version>
 
     <properties>
-        <revision>0.5.8-jdk8</revision>
+        <revision>0.5.9</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <dep.jline.version>3.17.1</dep.jline.version>
-        <dep.antlr.version>4.9.3</dep.antlr.version>
+        <dep.antlr.version>4.13.1</dep.antlr.version>
     </properties>
 
     <distributionManagement>
@@ -40,20 +40,50 @@
         </repository>
     </distributionManagement>
 
+    <profiles>
+        <profile>
+            <id>jdk11</id>
+            <properties>
+                <revision>0.5.9</revision>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-runtime</artifactId>
+                        <version>4.11.1</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>jdk8</id>
+            <properties>
+                <revision>0.5.9-jdk8</revision>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-runtime</artifactId>
+                        <version>4.9.3</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.8</version>
+                <version>1.18.20</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-runtime</artifactId>
-                <version>${dep.antlr.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -254,6 +284,12 @@
                 <scope>provided</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>4.13.1</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
@@ -286,4 +322,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

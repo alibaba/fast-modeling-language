@@ -17,6 +17,7 @@
 package com.aliyun.fastmodel.core.tree.datatype;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.aliyun.fastmodel.core.tree.AbstractNode;
 import com.aliyun.fastmodel.core.tree.Comment;
@@ -70,5 +71,19 @@ public class Field extends AbstractNode {
         builder.add(name);
         builder.add(dataType);
         return builder.build();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, dataType, comment);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        Field field = (Field)o;
+        return Objects.equals(name, field.name) && Objects.equals(dataType, field.dataType)
+            && Objects.equals(comment, field.comment);
     }
 }

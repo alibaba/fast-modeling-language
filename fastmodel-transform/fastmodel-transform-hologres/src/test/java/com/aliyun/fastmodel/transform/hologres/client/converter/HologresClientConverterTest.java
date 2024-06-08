@@ -33,10 +33,10 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
-import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn;
 import com.aliyun.fastmodel.transform.hologres.client.property.ColumnStatus;
-import com.aliyun.fastmodel.transform.hologres.client.property.Status;
+import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn;
 import com.aliyun.fastmodel.transform.hologres.client.property.DistributionKey;
+import com.aliyun.fastmodel.transform.hologres.client.property.Status;
 import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
@@ -47,7 +47,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -209,9 +211,14 @@ public class HologresClientConverterTest {
         Table convertToTable = hologresClientConverter.convertToTable(table, HologresTransformContext.builder().build());
         assertEquals(convertToTable.getColumns().size(), 1);
         Column column = convertToTable.getColumns().get(0);
-        assertEquals(column.toString(),
-            "Column(id=c1, name=c1, dataType=VARCHAR, length=10, comment=comment, precision=null, scale=null, primaryKey=true, nullable=true, "
-                + "partitionKey=false, partitionKeyIndex=null)");
+        assertEquals("c1", column.getId());
+        assertEquals("VARCHAR", column.getDataType());
+        assertEquals("comment", column.getComment());
+        assertNull(column.getPrecision());
+        assertNull(column.getScale());
+        assertFalse(column.isPartitionKey());
+        assertTrue(column.isNullable());
+        assertNull(column.getPartitionKeyIndex());
     }
 
     @Test
@@ -231,9 +238,14 @@ public class HologresClientConverterTest {
         Table convertToTable = hologresClientConverter.convertToTable(table, HologresTransformContext.builder().build());
         assertEquals(convertToTable.getColumns().size(), 1);
         Column column = convertToTable.getColumns().get(0);
-        assertEquals(
-            "Column(id=c1, name=c1, dataType=DECIMAL, length=null, comment=comment, precision=10, scale=11, primaryKey=false, nullable=false, "
-                + "partitionKey=false, partitionKeyIndex=null)", column.toString());
+        assertEquals("c1", column.getId());
+        assertEquals("DECIMAL", column.getDataType());
+        assertEquals("comment", column.getComment());
+        assertEquals(Integer.valueOf(10), column.getPrecision());
+        assertEquals(Integer.valueOf(11), column.getScale());
+        assertFalse(column.isPartitionKey());
+        assertFalse(column.isNullable());
+        assertNull(column.getPartitionKeyIndex());
     }
 
     @Test
@@ -253,9 +265,14 @@ public class HologresClientConverterTest {
         Table convertToTable = hologresClientConverter.convertToTable(table, HologresTransformContext.builder().build());
         assertEquals(convertToTable.getColumns().size(), 1);
         Column column = convertToTable.getColumns().get(0);
-        assertEquals(
-            "Column(id=c1, name=c1, dataType=DECIMAL, length=null, comment=comment, precision=10, scale=11, primaryKey=false, nullable=false, "
-                + "partitionKey=true, partitionKeyIndex=0)", column.toString());
+        assertEquals("c1", column.getId());
+        assertEquals("DECIMAL", column.getDataType());
+        assertEquals("comment", column.getComment());
+        assertEquals(Integer.valueOf(10), column.getPrecision());
+        assertEquals(Integer.valueOf(11), column.getScale());
+        assertTrue(column.isPartitionKey());
+        assertFalse(column.isNullable());
+        assertEquals(Integer.valueOf(0), column.getPartitionKeyIndex());
     }
 
     @Test

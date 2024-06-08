@@ -20,7 +20,7 @@ public class SparkLanguageParserTest {
         SparkLanguageParser sparkLanguageParser = new SparkLanguageParser();
         Node o = sparkLanguageParser.parseNode(parseNode);
         assertNotNull(o);
-        assertEquals(o.toString(), "CREATE DIM TABLE a \n"
+        assertEquals(o.toString(), "CREATE TABLE a \n"
             + "(\n"
             + "   a BIGINT\n"
             + ")\n"

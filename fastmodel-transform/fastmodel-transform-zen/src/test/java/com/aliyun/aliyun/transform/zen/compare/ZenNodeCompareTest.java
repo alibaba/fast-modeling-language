@@ -46,12 +46,12 @@ public class ZenNodeCompareTest {
                 .build());
         BaseStatement beforeStatement = compareResult.getBeforeStatement();
         BaseStatement afterStatement = compareResult.getAfterStatement();
-        assertEquals(beforeStatement.toString(), "CREATE DIM TABLE dim_shop \n"
+        assertEquals(beforeStatement.toString(), "CREATE TABLE dim_shop \n"
             + "(\n"
             + "   user_id   STRING COMMENT 'user_id',\n"
             + "   user_name STRING COMMENT 'user_name'\n"
             + ")");
-        assertEquals(afterStatement.toString(), "CREATE DIM TABLE dim_shop \n"
+        assertEquals(afterStatement.toString(), "CREATE TABLE dim_shop \n"
             + "(\n"
             + "   user_id   STRING COMMENT 'user_id',\n"
             + "   user_name STRING COMMENT 'user_name',\n"

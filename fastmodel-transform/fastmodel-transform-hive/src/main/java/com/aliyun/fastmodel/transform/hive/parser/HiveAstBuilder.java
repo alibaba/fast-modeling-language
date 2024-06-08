@@ -16,6 +16,8 @@
 
 package com.aliyun.fastmodel.transform.hive.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
@@ -46,6 +49,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.DimConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
+import com.aliyun.fastmodel.transform.hive.format.HivePropertyKey;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameColonTypeContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.ColumnNameTypeConstraintContext;
@@ -65,7 +69,10 @@ import com.aliyun.fastmodel.transform.hive.parser.HiveParser.TablePropertiesPref
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.TypeParameterContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getLocation;
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getOrigin;
@@ -115,11 +122,14 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
                 (QualifiedName)visit(ctx.tableName(1))
             );
         } else {
+            // 表名
             QualifiedName tableName = (QualifiedName)visit(ctx.tableName(0));
+            // 描述
             Comment comment = null;
             if (ctx.tableComment() != null) {
                 comment = (Comment)visit(ctx.tableComment());
             }
+            // properties
             List<Property> all = Lists.newArrayList(reverseContext.getProperties() == null ? Lists.newArrayList() : reverseContext.getProperties());
             List<Property> properties = ImmutableList.of();
             if (ctx.tablePropertiesPrefixed() != null) {
@@ -128,6 +138,9 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
                     Property.class);
                 all.addAll(properties);
             }
+            // 外表属性
+            buildExternalProperties(ctx, all);
+            // constraint
             ColumnNameTypeOrConstraintListContext columnNameTypeOrConstraintListContext
                 = ctx.columnNameTypeOrConstraintList();
             List<Node> nodes = Lists.newArrayListWithCapacity(64);
@@ -138,6 +151,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
                     Node.class
                 );
             }
+            //all columns
             List<ColumnDefinition> list = nodes.stream().filter(
                 node -> {
                     return node instanceof ColumnDefinition;
@@ -285,7 +299,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
     @Override
     public Node visitStructType(HiveParser.StructTypeContext ctx) {
         List<Field> list = ParserHelper.visit(this, ctx.columnNameColonTypeList().columnNameColonType(), Field.class);
-        return new RowDataType(list);
+        return new RowDataType(getLocation(ctx), getOrigin(ctx), list);
     }
 
 
@@ -318,5 +332,103 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
     @Override
     public Node visitIdentifier(IdentifierContext ctx) {
         return ParserHelper.getIdentifier(ctx);
+    }
+
+
+    private void buildExternalProperties(CreateTableStatementContext ctx, List<Property> properties) {
+        // external
+        if (ctx.KW_EXTERNAL() != null) {
+            properties.add(new Property(HivePropertyKey.EXTERNAL_TABLE.getValue(), new BooleanLiteral(BooleanLiteral.TRUE)));
+        }
+        // row format serde
+        if (ctx.tableRowFormat() != null) {
+            List<Property> rowFormatProperties = analyzeRowFormat(ctx.tableRowFormat());
+            properties.addAll(rowFormatProperties);
+        }
+        // stored as/by
+        if (ctx.tableFileFormat() != null) {
+            List<Property> fileFormatProperties = analyzeFileFormat(ctx.tableFileFormat());
+            properties.addAll(fileFormatProperties);
+        }
+        // location
+        if (ctx.tableLocation() != null) {
+            String value = StripUtils.strip(ctx.tableLocation().stop.getText());
+            properties.add(new Property(HivePropertyKey.LOCATION.getValue(), new StringLiteral(value)));
+        }
+    }
+
+    private List<Property> analyzeFileFormat(HiveParser.TableFileFormatContext ctx) {
+        if (ctx == null) {
+            return Collections.emptyList();
+        }
+        List<Property> properties = new ArrayList<>();
+        List<String> children = ctx.children.stream().map(ParseTree::getText).collect(Collectors.toList());
+//        if (ctx.KW_BY() != null) {
+//            // stored by
+//            int byIndex = children.indexOf(ctx.KW_BY().getText());
+//            String byValue = StripUtils.strip(children.get(byIndex + 1));
+//            properties.add(new Property(HivePropertyKey.STORED_BY.getValue(), new StringLiteral(byValue)));
+//        }
+        if (ctx.KW_AS() != null && ctx.KW_INPUTFORMAT() == null && ctx.KW_OUTPUTFORMAT() == null) {
+            // stored as
+            int asIndex = children.indexOf(ctx.KW_AS().getText());
+            String asValue = StripUtils.strip(children.get(asIndex + 1));
+            properties.add(new Property(HivePropertyKey.STORAGE_FORMAT.getValue(), new StringLiteral(asValue)));
+        }
+        if (ctx.KW_INPUTFORMAT() != null) {
+            // stored as INPUTFORMAT
+            int inputFormatIndex = children.indexOf(ctx.KW_INPUTFORMAT().getText());
+            String inputFormatValue = StripUtils.strip(children.get(inputFormatIndex + 1));
+            properties.add(new Property(HivePropertyKey.STORED_INPUT_FORMAT.getValue(), new StringLiteral(inputFormatValue)));
+        }
+        if (ctx.KW_OUTPUTFORMAT() != null) {
+            // stored as OUTPUTFORMAT
+            int outputFormatIndex = children.indexOf(ctx.KW_OUTPUTFORMAT().getText());
+            String outputFormatValue = StripUtils.strip(children.get(outputFormatIndex + 1));
+            properties.add(new Property(HivePropertyKey.STORED_OUTPUT_FORMAT.getValue(), new StringLiteral(outputFormatValue)));
+        }
+        return properties;
+    }
+
+    private List<Property> analyzeRowFormat(HiveParser.TableRowFormatContext ctx) {
+        if (ctx == null) {
+            return Collections.emptyList();
+        }
+        List<Property> properties = new ArrayList<>();
+        if (ctx.rowFormatSerde() != null) {
+            HiveParser.RowFormatSerdeContext rowFormatSerdeContext = ctx.rowFormatSerde();
+            List<String> children = rowFormatSerdeContext.children.stream()
+                    .map(ParseTree::getText).collect(Collectors.toList());
+            if (rowFormatSerdeContext.KW_SERDE() != null) {
+                // stored as
+                int index = children.indexOf(rowFormatSerdeContext.KW_SERDE().getText());
+                String value = StripUtils.strip(children.get(index + 1));
+                properties.add(new Property(HivePropertyKey.ROW_FORMAT_SERDE.getValue(), new StringLiteral(value)));
+            }
+            if (rowFormatSerdeContext.tableProperties() != null
+                    && rowFormatSerdeContext.tableProperties().tablePropertiesList() != null
+                    && CollectionUtils.isNotEmpty(rowFormatSerdeContext.tableProperties().tablePropertiesList().keyValueProperty())) {
+                List<KeyValuePropertyContext> keyValuePropertyContexts =
+                        rowFormatSerdeContext.tableProperties().tablePropertiesList().keyValueProperty();
+                keyValuePropertyContexts.forEach(context -> {
+                    String propKey = StripUtils.strip(context.getChild(0).getText());
+                    String propValue = StripUtils.strip(context.getChild(2).getText());
+                    properties.add(new Property(StringUtils.join(Lists.newArrayList(HivePropertyKey.SERDE_PROPS.getValue(), propKey),
+                            "."), new StringLiteral(propValue)));
+                });
+            }
+        }
+        if (ctx.rowFormatDelimited() != null) {
+            HiveParser.RowFormatDelimitedContext rowFormatDelimitedContext = ctx.rowFormatDelimited();
+            if (rowFormatDelimitedContext.tableRowFormatFieldIdentifier() != null) {
+                String value = StripUtils.strip(rowFormatDelimitedContext.tableRowFormatFieldIdentifier().stop.getText());
+                properties.add(new Property(HivePropertyKey.FIELDS_TERMINATED.getValue(), new StringLiteral(value)));
+            }
+            if (rowFormatDelimitedContext.tableRowFormatLinesIdentifier() != null) {
+                String value = StripUtils.strip(rowFormatDelimitedContext.tableRowFormatLinesIdentifier().stop.getText());
+                properties.add(new Property(HivePropertyKey.LINES_TERMINATED.getValue(), new StringLiteral(value)));
+            }
+        }
+        return properties;
     }
 }

@@ -585,7 +585,7 @@ public class FastModelVisitorTest {
             .build();
         fastModelVisitor.visitCreateTable(node, 0);
         String s = fastModelVisitor.getBuilder().toString();
-        assertEquals(s, "CREATE DIM TABLE dim_shop\n"
+        assertEquals(s, "CREATE TABLE dim_shop\n"
             + "/*(\n"
             + "   c BIGINT\n"
             + ")*/");

@@ -351,8 +351,7 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
     @Override
     public String visitIntervalLiteral(IntervalLiteral node, Void context) {
         StringBuilder builder = new StringBuilder()
-            .append("INTERVAL ")
-            .append(" '").append(node.getValue()).append("' ")
+            .append("INTERVAL").append(" ").append(process(node.getValue())).append(" ")
             .append(node.getFromDateTime());
 
         if (node.getToDateTime() != null) {

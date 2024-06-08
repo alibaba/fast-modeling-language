@@ -42,41 +42,41 @@ public enum ConstraintType {
     /**
      * 不为空
      */
-    NOT_NULL(Constants.NOT_NULL1, ConstraintScope.COLUMN, "notNull constraint"),
+    NOT_NULL(Constants.NOT_NULL, ConstraintScope.COLUMN, "notNull constraint"),
 
     /**
      * 列组的约束
      */
-    COLUMN_GROUP(Constants.COLUMN_GROUP1, ConstraintScope.COLUMN, "column Group constraint"),
+    COLUMN_GROUP(Constants.COLUMN_GROUP, ConstraintScope.COLUMN, "column Group constraint"),
 
     /**
      * 时间周期类型
      */
-    TIME_PERIOD(Constants.TIME_PERIOD1, ConstraintScope.TABLE, "time period"),
+    TIME_PERIOD(Constants.TIME_PERIOD, ConstraintScope.TABLE, "time period"),
 
     /**
      * UNIQUE
      */
-    UNIQUE(Constants.UNIQUE1, ConstraintScope.COLUMN, "唯一值约束"),
+    UNIQUE(Constants.UNIQUE, ConstraintScope.COLUMN, "唯一值约束"),
 
     /**
      * Redundant冗余约束
      */
-    REDUNDANT(Constants.REDUNDANT1, ConstraintScope.COLUMN, "冗余约束"),
+    REDUNDANT(Constants.REDUNDANT, ConstraintScope.COLUMN, "冗余约束"),
 
     /**
      * 默认值约束
      */
-    DEFAULT_VALUE(Constants.DEFAULT_VALUE1, ConstraintScope.COLUMN, "默认值"),
+    DEFAULT_VALUE(Constants.DEFAULT_VALUE, ConstraintScope.COLUMN, "默认值"),
 
     /**
      * 自定义约束信息
      */
-    CHECK(Constants.CHECK, ConstraintScope.UNDEFIND, "自定义约束"),
+    CHECK(Constants.CHECK, ConstraintScope.UNDEFINED, "自定义约束"),
     /**
      * index
      */
-    INDEX(Constants.INDEX, ConstraintScope.UNDEFIND, "index"),
+    INDEX(Constants.INDEX, ConstraintScope.UNDEFINED, "索引"),
 
     ;
 
@@ -100,12 +100,12 @@ public enum ConstraintType {
         public static final String PRIMARY = "primary";
         public static final String DIM = "dim";
         public static final String LEVEL = "level";
-        public static final String NOT_NULL1 = "notNull";
-        public static final String COLUMN_GROUP1 = "column_group";
-        public static final String TIME_PERIOD1 = "time_period";
-        public static final String UNIQUE1 = "unique";
-        public static final String REDUNDANT1 = "redundant";
-        public static final String DEFAULT_VALUE1 = "default_value";
+        public static final String NOT_NULL = "notNull";
+        public static final String COLUMN_GROUP = "column_group";
+        public static final String TIME_PERIOD = "time_period";
+        public static final String UNIQUE = "unique";
+        public static final String REDUNDANT = "redundant";
+        public static final String DEFAULT_VALUE = "default_value";
         public static final String CHECK = "check";
         public static final String INDEX = "index";
     }

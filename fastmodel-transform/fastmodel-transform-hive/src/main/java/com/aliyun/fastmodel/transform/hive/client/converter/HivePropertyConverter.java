@@ -56,8 +56,4 @@ public class HivePropertyConverter extends BasePropertyConverter {
         return map;
     }
 
-    @Override
-    protected boolean returnDefaultWhenNotExist() {
-        return false;
-    }
 }
