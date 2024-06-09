@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.compare.impl.table.ColumnCompare;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
@@ -30,8 +31,11 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnCategory;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
+import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
+import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol.ChangeType;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
@@ -41,6 +45,8 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ColumnCompareTest
@@ -163,7 +169,7 @@ public class ColumnCompareTest {
 
         List<BaseStatement> baseStatementList = columnCompare.compareTableElement(before, after);
         String join = Joiner.on("\n").join(baseStatementList);
-        assertEquals(join, "ALTER TABLE dim_shop CHANGE COLUMN c2 c2 BIGINT FIRST" );
+        assertEquals(join, "ALTER TABLE dim_shop CHANGE COLUMN c2 c2 BIGINT FIRST");
     }
 
     @Test
@@ -194,7 +200,6 @@ public class ColumnCompareTest {
             .columns(beforeColumns)
             .tableName(QualifiedName.of("dim_shop")).build();
 
-
         CreateTable after = CreateTable.builder()
             .columns(afterColumns)
             .tableName(QualifiedName.of("dim_shop")).build();
@@ -208,7 +213,6 @@ public class ColumnCompareTest {
             + "ALTER TABLE dim_shop CHANGE COLUMN d d BIGINT AFTER e;\n"
             + "ALTER TABLE dim_shop CHANGE COLUMN c c BIGINT AFTER d");
     }
-
 
     private static ColumnDefinition getColumn(String colName) {
         return ColumnDefinition.builder().colName(new Identifier(colName))
@@ -344,5 +348,75 @@ public class ColumnCompareTest {
         assertEquals(1, baseStatementList.size());
         String join = Joiner.on("\n").join(baseStatementList);
         assertEquals(join, "ALTER TABLE dim_shop CHANGE COLUMN c1 c1 BIGINT WITH ('code_table'='a')");
+        BaseStatement baseStatement = baseStatementList.get(0);
+        ChangeCol changeCol = (ChangeCol)baseStatement;
+        boolean change = changeCol.change(ChangeType.COLUMN_PROPERTIES);
+        assertTrue(change);
+        change = changeCol.change(ChangeType.COMMENT);
+        assertFalse(change);
+    }
+
+    @Test
+    public void testCompareDefaultValue() {
+        ColumnDefinition columnDefinition = ColumnDefinition.builder()
+            .colName(new Identifier("c1"))
+            .defaultValue(new StringLiteral("abc"))
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+            .build();
+        ColumnDefinition columnDefinition2 = ColumnDefinition.builder()
+            .colName(new Identifier("c1"))
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+            .defaultValue(new StringLiteral("bcd"))
+            .build();
+        CreateTable before = CreateTable.builder()
+            .columns(ImmutableList.of(columnDefinition))
+            .tableName(QualifiedName.of("dim_shop")).build();
+
+        CreateTable after = CreateTable.builder()
+            .columns(ImmutableList.of(columnDefinition2))
+            .tableName(QualifiedName.of("dim_shop")).build();
+
+        List<BaseStatement> baseStatementList = columnCompare.compareTableElement(before, after);
+        assertEquals(1, baseStatementList.size());
+        String join = Joiner.on("\n").join(baseStatementList);
+        assertEquals(join, "ALTER TABLE dim_shop CHANGE COLUMN c1 c1 BIGINT DEFAULT 'bcd'");
+        BaseStatement baseStatement = baseStatementList.get(0);
+        assertTrue(baseStatement instanceof ChangeCol);
+        ChangeCol changeCol = (ChangeCol)baseStatement;
+        boolean change = changeCol.change(ChangeType.DEFAULT_VALUE);
+        assertTrue(change);
+        change = changeCol.change(ChangeType.COMMENT);
+        assertFalse(change);
+    }
+
+    @Test
+    public void testCompareComment() {
+        ColumnDefinition columnDefinition = ColumnDefinition.builder()
+            .colName(new Identifier("c1"))
+            .comment(new Comment("abc"))
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+            .build();
+        ColumnDefinition columnDefinition2 = ColumnDefinition.builder()
+            .colName(new Identifier("c1"))
+            .comment(new Comment("bcd"))
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT))
+            .build();
+        CreateTable before = CreateTable.builder()
+            .columns(ImmutableList.of(columnDefinition))
+            .tableName(QualifiedName.of("dim_shop")).build();
+
+        CreateTable after = CreateTable.builder()
+            .columns(ImmutableList.of(columnDefinition2))
+            .tableName(QualifiedName.of("dim_shop")).build();
+
+        List<BaseStatement> baseStatementList = columnCompare.compareTableElement(before, after);
+        assertEquals(1, baseStatementList.size());
+        String join = Joiner.on("\n").join(baseStatementList);
+        assertEquals(join, "ALTER TABLE dim_shop CHANGE COLUMN c1 c1 BIGINT COMMENT 'bcd'");
+        BaseStatement baseStatement = baseStatementList.get(0);
+        assertTrue(baseStatement instanceof ChangeCol);
+        ChangeCol changeCol = (ChangeCol)baseStatement;
+        boolean change = changeCol.change(ChangeType.COMMENT);
+        assertTrue(change);
     }
 }

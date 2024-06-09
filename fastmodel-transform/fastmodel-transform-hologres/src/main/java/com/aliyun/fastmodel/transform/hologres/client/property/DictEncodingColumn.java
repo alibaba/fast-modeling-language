@@ -26,7 +26,7 @@ public class DictEncodingColumn extends BaseClientProperty<List<ColumnStatus>> {
     /**
      * columns
      */
-    public static final String DICTIONARY_ENCODING_COLUMN = "dictionary_encoding_columns";
+    public static final String DICTIONARY_ENCODING_COLUMN = HoloPropertyKey.DICTIONARY_ENCODING_COLUMN.getValue();
 
     public DictEncodingColumn() {
         this.setKey(DICTIONARY_ENCODING_COLUMN);

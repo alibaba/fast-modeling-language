@@ -36,7 +36,7 @@ public class ListStringLiteral extends BaseLiteral {
     private final List<StringLiteral> stringLiteralList;
 
     public ListStringLiteral(NodeLocation location, String origin,
-                             List<StringLiteral> stringLiteralList) {
+        List<StringLiteral> stringLiteralList) {
         super(location, origin);
         this.stringLiteralList = stringLiteralList;
     }

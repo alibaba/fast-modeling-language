@@ -63,3 +63,21 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.10
+新功能（new features）
+Core
+• 新增支持Column的Default表达式
+
+
+Transformer
+• Hologres建表支持Default表达式
+• StarRocks建表支持分区表达式
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无

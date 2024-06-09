@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class SegmentKey extends BaseClientProperty<List<String>> {
 
-    public static final String SEGMENT_KEY = "segment_key";
+    public static final String SEGMENT_KEY = HoloPropertyKey.SEGMENT_KEY.getValue();
 
     public SegmentKey() {
         this.setKey(SEGMENT_KEY);

@@ -10,6 +10,7 @@ package com.aliyun.fastmodel.transform.api.client.dto.constraint;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
  * @author panguanjing
  * @date 2022/6/7
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

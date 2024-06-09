@@ -3,6 +3,8 @@ package com.aliyun.fastmodel.transform.starrocks.client.converter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -14,8 +16,16 @@ import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
+import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
+import com.aliyun.fastmodel.transform.api.client.dto.constraint.OutlineConstraintType;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
+import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
+import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
+import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.starrocks.StarRocksTransformer;
+import com.aliyun.fastmodel.transform.starrocks.client.property.column.AggrColumnProperty;
 import com.aliyun.fastmodel.transform.starrocks.client.property.table.SingleRangePartitionProperty;
 import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.ArrayClientPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.BaseClientPartitionKey;
@@ -23,7 +33,9 @@ import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.
 import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.MultiRangeClientPartition;
 import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.PartitionClientValue;
 import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
 import com.aliyun.fastmodel.transform.starrocks.format.StarRocksProperty;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
@@ -33,6 +45,7 @@ import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionV
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +54,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Desc:
+ * StarRocksClientConverterTest
  *
  * @author panguanjing
  * @date 2023/9/16
@@ -191,5 +204,108 @@ public class StarRocksClientConverterTest {
             .dataType("int")
             .build();
         starRocksClientConverter.getDataType(column);
+    }
+
+    @Test
+    public void testConvertIndexToTable() {
+        StarRocksLanguageParser starRocksLanguageParser = new StarRocksLanguageParser();
+        Node node1 = starRocksLanguageParser.parseNode("CREATE TABLE example_db.table_hash\n"
+            + "(\n"
+            + "    k1 TINYINT,\n"
+            + "    k2 DECIMAL(10, 2) DEFAULT \"10.5\",\n"
+            + "    v1 CHAR(10) REPLACE,\n"
+            + "    v2 INT SUM,\n"
+            + "    INDEX k1_idx (k1) USING BITMAP COMMENT 'xxxxxx'\n"
+            + ")\n"
+            + "ENGINE=olap\n"
+            + "AGGREGATE KEY(k1, k2)\n"
+            + "COMMENT \"my first starrocks table\"\n"
+            + "DISTRIBUTED BY HASH(k1) BUCKETS 10\n"
+            + "PROPERTIES (\"storage_type\"=\"column\");");
+        Table table = starRocksClientConverter.convertToTable(node1, StarRocksContext.builder().build());
+        List<Constraint> constraints = table.getConstraints();
+        assertEquals(3, constraints.size());
+        Constraint constraint = constraints.stream().filter(c -> {
+            return StringUtils.equalsIgnoreCase(c.getType().getCode(), OutlineConstraintType.INDEX.getCode());
+        }).findFirst().get();
+        assertEquals("k1_idx", constraint.getName());
+        List<BaseClientProperty> properties = constraint.getProperties();
+        assertEquals(2, properties.size());
+    }
+
+    @Test
+    public void testConvertColumnPropertyToProperty() {
+        CreateTable createTable = new StarRocksLanguageParser().parseNode(
+            "CREATE TABLE IF NOT EXISTS example_db.aggregate_tbl (\n"
+                + "    site_id LARGEINT NOT NULL COMMENT \"id of site\",\n"
+                + "    date DATE NOT NULL COMMENT \"time of event\",\n"
+                + "    city_code VARCHAR(20) COMMENT \"city_code of user\",\n"
+                + "    pv BIGINT SUM DEFAULT \"0\" COMMENT \"total page views\"\n"
+                + ")\n"
+                + "AGGREGATE KEY(site_id, date, city_code)\n"
+                + "DISTRIBUTED BY HASH(site_id)\n"
+                + "PROPERTIES (\n"
+                + "\"replication_num\" = \"3\"\n"
+                + ");\n"
+                + "\n"
+        );
+        List<Column> tableColumns = starRocksClientConverter.toTableColumns(createTable);
+        Column pv = tableColumns.stream().filter(c -> {
+            return StringUtils.equalsIgnoreCase(c.getName(), "pv");
+        }).findFirst().get();
+        assertNotNull(pv);
+        List<BaseClientProperty> properties = pv.getProperties();
+        assertEquals(1, properties.size());
+        assertEquals("SUM", properties.get(0).getValue().toString());
+    }
+
+    @Test
+    public void testConvertColumnPropertyToProperty2() {
+        String template = "CREATE TABLE IF NOT EXISTS example_db.aggregate_tbl (\n"
+            + "    site_id LARGEINT NOT NULL COMMENT \"id of site\",\n"
+            + "    date DATE NOT NULL COMMENT \"time of event\",\n"
+            + "    city_code VARCHAR(20) COMMENT \"city_code of user\",\n"
+            + "    pv BIGINT %s DEFAULT \"0\" COMMENT \"total page views\"\n"
+            + ")\n"
+            + "AGGREGATE KEY(site_id, date, city_code)\n"
+            + "DISTRIBUTED BY HASH(site_id)\n"
+            + "PROPERTIES (\n"
+            + "\"replication_num\" = \"3\"\n"
+            + ");\n"
+            + "\n";
+        List<String> aggrType = Lists.newArrayList("SUM", "MAX", "MIN", "REPLACE", "HLL_UNION", "BITMAP_UNION");
+        for (String a : aggrType) {
+            CreateTable createTable = new StarRocksLanguageParser().parseNode(
+                String.format(template, a)
+            );
+            List<Column> tableColumns = starRocksClientConverter.toTableColumns(createTable);
+            Column pv = tableColumns.stream().filter(c -> {
+                return StringUtils.equalsIgnoreCase(c.getName(), "pv");
+            }).findFirst().get();
+            assertNotNull(pv);
+            List<BaseClientProperty> properties = pv.getProperties();
+            assertEquals(1, properties.size());
+            assertNotNull(properties.get(0).getValue());
+        }
+    }
+
+    @Test
+    public void testToFmlTable() {
+        List<Column> columns = Lists.newArrayList();
+        List<BaseClientProperty> properties = Lists.newArrayList();
+        AggrColumnProperty e = new AggrColumnProperty();
+        e.setValueString("REPLACE");
+        properties.add(e);
+        columns.add(Column.builder().name("c1").dataType("bigint").properties(properties).build());
+        Table table = Table.builder().name("t1").columns(columns).build();
+        BaseStatement node = (BaseStatement)starRocksClientConverter.covertToNode(table,
+            TableConfig.builder().dialectMeta(DialectMeta.DEFAULT_STARROCKS).build());
+        StarRocksTransformer starRocksTransformer = new StarRocksTransformer();
+        DialectNode transform = starRocksTransformer.transform(node);
+        assertEquals("CREATE TABLE IF NOT EXISTS t1\n"
+            + "(\n"
+            + "   c1 BIGINT REPLACE NOT NULL\n"
+            + ");", transform.getNode());
+
     }
 }

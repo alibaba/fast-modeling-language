@@ -23,12 +23,24 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.CurrentTimestamp;
+import com.aliyun.fastmodel.core.tree.expr.literal.DateLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.DecimalLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.DoubleLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.NullLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintScope;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
@@ -37,7 +49,9 @@ import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
+import com.aliyun.fastmodel.core.tree.util.StringLiteralUtil;
 import com.aliyun.fastmodel.transform.api.client.ClientConverter;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
@@ -48,12 +62,16 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
+import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
+import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import static com.aliyun.fastmodel.core.tree.expr.literal.NullLiteral.NULL_CONSTANT;
 
 /**
  * basic client converter
@@ -70,6 +88,41 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     public static final int THIRD_INDEX = 3;
 
     /**
+     * get DataType
+     *
+     * @param column
+     * @return
+     */
+    protected abstract BaseDataType getDataType(Column column);
+
+    /**
+     * get property converter
+     *
+     * @return {@link PropertyConverter}
+     */
+    public abstract PropertyConverter getPropertyConverter();
+
+    /**
+     * to lifecycle
+     *
+     * @param createTable
+     * @return
+     */
+    protected Long toLifeCycleSeconds(CreateTable createTable) {
+        return 0L;
+    }
+
+    /**
+     * is external
+     *
+     * @param createTable
+     * @return
+     */
+    protected Boolean isExternal(CreateTable createTable) {
+        return false;
+    }
+
+    /**
      * @param table
      * @return {@link Node}
      */
@@ -82,6 +135,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         }
         List<BaseConstraint> constraints = toConstraint(table.getColumns(), table.getConstraints());
         PartitionedBy partitionedBy = toPartitionedBy(table, table.getColumns());
+        List<TableIndex> tableIndexList = toTableIndex(table, table.getColumns());
         List<Property> properties = toProperty(table, table.getProperties());
         List<ColumnDefinition> columnDefines = toColumnDefinition(table, table.getColumns());
         return CreateTable.builder()
@@ -89,6 +143,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .tableName(of)
             .columns(columnDefines)
             .partition(partitionedBy)
+            .tableIndex(tableIndexList)
             .comment(comment)
             .constraints(constraints)
             .properties(properties)
@@ -106,6 +161,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     public Table convertToTable(Node table, T context) {
         Preconditions.checkArgument(table instanceof CreateTable, "unsupported convert to table:" + table.getClass());
         CreateTable createTable = (CreateTable)table;
+        Boolean external = isExternal(createTable);
         String schema = toSchema(createTable, context);
         String suffix = createTable.getQualifiedName().getSuffix();
         String database = toDatabase(createTable, context.getDatabase());
@@ -114,7 +170,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         List<BaseClientProperty> properties = toBaseClientProperty(createTable);
         return Table.builder()
             .ifNotExist(createTable.isNotExists())
-            .external(isExternal(createTable))
+            .external(external)
             .database(database)
             .schema(schema).name(suffix)
             .comment(createTable.getCommentValue())
@@ -168,33 +224,6 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             baseClientProperties.add(baseClientProperty);
         }
         return baseClientProperties;
-    }
-
-    /**
-     * get property converter
-     *
-     * @return {@link PropertyConverter}
-     */
-    public abstract PropertyConverter getPropertyConverter();
-
-    /**
-     * to lifecycle
-     *
-     * @param createTable
-     * @return
-     */
-    protected Long toLifeCycleSeconds(CreateTable createTable) {
-        return 0L;
-    }
-
-    /**
-     * is external
-     *
-     * @param createTable
-     * @return
-     */
-    protected Boolean isExternal(CreateTable createTable) {
-        return false;
     }
 
     /**
@@ -314,21 +343,61 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             List<Property> columnProperty = toProperty(table, properties);
             all.addAll(columnProperty);
         }
+        BaseDataType dataType = getDataType(c);
         return ColumnDefinition.builder()
             .colName(new Identifier(c.getName()))
-            .comment(new Comment(c.getComment())).dataType(getDataType(c))
+            .comment(new Comment(c.getComment()))
+            .dataType(dataType)
             .notNull(BooleanUtils.isFalse(c.isNullable()))
             .primary(c.isPrimaryKey())
-            .properties(all).build();
+            .properties(all)
+            .defaultValue(toDefaultValueExpression(dataType, c.getDefaultValue()))
+            .build();
     }
 
     /**
-     * get DataType
+     * 默认的执行内容处理
      *
-     * @param column
+     * @param defaultValue
      * @return
      */
-    protected abstract BaseDataType getDataType(Column column);
+    protected BaseExpression toDefaultValueExpression(BaseDataType baseDataType, String defaultValue) {
+        if (defaultValue == null) {
+            return null;
+        }
+        IDataTypeName typeName = baseDataType.getTypeName();
+        String type = typeName.getValue();
+        String value = defaultValue;
+        if (StringUtils.equalsIgnoreCase(value, NULL_CONSTANT)) {
+            return new NullLiteral();
+        }
+        if (StringUtils.equalsIgnoreCase(DataTypeEnums.DOUBLE.getValue(), type)) {
+            return new DecimalLiteral(value);
+        }
+        if (StringUtils.equalsIgnoreCase(DataTypeEnums.BIGINT.getValue(), type)) {
+            return new LongLiteral(value);
+        }
+        if (StringUtils.equalsIgnoreCase(DataTypeEnums.BOOLEAN.getValue(), type)) {
+            return new BooleanLiteral(value);
+        }
+        if (StringUtils.equalsIgnoreCase(CurrentTimestamp.CURRENT_TIMESTAMP, value)) {
+            return new CurrentTimestamp();
+        }
+        if (StringUtils.equalsIgnoreCase(DataTypeEnums.TIMESTAMP.getValue(), type)) {
+            return new TimestampLiteral(value);
+        }
+        if (StringUtils.equalsIgnoreCase(DataTypeEnums.DATE.getValue(), type)) {
+            return new DateLiteral(value);
+        }
+        if (typeName instanceof ISimpleDataTypeName) {
+            ISimpleDataTypeName simpleDataTypeName = (ISimpleDataTypeName)typeName;
+            if (simpleDataTypeName.getSimpleDataTypeName() == SimpleDataTypeName.NUMBER) {
+                return new DecimalLiteral(value);
+            }
+        }
+        String strip = StringLiteralUtil.strip(defaultValue);
+        return new StringLiteral(strip);
+    }
 
     /**
      * to property
@@ -361,6 +430,10 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return new PartitionedBy(collect);
     }
 
+    protected List<TableIndex> toTableIndex(Table table, List<Column> columns) {
+        return Collections.emptyList();
+    }
+
     /**
      * to constraint
      *
@@ -373,6 +446,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         BaseConstraint primaryConstraintByColumns = setPrimaryConstraintColumns(columns);
         if (primaryConstraintByColumns != null) {
             constraintList.add(primaryConstraintByColumns);
+            return constraintList;
         }
         if (CollectionUtils.isEmpty(constraints)) {
             return constraintList;
@@ -385,11 +459,11 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
                 constraintName = new Identifier(c.getName());
             }
             ConstraintType constraintType = c.getType();
-            if (constraintType == OutlineConstraintType.PRIMARY_KEY) {
+            if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.PRIMARY_KEY.getCode())) {
                 PrimaryConstraint primaryConstraint = new PrimaryConstraint(constraintName,
                     c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
                 constraintList.add(primaryConstraint);
-            } else if (constraintType == OutlineConstraintType.UNIQUE) {
+            } else if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.UNIQUE.getCode())) {
                 UniqueConstraint primaryConstraint = new UniqueConstraint(constraintName,
                     c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
                 constraintList.add(primaryConstraint);
@@ -429,6 +503,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .nullable(BooleanUtils.isNotTrue(c.getNotNull()))
             .primaryKey(BooleanUtils.isTrue(c.getPrimary()))
             .partitionKey(partitionKey)
+            .defaultValue(toDefaultBaseValue(c.getDefaultValue()))
             .partitionKeyIndex(partitionKeyIndex).build();
         IDataTypeName typeName = dataType.getTypeName();
         Dimension dimension = typeName.getDimension();
@@ -463,6 +538,45 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             }
         }
         return column;
+    }
+
+    protected String toDefaultBaseValue(BaseExpression defaultValue) {
+        if (defaultValue == null) {
+            return null;
+        }
+        Class<? extends BaseExpression> aClass = defaultValue.getClass();
+        if (aClass == NullLiteral.class) {
+            return "NULL";
+        }
+        if (aClass == StringLiteral.class) {
+            String value = ((StringLiteral)defaultValue).getValue();
+            return value;
+        }
+        if (aClass == LongLiteral.class) {
+            LongLiteral literal = (LongLiteral)defaultValue;
+            return String.valueOf(literal.getValue());
+        }
+        if (aClass == DoubleLiteral.class) {
+            DoubleLiteral doubleLiteral = (DoubleLiteral)defaultValue;
+            return String.valueOf(doubleLiteral.getValue());
+        }
+        if (aClass == TimestampLiteral.class) {
+            TimestampLiteral timestampLiteral = (TimestampLiteral)defaultValue;
+            String timestampFormat = timestampLiteral.getTimestampFormat();
+            return timestampFormat;
+        }
+        if (aClass == BooleanLiteral.class) {
+            BooleanLiteral booleanLiteral = (BooleanLiteral)defaultValue;
+            return BooleanUtils.toStringTrueFalse(booleanLiteral.isValue());
+        }
+        if (aClass == FunctionCall.class) {
+            FunctionCall functionCall = (FunctionCall)defaultValue;
+            return functionCall.toString();
+        }
+        if (aClass == CurrentTimestamp.class) {
+            return CurrentTimestamp.CURRENT_TIMESTAMP;
+        }
+        return defaultValue.getOrigin();
     }
 
     protected void setPrimaryKey(List<BaseConstraint> constraints, Column column) {

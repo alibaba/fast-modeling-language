@@ -5,6 +5,7 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.builder.BuilderFactory;
 import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
@@ -60,5 +61,10 @@ public class StarRocksTransformer implements Transformer<BaseStatement> {
     public Table transformTable(Node table, TransformContext context) {
         StarRocksContext starRocksContext = new StarRocksContext(context);
         return starRocksClientConverter.convertToTable(table, starRocksContext);
+    }
+
+    @Override
+    public BaseClientProperty create(String name, String value) {
+        return starRocksClientConverter.getPropertyConverter().create(name, value);
     }
 }

@@ -30,6 +30,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class CurrentTimestamp extends BaseExpression {
 
+    public static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
+
     public CurrentTimestamp() {
         this(null, null);
     }

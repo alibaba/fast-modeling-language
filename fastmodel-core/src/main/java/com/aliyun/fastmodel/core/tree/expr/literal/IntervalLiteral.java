@@ -43,8 +43,8 @@ public class IntervalLiteral extends BaseLiteral {
     }
 
     public IntervalLiteral(NodeLocation location, String origin,
-                           BaseLiteral value, DateTimeEnum fromDateTime,
-                           DateTimeEnum toDateTime) {
+        BaseLiteral value, DateTimeEnum fromDateTime,
+        DateTimeEnum toDateTime) {
         super(location, origin);
         this.value = value;
         this.fromDateTime = fromDateTime;
@@ -52,7 +52,7 @@ public class IntervalLiteral extends BaseLiteral {
     }
 
     public IntervalLiteral(BaseLiteral value, DateTimeEnum fromDateTime,
-                           DateTimeEnum toDateTime) {
+        DateTimeEnum toDateTime) {
         this(null, null, value, fromDateTime, toDateTime);
     }
 

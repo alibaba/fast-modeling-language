@@ -50,9 +50,9 @@ public class CreateDict extends BaseCreate {
     private final BaseLiteral defaultValue;
 
     public CreateDict(CreateElement element,
-                      BaseDataType baseDataType,
-                      BaseConstraint baseConstraint,
-                      BaseLiteral defaultValue) {
+        BaseDataType baseDataType,
+        BaseConstraint baseConstraint,
+        BaseLiteral defaultValue) {
         super(element);
         this.baseDataType = baseDataType;
         this.baseConstraint = baseConstraint;

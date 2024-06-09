@@ -87,7 +87,7 @@ public class StrategyUtil {
     }
 
     public static BaseFunction toFixedFunction(BaseExpression expression,
-                                               BaseDataType baseDataType) {
+        BaseDataType baseDataType) {
         if (expression instanceof BaseFunction) {
             return (BaseFunction)expression;
         }

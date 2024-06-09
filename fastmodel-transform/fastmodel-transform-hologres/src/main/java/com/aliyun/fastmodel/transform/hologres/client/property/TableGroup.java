@@ -18,7 +18,7 @@ import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty
  */
 public class TableGroup extends BaseClientProperty<String> {
 
-    public static final String TABLE_GROUP = "table_group";
+    public static final String TABLE_GROUP = HoloPropertyKey.TABLE_GROUP.getValue();
 
     public TableGroup() {
         this.setKey(TABLE_GROUP);

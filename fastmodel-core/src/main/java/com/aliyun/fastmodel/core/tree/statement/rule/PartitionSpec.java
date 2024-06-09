@@ -45,7 +45,7 @@ public class PartitionSpec extends AbstractNode {
     private final BaseLiteral baseLiteral;
 
     public PartitionSpec(Identifier partitionColName,
-                         BaseLiteral baseLiteral) {
+        BaseLiteral baseLiteral) {
         this.partitionColName = partitionColName;
         this.baseLiteral = baseLiteral;
     }

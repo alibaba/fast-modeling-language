@@ -1,4 +1,4 @@
-package com.aliyun.fastmodel.transform.starrocks.parser.tree;
+package com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint;
 
 import java.util.List;
 
@@ -16,18 +16,18 @@ import lombok.Getter;
  * @date 2023/9/11
  */
 @Getter
-public class DuplicateConstraint extends CustomConstraint {
+public class DuplicateKeyConstraint extends CustomConstraint {
 
     public static final String TYPE = "DUPLICATE";
 
     private final List<Identifier> columns;
 
-    public DuplicateConstraint(Identifier constraintName, List<Identifier> columns, Boolean enable) {
+    public DuplicateKeyConstraint(Identifier constraintName, List<Identifier> columns, Boolean enable) {
         super(constraintName, enable, TYPE);
         this.columns = columns;
     }
 
-    public DuplicateConstraint(Identifier constraintName, List<Identifier> columns) {
+    public DuplicateKeyConstraint(Identifier constraintName, List<Identifier> columns) {
         this(constraintName, columns, true);
     }
 

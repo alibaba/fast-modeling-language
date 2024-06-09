@@ -22,7 +22,8 @@ import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
-import com.aliyun.fastmodel.core.tree.statement.table.TableElement;
+import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,8 +35,8 @@ import lombok.Getter;
  * @date 2021/8/30
  */
 @Getter
-@EqualsAndHashCode
-public class TableIndex extends TableElement {
+@EqualsAndHashCode(callSuper = false)
+public class TableIndex extends BaseConstraint {
 
     private final Identifier indexName;
 
@@ -44,8 +45,9 @@ public class TableIndex extends TableElement {
     private final List<Property> properties;
 
     public TableIndex(Identifier indexName,
-                      List<IndexColumnName> indexColumnNames,
-                      List<Property> properties) {
+        List<IndexColumnName> indexColumnNames,
+        List<Property> properties) {
+        super(indexName, ConstraintType.INDEX);
         this.indexName = indexName;
         this.indexColumnNames = indexColumnNames;
         this.properties = properties;

@@ -24,6 +24,7 @@ import lombok.Getter;
  * @author panguanjing
  * @date 2020/9/4
  */
+@Getter
 public enum ConstraintType {
     /**
      * 主键约束
@@ -83,17 +84,14 @@ public enum ConstraintType {
     /**
      * 唯一
      */
-    @Getter
     private final String code;
     /**
      * 作用域
      */
-    @Getter
     private final ConstraintScope scope;
     /**
      * 约束描述
      */
-    @Getter
     private final String description;
 
     public static class Constants {

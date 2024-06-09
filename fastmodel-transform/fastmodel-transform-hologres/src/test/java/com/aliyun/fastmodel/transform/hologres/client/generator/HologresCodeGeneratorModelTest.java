@@ -190,9 +190,7 @@ public class HologresCodeGeneratorModelTest {
         assertEquals(dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining(",\n")), "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS sc.tb (\n"
             + "   c1 TEXT NOT NULL\n"
-            + ");\n"
-            + "CALL SET_TABLE_PROPERTY('sc.tb', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('sc.tb', 'time_to_live_in_seconds', '3153600000');\n"
+            + ");\n\n"
             + "COMMENT ON COLUMN sc.tb.c1 IS 'comment';\n"
             + "COMMIT;");
     }
@@ -255,8 +253,6 @@ public class HologresCodeGeneratorModelTest {
             + "CREATE TABLE IF NOT EXISTS abc (\n"
             + "   a TEXT NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE abc IS '''abc';\n"
             + "COMMENT ON COLUMN abc.a IS 'comment';\n"
             + "COMMIT;", generate.getDialectNodes().get(0).getNode());
@@ -282,10 +278,41 @@ public class HologresCodeGeneratorModelTest {
             + "CREATE TABLE IF NOT EXISTS \"schema\".abc (\n"
             + "   a TEXT NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('schema.abc', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('schema.abc', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE \"schema\".abc IS '''abc';\n"
             + "COMMENT ON COLUMN \"schema\".abc.a IS 'comment';\n"
+            + "COMMIT;", generate.getDialectNodes().get(0).getNode());
+    }
+
+    @Test
+    public void testGeneratorWithDefaultValue() {
+        DefaultCodeGenerator defaultCodeGenerator = new DefaultCodeGenerator();
+        DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(DialectMeta.DEFAULT_HOLO)
+            .caseSensitive(false)
+            .build();
+        request.setConfig(config);
+        List<Column> columns = Lists.newArrayList(
+            Column.builder()
+                .name("d_v")
+                .dataType("text")
+                .defaultValue("abc")
+                .comment("comment")
+                .build()
+        );
+        request.setAfter(Table.builder()
+            .name("abc")
+            .schema("schema")
+            .columns(columns)
+            .comment("'abc")
+            .build());
+        DdlGeneratorResult generate = defaultCodeGenerator.generate(request);
+        assertEquals("BEGIN;\n"
+            + "CREATE TABLE IF NOT EXISTS \"schema\".abc (\n"
+            + "   d_v TEXT NOT NULL DEFAULT 'abc'\n"
+            + ");\n"
+            + "COMMENT ON TABLE \"schema\".abc IS '''abc';\n"
+            + "COMMENT ON COLUMN \"schema\".abc.d_v IS 'comment';\n"
             + "COMMIT;", generate.getDialectNodes().get(0).getNode());
     }
 }

@@ -19,15 +19,15 @@ package com.aliyun.fastmodel.core.tree.statement.table.constraint;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
-import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
- * Desc:
+ * default value constraint
  *
  * @author panguanjing
  * @date 2020/11/26
@@ -39,10 +39,10 @@ public class DefaultValueConstraint extends BaseConstraint {
     /**
      * 默认值
      */
-    private final BaseLiteral value;
+    private final BaseExpression value;
 
     public DefaultValueConstraint(Identifier constraintName,
-                                  BaseLiteral value) {
+        BaseExpression value) {
         super(constraintName, ConstraintType.DEFAULT_VALUE, true);
         this.value = value;
     }

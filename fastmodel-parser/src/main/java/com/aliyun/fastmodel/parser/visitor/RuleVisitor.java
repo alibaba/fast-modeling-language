@@ -174,7 +174,7 @@ public class RuleVisitor extends AstBuilder {
         Comment comment = visitIfPresent(ctx.comment(), Comment.class).orElse(null);
         boolean enable = ctx.KW_DISABLE() == null;
         RuleDefinition ruleDefinition = RuleDefinition.builder().ruleGrade(ruleGrade).ruleName(identifier).aliasedName(
-            aliasedName)
+                aliasedName)
             .ruleStrategy(ruleStrategy)
             .comment(comment)
             .enable(enable)

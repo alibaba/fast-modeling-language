@@ -46,11 +46,6 @@ public class HologresPropertyConverter extends BasePropertyConverter {
         return INSTANCE;
     }
 
-    @Override
-    public boolean returnDefaultWhenNotExist() {
-        return false;
-    }
-
     public void init() {
         PROPERTY_FUNCTION_MAP.put(BitMapColumn.BITMAP_COLUMN, value -> {
             BitMapColumn bitMapColumn = new BitMapColumn();

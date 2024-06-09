@@ -1,10 +1,15 @@
 package com.aliyun.fastmodel.transform.starrocks.parser.visitor;
 
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggregateConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.DuplicateConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupItem;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionedBy;
@@ -54,7 +59,7 @@ public interface StarRocksAstVisitor<R, C> extends IAstVisitor<R, C> {
      * @param context
      * @return
      */
-    default R visitAggregateConstraint(AggregateConstraint aggregateConstraint, C context) {
+    default R visitAggregateConstraint(AggregateKeyConstraint aggregateConstraint, C context) {
         return visitNode(aggregateConstraint, context);
     }
 
@@ -65,7 +70,7 @@ public interface StarRocksAstVisitor<R, C> extends IAstVisitor<R, C> {
      * @param context
      * @return
      */
-    default R visitDuplicateConstraint(DuplicateConstraint duplicateConstraint, C context) {
+    default R visitDuplicateConstraint(DuplicateKeyConstraint duplicateConstraint, C context) {
         return visitNode(duplicateConstraint, context);
     }
 
@@ -78,6 +83,17 @@ public interface StarRocksAstVisitor<R, C> extends IAstVisitor<R, C> {
      */
     default R visitListPartitionedBy(ListPartitionedBy listPartitionedBy, C context) {
         return visitNode(listPartitionedBy, context);
+    }
+
+    /**
+     * visitExpressionPartitionBy
+     *
+     * @param expressionPartitionedBy
+     * @param context
+     * @return
+     */
+    default R visitExpressionPartitionedBy(ExpressionPartitionBy expressionPartitionedBy, C context) {
+        return visitNode(expressionPartitionedBy, context);
     }
 
     /**
@@ -188,5 +204,21 @@ public interface StarRocksAstVisitor<R, C> extends IAstVisitor<R, C> {
      */
     default R visitPartitionValue(PartitionValue partitionValue, C context) {
         return visitNode(partitionValue, context);
+    }
+
+    default R visitOrderByConstraint(OrderByConstraint orderByConstraint, C context) {
+        return visitNode(orderByConstraint, context);
+    }
+
+    default R visitDistributeKeyConstraint(DistributeConstraint distributeKeyConstraint, C context) {
+        return visitNode(distributeKeyConstraint, context);
+    }
+
+    default R visitRollupItem(RollupItem rollupItem, C context) {
+        return visitNode(rollupItem, context);
+    }
+
+    default R visitRollupConstraint(RollupConstraint rollupConstraint, C context) {
+        return visitNode(rollupConstraint, context);
     }
 }

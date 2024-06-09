@@ -26,8 +26,9 @@ import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggDesc;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggregateConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.DuplicateConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
@@ -97,7 +98,7 @@ public class StarRocksOutVisitorTest {
             + "(\n"
             + "   PARTITION p1 VALUES LESS THAN (\"2010-01-10\"),\n"
             + "   START(\"2001-01-01\") END(\"2020-01-01\") EVERY (INTERVAL 10 HOUR)\n"
-            + ")", s);
+            + ");", s);
     }
 
     @Test
@@ -155,20 +156,22 @@ public class StarRocksOutVisitorTest {
         List<ColumnDefinition> columns = Lists.newArrayList();
         List<Property> columnProperties = Lists.newArrayList();
         columns.add(ColumnDefinition.builder().colName(new Identifier("c1")).properties(columnProperties).build());
-        List<Property> properties = Lists.newArrayList();
-        properties.add(new Property(StarRocksProperty.TABLE_DISTRIBUTED_HASH.getValue(), "c1"));
-        properties.add(new Property(StarRocksProperty.TABLE_DISTRIBUTED_BUCKETS.getValue(), "4"));
+        List<BaseConstraint> list = Lists.newArrayList();
+        DistributeConstraint distributeConstraint = new DistributeConstraint(
+            Lists.newArrayList(new Identifier("c1")), 4
+        );
+        list.add(distributeConstraint);
         CreateTable createTable = CreateTable.builder()
             .tableName(QualifiedName.of("ab"))
             .columns(columns)
-            .properties(properties)
+            .constraints(list)
             .build();
         starRocksVisitor.visitCreateTable(createTable, 0);
         assertEquals("CREATE TABLE ab\n"
             + "(\n"
             + "   c1\n"
             + ")\n"
-            + "DISTRIBUTED BY HASH(c1) BUCKETS 4", starRocksVisitor.getBuilder().toString());
+            + "DISTRIBUTED BY HASH (c1) BUCKETS 4;", starRocksVisitor.getBuilder().toString());
     }
 
     @Test
@@ -200,7 +203,7 @@ public class StarRocksOutVisitorTest {
             + "  PARTITION p1 VALUES LESS THAN (\"20210102\"),\n"
             + "  PARTITION p2 VALUES LESS THAN (\"20210103\"),\n"
             + "  PARTITION p3 VALUES LESS THAN MAXVALUE\n"
-            + ")", s);
+            + ");", s);
     }
 
     @Test
@@ -288,11 +291,12 @@ public class StarRocksOutVisitorTest {
             IdentifierUtil.sysIdentifier(),
             Lists.newArrayList(new Identifier("c1"))
         );
-        DuplicateConstraint duplicateConstraint = new DuplicateConstraint(
+        DuplicateKeyConstraint duplicateConstraint = new DuplicateKeyConstraint(
             IdentifierUtil.sysIdentifier(), Lists.newArrayList(new Identifier("c2")), true
         );
 
-        AggregateConstraint aggregateConstraint = new AggregateConstraint(IdentifierUtil.sysIdentifier(), Lists.newArrayList(new Identifier("c2")));
+        AggregateKeyConstraint aggregateConstraint = new AggregateKeyConstraint(IdentifierUtil.sysIdentifier(),
+            Lists.newArrayList(new Identifier("c2")));
         return Lists.newArrayList(primaryConstraint, duplicateConstraint, aggregateConstraint);
     }
 }

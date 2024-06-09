@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author panguanjing
  * @date 2022/6/7
  */
+@Getter
 public enum OutlineConstraintType implements ConstraintType {
     /**
      * unique
@@ -36,10 +37,9 @@ public enum OutlineConstraintType implements ConstraintType {
     CHECK(com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType.CHECK.getCode()),
 
     /**
-     * create index
+     * index
      */
-    CREATE_INDEX(com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType.INDEX.getCode());
-    @Getter
+    INDEX(com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType.INDEX.getCode());
     private final String value;
 
     OutlineConstraintType(String value) {
@@ -47,7 +47,7 @@ public enum OutlineConstraintType implements ConstraintType {
     }
 
     @Override
-    public String getName() {
+    public String getCode() {
         return this.getValue();
     }
 

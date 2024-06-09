@@ -988,6 +988,7 @@ defaultValue
 columnConstraintType
                 : KW_NOT? KW_NULL
                 | KW_PRIMARY KW_KEY
+                | KW_DEFAULT constant
                 ;
 columnNameTypeList
         : columnNameType (COMMA columnNameType)*

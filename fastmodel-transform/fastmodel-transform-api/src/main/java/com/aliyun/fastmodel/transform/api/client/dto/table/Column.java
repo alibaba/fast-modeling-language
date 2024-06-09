@@ -61,6 +61,7 @@ public class Column {
      * primary key
      */
     private boolean primaryKey;
+
     /**
      * nullable
      */
@@ -73,6 +74,11 @@ public class Column {
      * partition key index, zero-base
      */
     private Integer partitionKeyIndex;
+
+    /**
+     * defaultValue
+     */
+    private String defaultValue;
 
     /**
      * column properties

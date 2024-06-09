@@ -10,6 +10,7 @@ package com.aliyun.fastmodel.transform.starrocks.format;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.NullLiteral;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
@@ -51,6 +52,11 @@ public class StarRocksExpressionVisitor extends DefaultExpressionVisitor impleme
             String strip = StripUtils.strip(value);
             return StripUtils.addPrefix(strip);
         }
+    }
+
+    @Override
+    public String visitNullLiteral(NullLiteral node, Void context) {
+        return "NULL";
     }
 
     @Override

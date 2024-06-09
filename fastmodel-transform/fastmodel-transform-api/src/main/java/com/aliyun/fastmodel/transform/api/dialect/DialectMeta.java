@@ -44,6 +44,11 @@ public class DialectMeta {
     public static final DialectMeta DEFAULT_MYSQL = createDefault(DialectName.MYSQL);
 
     /**
+     * starRocks
+     */
+    public static final DialectMeta DEFAULT_STARROCKS = createDefault(DialectName.STARROCKS);
+
+    /**
      * 引擎的名字，唯一标示，大小写不敏感
      */
     private final IDialectName dialectName;

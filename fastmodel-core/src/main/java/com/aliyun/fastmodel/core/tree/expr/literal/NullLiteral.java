@@ -29,6 +29,8 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 public class NullLiteral extends BaseLiteral {
 
+    public static final String NULL_CONSTANT = "NULL";
+
     public NullLiteral() {
         this(null, null);
     }

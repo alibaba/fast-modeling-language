@@ -58,7 +58,7 @@ public class Issue1Test {
         Column column = reverse.getTable().getColumns().get(3);
         assertEquals(column.getComment(), "Auto generated logical delete column");
         List<BaseClientProperty> properties = reverse.getTable().getProperties();
-        assertEquals(3, properties.size());
+        assertEquals(2, properties.size());
         assertEquals(reverse.getTable().getLifecycleSeconds(), new Long(2592000L));
     }
 }

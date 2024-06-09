@@ -51,7 +51,6 @@ import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -115,14 +114,14 @@ public class HologresTransformerTest {
                 .build()
         );
         DialectNode transform = hologresTransformer.transform(changeCol, HologresTransformContext.builder().build());
-        assertEquals(transform.getNode(), "BEGIN;\n"
+        assertEquals("BEGIN;\n"
             + "ALTER TABLE abc ALTER COLUMN bcd SET DEFAULT 'bcd';\n"
-            + "COMMIT;");
+            + "COMMIT;", transform.getNode());
         assertTrue(transform.isExecutable());
     }
 
     @Test
-    public void testChangeColumndefaultNumber() {
+    public void testChangeColumnDefaultNumber() {
         ChangeCol changeCol = new ChangeCol(QualifiedName.of("abc"), new Identifier("bcd"),
             ColumnDefinition.builder()
                 .colName(new Identifier("bcd"))
@@ -152,9 +151,7 @@ public class HologresTransformerTest {
         DialectNode transform = hologresTransformer.transform(dimTable, HologresTransformContext.builder().build());
         assertEquals("BEGIN;\nCREATE TABLE b (\n"
             + "   col1 JSON\n"
-            + ");\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'time_to_live_in_seconds', '3153600000');\nCOMMIT;", transform.getNode());
+            + ");\n\nCOMMIT;", transform.getNode());
     }
 
     @Test
@@ -181,7 +178,7 @@ public class HologresTransformerTest {
         HologresTransformer hologresTransformer = new HologresTransformer();
         BaseStatement reverse = hologresTransformer.reverse(new DialectNode("COMMENT ON TABLE molin_db.aa_exist_1 IS NULL;"));
         assertNotNull(reverse);
-        SetTableComment setTableComment = (SetTableComment)reverse;
+        SetTableComment setTableComment = (SetTableComment) reverse;
         assertEquals(setTableComment.getComment(), new Comment(null));
 
     }
@@ -203,7 +200,7 @@ public class HologresTransformerTest {
             .build();
         primaryColumns.add(Column.builder().name("c3").dataType("text").nullable(true).build());
         Node node = hologresTransformer.reverseTable(table, ReverseContext.builder().build());
-        CreateTable createTable = (CreateTable)node;
+        CreateTable createTable = (CreateTable) node;
         assertEquals(createTable.getConstraintStatements().size(), 1);
         DialectNode transform = hologresTransformer.transform(createTable);
         assertEquals(transform.getNode(), "BEGIN;\n"
@@ -212,12 +209,7 @@ public class HologresTransformerTest {
             + "   c2 BIGINT NOT NULL,\n"
             + "   c3 TEXT,\n"
             + "   PRIMARY KEY(c1,c2)\n"
-            + ");\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN abc.c1 IS NULL;\n"
-            + "COMMENT ON COLUMN abc.c2 IS NULL;\n"
-            + "COMMENT ON COLUMN abc.c3 IS NULL;\n"
+            + ");\n\n"
             + "COMMIT;");
     }
 
@@ -271,14 +263,11 @@ public class HologresTransformerTest {
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement) node).getNode();
         assertEquals(node1, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS t_name (\n"
             + "   n VARCHAR(1) NOT NULL\n"
-            + ");\n"
-            + "CALL SET_TABLE_PROPERTY('t_name', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('t_name', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN t_name.n IS NULL;\n"
+            + ");\n\n"
             + "COMMIT;");
     }
 
@@ -296,14 +285,11 @@ public class HologresTransformerTest {
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement) node).getNode();
         assertEquals(node1, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS t_name (\n"
             + "   n VARCHAR NOT NULL\n"
-            + ");\n"
-            + "CALL SET_TABLE_PROPERTY('t_name', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('t_name', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN t_name.n IS NULL;\n"
+            + ");\n\n"
             + "COMMIT;");
     }
 
@@ -338,19 +324,14 @@ public class HologresTransformerTest {
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement) node).getNode();
         assertEquals(node1, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS key_name (\n"
             + "   id     VARCHAR NOT NULL,\n"
             + "   c_name BIGINT NOT NULL,\n"
             + "   age    BIGINT NOT NULL,\n"
             + "   PRIMARY KEY(id,c_name)\n"
-            + ") PARTITION BY LIST(id);\n"
-            + "CALL SET_TABLE_PROPERTY('key_name', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('key_name', 'time_to_live_in_seconds', '3153600000');\n"
-            + "COMMENT ON COLUMN key_name.id IS NULL;\n"
-            + "COMMENT ON COLUMN key_name.c_name IS NULL;\n"
-            + "COMMENT ON COLUMN key_name.age IS NULL;\n"
+            + ") PARTITION BY LIST(id);\n\n"
             + "COMMIT;");
     }
 
@@ -383,11 +364,11 @@ public class HologresTransformerTest {
             .properties(properties)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        CreateTable createTable = (CreateTable)node;
+        CreateTable createTable = (CreateTable) node;
         int size = createTable.getConstraintStatements().size();
         assertEquals(1, size);
         BaseConstraint baseConstraint = createTable.getConstraintStatements().get(0);
-        PrimaryConstraint primaryConstraint = (PrimaryConstraint)baseConstraint;
+        PrimaryConstraint primaryConstraint = (PrimaryConstraint) baseConstraint;
         assertEquals(primaryConstraint.getColNames().get(0), new Identifier("c1"));
         List<Property> properties1 = createTable.getProperties();
         assertEquals(2, properties1.size());
@@ -401,9 +382,6 @@ public class HologresTransformerTest {
             + ");\n"
             + "CALL SET_TABLE_PROPERTY('t1', 'dictionary_encoding_columns', '\"c1:auto,c2:auto\"');\n"
             + "CALL SET_TABLE_PROPERTY('t1', 'segment_key', '\"c1\"');\n"
-            + "COMMENT ON COLUMN t1.c1 IS NULL;\n"
-            + "COMMENT ON COLUMN t1.c2 IS NULL;\n"
-            + "COMMENT ON COLUMN t1.c3 IS NULL;\n"
             + "COMMIT;");
     }
 
@@ -447,8 +425,279 @@ public class HologresTransformerTest {
             .build();
         Node node = hologresTransformer.reverseTable(t);
         assertNotNull(node);
-        CreateTable c = (CreateTable)node;
+        CreateTable c = (CreateTable) node;
         assertEquals(c.getColumnDefines().size(), 1);
     }
 
+    @Test
+    public void testBooleanDefaultValue() {
+        DialectNode dialectNode = new DialectNode(
+            "begin;\n" +
+                "CREATE TABLE public.tbl_default (    \n" +
+                "  smallint_col smallint DEFAULT 0,    \n" +
+                "  int_col int NOT NULL DEFAULT 0,    \n" +
+                "  bigint_col bigint not null DEFAULT 0,    \n" +
+                "  boolean_col boolean DEFAULT FALSE,    \n" +
+                "  float_col real DEFAULT 0.0,    \n" +
+                "  double_col double precision DEFAULT 0.0,    \n" +
+                "  decimal_col decimal(2, 1) DEFAULT 0.0,    \n" +
+                "  text_col text DEFAULT 'N',    \n" +
+                "  char_col char(2) DEFAULT 'N',    \n" +
+                "  varchar_col varchar(200) DEFAULT 'N',    \n" +
+                "  timestamptz_col timestamptz DEFAULT now(),    \n" +
+                "  date_col date DEFAULT now(),    \n" +
+                "  timestamp_col timestamp DEFAULT now()\n" +
+                ");\n" +
+                "COMMENT ON TABLE public.\"tbl_default\" is '用户属性表';\n" +
+                "COMMENT ON COLUMN public.\"tbl_default\".int_col is '身份证号';\n" +
+                "COMMENT ON COLUMN public.\"tbl_default\".text_col is '姓名';\n" +
+                "commit;"
+        );
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+        assertEquals("false", table.getColumns().get(3).getDefaultValue());
+        assertEquals("now()", table.getColumns().get(10).getDefaultValue());
+    }
+
+    @Test
+    public void testDynamicPartition() {
+        DialectNode dialectNode = new DialectNode(
+            "CREATE TABLE tbl1 (\n" +
+                "    c1 text NOT NULL,\n" +
+                "    c2 text \n" +
+                ")\n" +
+                "PARTITION BY LIST (c2)\n" +
+                "WITH (\n" +
+                "   auto_partitioning_enable = 'true',\n" +
+                "   auto_partitioning_time_unit = 'DAY',\n" +
+                "   auto_partitioning_time_zone = 'Asia/Shanghai',\n" +
+                "   auto_partitioning_num_precreate = '3',\n" +
+                "   auto_partitioning_num_retention = '2'\n" +
+                ");"
+        );
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+        List<BaseClientProperty> properties = table.getProperties();
+        assertEquals(5, properties.size());
+        assertEquals("true", properties.get(0).getValue());
+        assertEquals("DAY", properties.get(1).getValue());
+        assertEquals("Asia/Shanghai", properties.get(2).getValue());
+        assertEquals("3", properties.get(3).getValue());
+        assertEquals("2", properties.get(4).getValue());
+    }
+
+    @Test
+    public void testForeignTable() {
+        {
+            DialectNode dialectNode = new DialectNode(
+                "CREATE FOREIGN TABLE src_pt(\n" +
+                    "  id text, \n" +
+                    "  pt text) \n" +
+                    "SERVER odps_server \n" +
+                    "OPTIONS(project_name '<odps_project>', table_name '<odps_table>');"
+            );
+            ReverseContext build = ReverseContext.builder().merge(true).build();
+            Node node = hologresTransformer.reverse(dialectNode, build);
+            Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+            assertEquals(true, table.isExternal());
+            assertNotNull(table.getProperties());
+            List<BaseClientProperty> properties = table.getProperties();
+            assertEquals(3, properties.size());
+            assertEquals("odps_server", properties.get(0).getValue());
+            assertEquals("<odps_project>", properties.get(1).getValue());
+            assertEquals("<odps_table>", properties.get(2).getValue());
+        }
+
+        {
+            DialectNode dialectNode = new DialectNode(
+                "CREATE FOREIGN TABLE src_pt(\n" +
+                    "  id text,\n" +
+                    "  pt text)\n" +
+                    "SERVER odps_server\n" +
+                    "OPTIONS(project_name '<odps_project>#<odps_schema>', table_name '<odps_table>');"
+            );
+            ReverseContext build = ReverseContext.builder().merge(true).build();
+            Node node = hologresTransformer.reverse(dialectNode, build);
+            Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+            assertEquals(true, table.isExternal());
+            assertNotNull(table.getProperties());
+            List<BaseClientProperty> properties = table.getProperties();
+            assertEquals(3, properties.size());
+            assertEquals("odps_server", properties.get(0).getValue());
+            assertEquals("<odps_project>#<odps_schema>", properties.get(1).getValue());
+            assertEquals("<odps_table>", properties.get(2).getValue());
+        }
+    }
+
+    @Test
+    public void testColumn() {
+        DialectNode dialectNode = new DialectNode(
+            "begin;\n" +
+                "CREATE TABLE public.tbl_default (    \n" +
+                "  smallint_col smallint DEFAULT 0,    \n" +
+                "  int_col int NOT NULL DEFAULT 0,    \n" +
+                "  bigint_col bigint not null DEFAULT 0,    \n" +
+                "  boolean_col boolean DEFAULT FALSE,    \n" +
+                "  float_col real DEFAULT 0.0,    \n" +
+                "  double_col double precision DEFAULT 0.0,    \n" +
+                "  decimal_col decimal(2, 1) DEFAULT 0.0,    \n" +
+                "  text_col text DEFAULT 'N',    \n" +
+                "  char_col char(2) DEFAULT 'N',    \n" +
+                "  varchar_col varchar(200) DEFAULT 'N',    \n" +
+                "  timestamptz_col timestamptz DEFAULT now(),    \n" +
+                "  date_col date DEFAULT now(),    \n" +
+                "  timestamp_col timestamp DEFAULT now()\n" +
+                ");\n" +
+                "COMMENT ON TABLE public.\"tbl_default\" is '用户属性表';\n" +
+                "COMMENT ON COLUMN public.\"tbl_default\".int_col is '身份证号';\n" +
+                "COMMENT ON COLUMN public.\"tbl_default\".text_col is '姓名';\n" +
+                "commit;"
+        );
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+        Node reverseNode = hologresTransformer.reverseTable(table);
+        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().schema(((CreateTable) reverseNode).getQualifiedName().getFirst()).build()).getNode();
+        assertEquals("BEGIN;\n" +
+            "CREATE TABLE public.tbl_default (\n" +
+            "   smallint_col    SMALLINT DEFAULT 0,\n" +
+            "   int_col         INTEGER NOT NULL DEFAULT 0,\n" +
+            "   bigint_col      BIGINT NOT NULL DEFAULT 0,\n" +
+            "   boolean_col     BOOLEAN DEFAULT false,\n" +
+            "   float_col       REAL DEFAULT 0.0,\n" +
+            "   double_col      DOUBLE PRECISION DEFAULT 0.0,\n" +
+            "   decimal_col     DECIMAL(2,1) DEFAULT 0.0,\n" +
+            "   text_col        TEXT DEFAULT 'N',\n" +
+            "   char_col        CHAR(2) DEFAULT 'N',\n" +
+            "   varchar_col     VARCHAR(200) DEFAULT 'N',\n" +
+            "   timestamptz_col TIMESTAMP WITH TIME ZONE DEFAULT now(),\n" +
+            "   date_col        DATE DEFAULT now(),\n" +
+            "   timestamp_col   TIMESTAMP DEFAULT now()\n" +
+            ");\n" +
+            "COMMENT ON TABLE public.tbl_default IS '用户属性表';\n" +
+            "COMMENT ON COLUMN public.tbl_default.int_col IS '身份证号';\n" +
+            "COMMENT ON COLUMN public.tbl_default.text_col IS '姓名';\n" +
+            "COMMIT;", node1);
+    }
+
+    @Test
+    public void testProperties() {
+        DialectNode dialectNode = new DialectNode(
+            "BEGIN;\n" +
+                "\n" +
+                "CREATE TABLE tbl\n" +
+                "(\n" +
+                "    id             BIGINT NOT NULL\n" +
+                "    ,name          TEXT NOT NULL\n" +
+                "    ,age           BIGINT NOT NULL\n" +
+                "    ,class         TEXT NOT NULL\n" +
+                "    ,reg_timestamp TIMESTAMP WITH TIME ZONE NOT NULL\n" +
+                "    ,PRIMARY KEY (id,age)\n" +
+                ");\n" +
+                "call set_table_property('tbl', 'orientation', 'column');\n" +
+                "call set_table_property('tbl', 'table_group', 'default');\n" +
+                "call set_table_property('tbl', 'distribution_key', 'id');\n" +
+                "call set_table_property('tbl', 'clustering_key', 'age');\n" +
+                "call set_table_property('tbl', 'event_time_column', 'reg_timestamp');\n" +
+                "call set_table_property('tbl', 'bitmap_columns', 'name,class');\n" +
+                "call set_table_property('tbl', 'dictionary_encoding_columns', 'class:auto');\n" +
+                "call set_table_property('tbl', 'time_to_live_in_seconds', '36');\n" +
+                "commit;"
+        );
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+        Node reverseNode = hologresTransformer.reverseTable(table);
+        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().build()).getNode();
+        assertEquals("BEGIN;\n" +
+            "CREATE TABLE tbl (\n" +
+            "   id            BIGINT NOT NULL,\n" +
+            "   \"name\"        TEXT NOT NULL,\n" +
+            "   age           BIGINT NOT NULL,\n" +
+            "   \"class\"       TEXT NOT NULL,\n" +
+            "   reg_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,\n" +
+            "   PRIMARY KEY(id,age)\n" +
+            ");\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'time_to_live_in_seconds', '36');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'orientation', 'column');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'table_group', 'default');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'distribution_key', '\"id\"');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'clustering_key', '\"age\"');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'event_time_column', 'reg_timestamp');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'bitmap_columns', '\"name,class\"');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl', 'dictionary_encoding_columns', '\"class:auto\"');\n" +
+            "COMMIT;", node1);
+    }
+
+    @Test
+    public void testDynamicPartition2() {
+        DialectNode dialectNode = new DialectNode(
+            "BEGIN;\n" +
+                "\n" +
+                "CREATE TABLE tbl1\n" +
+                "(\n" +
+                "    c1  TEXT NOT NULL\n" +
+                "    ,c2 TEXT\n" +
+                ")\n" +
+                "PARTITION BY LIST \n" +
+                "(\n" +
+                "    c2  \n" +
+                ");\n" +
+                "CALL set_table_property ('tbl1', 'auto_partitioning.enable', 'true');\n" +
+                "CALL set_table_property ('tbl1', 'auto_partitioning.time_unit', 'DAY');\n" +
+                "CALL set_table_property ('tbl1', 'auto_partitioning.time_zone', 'Asia/Shanghai');\n" +
+                "CALL set_table_property ('tbl1', 'auto_partitioning.num_precreate', '3');\n" +
+                "CALL set_table_property ('tbl1', 'auto_partitioning.num_retention', '2');\n" +
+                "COMMIT;"
+        );
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+        Node reverseNode = hologresTransformer.reverseTable(table);
+        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().build()).getNode();
+        assertEquals("BEGIN;\n" +
+            "CREATE TABLE tbl1 (\n" +
+            "   c1 TEXT NOT NULL,\n" +
+            "   c2 TEXT\n" +
+            ") PARTITION BY LIST(c2);\n" +
+            "CALL SET_TABLE_PROPERTY('tbl1', 'auto_partitioning.enable', 'true');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl1', 'auto_partitioning.time_unit', 'DAY');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl1', 'auto_partitioning.time_zone', 'Asia/Shanghai');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl1', 'auto_partitioning.num_precreate', '3');\n" +
+            "CALL SET_TABLE_PROPERTY('tbl1', 'auto_partitioning.num_retention', '2');\n" +
+            "COMMIT;", node1);
+    }
+
+    @Test
+    public void testForeignTable2() {
+        DialectNode dialectNode = new DialectNode(
+            "CREATE FOREIGN TABLE src_pt(\n" +
+                "  id text, \n" +
+                "  pt text) \n" +
+                "SERVER odps_server \n" +
+                "OPTIONS(project_name '<odps_project>', table_name '<odps_table>');"
+        );
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+
+        Node reverseNode = hologresTransformer.reverseTable(table);
+        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().build()).getNode();
+        assertEquals("BEGIN;\n" +
+            "CREATE FOREIGN TABLE src_pt (\n" +
+            "   id TEXT,\n" +
+            "   pt TEXT\n" +
+            ")\n" +
+            "SERVER odps_server\n" +
+            "OPTIONS(project_name '<odps_project>', table_name '<odps_table>');\n" +
+            "COMMIT;", node1);
+    }
 }

@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class TimeToLiveSeconds extends BaseClientProperty<Long> {
 
-    public static final String TIME_TO_LIVE_IN_SECONDS = "time_to_live_in_seconds";
+    public static final String TIME_TO_LIVE_IN_SECONDS = HoloPropertyKey.TIME_TO_LIVE_IN_SECONDS.getValue();
 
     public TimeToLiveSeconds() {
         this.setKey(TIME_TO_LIVE_IN_SECONDS);

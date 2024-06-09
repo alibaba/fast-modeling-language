@@ -54,10 +54,10 @@ public class SetDictProperties extends BaseSetProperties {
     private final BaseLiteral defaultValue;
 
     public SetDictProperties(QualifiedName qualifiedName,
-                             List<Property> property,
-                             BaseDataType baseDataType,
-                             BaseConstraint baseConstraint,
-                             BaseLiteral defaultValue) {
+        List<Property> property,
+        BaseDataType baseDataType,
+        BaseConstraint baseConstraint,
+        BaseLiteral defaultValue) {
         super(qualifiedName, property);
         this.baseDataType = baseDataType;
         this.baseConstraint = baseConstraint;

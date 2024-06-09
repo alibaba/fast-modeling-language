@@ -20,5 +20,5 @@ public interface ConstraintType {
      *
      * @return
      */
-    String getName();
+    String getCode();
 }

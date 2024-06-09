@@ -54,8 +54,6 @@ public class TransformHologresTest {
             + "CREATE TABLE b (\n"
             + "   c1 BIGINT\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE b IS 'table comment';\n"
             + "COMMENT ON COLUMN b.c1 IS 'comment';\n"
             + "COMMIT;");

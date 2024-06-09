@@ -26,12 +26,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import com.aliyun.fastmodel.compare.util.CompareUtil;
 import com.aliyun.fastmodel.compare.impl.table.column.OrderColumnManager;
+import com.aliyun.fastmodel.compare.util.CompareUtil;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnCategory;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
@@ -108,11 +109,11 @@ public class ColumnCompare implements TableElementCompare {
     }
 
     protected Builder<BaseStatement> incrementCompare(QualifiedName qualifiedName,
-                                                      List<ColumnDefinition> beforeColumnDefines,
-                                                      List<ColumnDefinition> afterColumnDefines,
-                                                      BiFunction<QualifiedName, ColumnDefinition, BaseStatement> addDrop,
-                                                      BiFunction<QualifiedName, List<ColumnDefinition>,
-                                                          List<BaseStatement>> addCols) {
+        List<ColumnDefinition> beforeColumnDefines,
+        List<ColumnDefinition> afterColumnDefines,
+        BiFunction<QualifiedName, ColumnDefinition, BaseStatement> addDrop,
+        BiFunction<QualifiedName, List<ColumnDefinition>,
+            List<BaseStatement>> addCols) {
         Builder<BaseStatement> builder = ImmutableList.builder();
         //如果两边的都有的话内容
         List<ColumnDefinition> afterCopy = Lists.newArrayList(afterColumnDefines);
@@ -199,18 +200,20 @@ public class ColumnCompare implements TableElementCompare {
      * @return
      */
     private ChangeCol compare(QualifiedName qualifiedName, ColumnDefinition beforeDefine,
-                              ColumnDefinition afterDefine) {
+        ColumnDefinition afterDefine) {
         boolean changeComment = isChangeColumnComment(beforeDefine, afterDefine);
         boolean changeAliased = !Objects.equals(beforeDefine.getAliasedName(), afterDefine.getAliasedName());
         boolean changePrimary = false;
-        boolean changeColumn = !StringUtils.equalsIgnoreCase(beforeDefine.getColName().getValue(),
+        boolean changeName = !StringUtils.equalsIgnoreCase(beforeDefine.getColName().getValue(),
             afterDefine.getColName().getValue());
         boolean changeNotNull = false;
         boolean changeType = !Objects.equals(beforeDefine.getDataType(), afterDefine.getDataType());
         boolean changeCategory = isChangeColumnCategory(beforeDefine, afterDefine);
         boolean changeDim = isChangeDim(beforeDefine, afterDefine);
         boolean changeRefIndicators = isChangeRefIndicaotrs(beforeDefine, afterDefine);
+        boolean changeDefaultValue = isChangeDefaultValue(beforeDefine, afterDefine);
         List<Property> changeProperties = changeProperties(beforeDefine, afterDefine);
+        boolean changeColumnProperties = !changeProperties.isEmpty();
         Comment comment = null;
         if (changeComment) {
             if (afterDefine.getComment() == null) {
@@ -241,9 +244,42 @@ public class ColumnCompare implements TableElementCompare {
                 changeNotNull = true;
             }
         }
+        ChangeCol.ChangeState changeState = new ChangeCol.ChangeState();
+        if (changeName) {
+            changeState.setChangeName();
+        }
+        if (changeAliased) {
+            changeState.setChangeAlias();
+        }
+        if (changePrimary) {
+            changeState.setChangePrimary();
+        }
+        if (changeNotNull) {
+            changeState.setChangeNotNull();
+        }
+        if (changeType) {
+            changeState.setChangeDataType();
+        }
+        if (changeComment) {
+            changeState.setChangeComment();
+        }
+        if (changeDefaultValue) {
+            changeState.setChangeDefaultValue();
+        }
+        if (changeColumnProperties) {
+            changeState.setChangeColumnProperties();
+        }
+        if (changeCategory) {
+            changeState.setChangeCategory();
+        }
+        if (changeDim) {
+            changeState.setChangeDim();
+        }
+        if (changeRefIndicators) {
+            changeState.setChangeRefIndicators();
+        }
         //如果都没有发生修改，那么直接返回null
-        if (!changeComment && !changeAliased && !changePrimary && !changeNotNull && !changeColumn && !changeType
-            && !changeCategory && changeProperties.isEmpty() && !changeDim && !changeRefIndicators) {
+        if (changeState.nothingChange()) {
             return null;
         }
         if (changeCategory) {
@@ -258,8 +294,16 @@ public class ColumnCompare implements TableElementCompare {
         if (changeRefIndicators) {
             builder.refIndicators(afterDefine.getRefIndicators());
         }
-        ChangeCol changeCol = new ChangeCol(qualifiedName, beforeDefine.getColName(), builder.build());
-        return changeCol;
+        if (changeDefaultValue) {
+            builder.defaultValue(afterDefine.getDefaultValue());
+        }
+        return new ChangeCol(qualifiedName, beforeDefine.getColName(), builder.build(), Optional.of(changeState));
+    }
+
+    private boolean isChangeDefaultValue(ColumnDefinition beforeDefine, ColumnDefinition afterDefine) {
+        BaseExpression defaultValue = beforeDefine.getDefaultValue();
+        BaseExpression afterDefaultValue = afterDefine.getDefaultValue();
+        return !Objects.equals(defaultValue, afterDefaultValue);
     }
 
     private boolean isChangeDim(ColumnDefinition beforeDefine, ColumnDefinition afterDefine) {

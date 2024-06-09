@@ -8,9 +8,11 @@
 
 package com.aliyun.fastmodel.transform.hologres.parser.visitor;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
@@ -25,12 +27,12 @@ import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
-import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
 import com.aliyun.fastmodel.core.tree.statement.table.AddConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.AddPartitionCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
+import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol.ChangeType;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropCol;
@@ -46,6 +48,7 @@ import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
+import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.BeginWork;
@@ -54,6 +57,8 @@ import com.aliyun.fastmodel.transform.hologres.parser.util.BuilderUtil;
 import com.aliyun.fastmodel.transform.hologres.parser.util.HologresReservedWordUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import static java.util.stream.Collectors.joining;
@@ -86,6 +91,15 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     @Override
     public Boolean visitCreateTable(CreateTable node, Integer indent) {
+        Boolean foreignTable = isForeignTable(node);
+        if (foreignTable) {
+            return visitCreateForeignTable(node, indent);
+        } else {
+            return visitCreateInnerTable(node, indent);
+        }
+    }
+
+    private Boolean visitCreateInnerTable(CreateTable node, Integer indent) {
         boolean columnEmpty = node.isColumnEmpty();
         boolean executable = !columnEmpty;
         builder.append("BEGIN;\n");
@@ -113,21 +127,16 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         }
         builder.append(";\n");
         List<Property> properties = node.getProperties();
-        if (node.isPropertyEmpty()) {
-            builder.append(callSetProperty(tableCode, "orientation", context.getOrientation()));
-            builder.append("\n");
-            builder.append(callSetProperty(tableCode, "time_to_live_in_seconds", String.valueOf(context.getTimeToLiveInSeconds())));
-        } else {
+        if (CollectionUtils.isNotEmpty(properties)) {
             String propertiesValue = buildSetProperties(node.getQualifiedName(), properties);
             builder.append(propertiesValue);
         }
-        if (node.getComment() != null) {
-            builder.append("\n");
+        if (node.getComment() != null && node.getComment().getComment() != null) {
             builder.append(commentTable(tableCode, node.getCommentValue()));
         }
         if (!columnEmpty) {
             for (ColumnDefinition columnDefinition : columnDefines) {
-                if (columnDefinition.getComment() == null) {
+                if (columnDefinition.getComment() == null || columnDefinition.getComment().getComment() == null) {
                     continue;
                 }
                 builder.append("\n");
@@ -135,6 +144,34 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             }
         }
         builder.append("\n");
+        builder.append("COMMIT;");
+        return executable;
+    }
+
+    private Boolean visitCreateForeignTable(CreateTable node, Integer indent) {
+        boolean columnEmpty = node.isColumnEmpty();
+        boolean executable = !columnEmpty;
+        builder.append("BEGIN;\n");
+        builder.append("CREATE FOREIGN TABLE ");
+        if (node.isNotExists()) {
+            builder.append("IF NOT EXISTS ");
+        }
+        String tableCode = getCode(node.getQualifiedName());
+        builder.append(tableCode);
+        String elementIndent = indentString(indent + 1);
+        List<ColumnDefinition> columnDefines = merge(node.getColumnDefines(), node.getPartitionedBy());
+        if (!columnEmpty) {
+            builder.append(" (\n");
+            String columnList = formatColumnList(columnDefines, elementIndent);
+            builder.append(columnList);
+            if (!node.isConstraintEmpty()) {
+                appendConstraint(node, indent);
+            }
+            builder.append("\n").append(")");
+        }
+        String serverAndOptions = buildServerAndOptions(node);
+        builder.append(serverAndOptions);
+        builder.append(";\n");
         builder.append("COMMIT;");
         return executable;
     }
@@ -182,9 +219,6 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     private String callSetProperty(String code, String key, String value) {
         HologresPropertyConverter instance = HologresPropertyConverter.getInstance();
-        if (!instance.isValidProperty(key)) {
-            return StringUtils.EMPTY;
-        }
         BaseClientProperty baseClientProperty = instance.create(key, value);
         //https://help.aliyun.com/document_detail/160754.html?spm=a2c4g.467951.0.0.12c01598oEHfQG
         List<String> list = baseClientProperty.toColumnList();
@@ -232,6 +266,9 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         boolean isNotNull = column.getNotNull() != null && column.getNotNull();
         if (!isPrimary && isNotNull) {
             sb.append(" NOT NULL");
+        }
+        if (column.getDefaultValue() != null) {
+            sb.append(" DEFAULT ").append(formatExpression(column.getDefaultValue()));
         }
         return sb.toString();
     }
@@ -307,7 +344,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     @Override
     public Boolean visitSetTableComment(SetTableComment setTableComment, Integer context) {
-        BuilderUtil.addTransaction(builder, () ->{
+        BuilderUtil.addTransaction(builder, () -> {
             return commentTable(getCode(setTableComment.getQualifiedName()), setTableComment.getComment().getComment());
         });
         return true;
@@ -385,13 +422,22 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         String code = getCode(changeCol.getQualifiedName());
         List<String> changeValue = Lists.newArrayList();
         if (Objects.equals(oldColName, newColName)) {
-            BaseLiteral defaultValue = changeCol.getDefaultValue();
+            BaseExpression defaultValue = changeCol.getDefaultValue();
             if (defaultValue != null) {
                 String builder = "ALTER TABLE " + code
                     + " ALTER COLUMN " + formatColName(oldColName, 0)
                     + " SET DEFAULT " + formatExpression(defaultValue)
                     + ";";
                 changeValue.add(builder);
+            }
+            //如果改了默认值
+            if (changeCol.change(ChangeType.DEFAULT_VALUE)) {
+                if (defaultValue == null) {
+                    String builder = "ALTER TABLE " + code
+                        + " ALTER COLUMN " + formatColName(oldColName, 0)
+                        + " DROP DEFAULT;";
+                    changeValue.add(builder);
+                }
             }
             Comment comment = changeCol.getColumnDefinition().getComment();
             if (comment != null) {
@@ -442,5 +488,34 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     public Boolean visitCommitWork(CommitWork commitWork, Integer context) {
         builder.append("COMMIT;");
         return null;
+    }
+
+    private Boolean isForeignTable(CreateTable node) {
+        if (CollectionUtils.isEmpty(node.getProperties())) {
+            return false;
+        }
+        Optional<Property> foreignTablePropertyOpt = node.getProperties().stream().filter(property ->
+            StringUtils.equalsIgnoreCase(HoloPropertyKey.FOREIGN.getValue(), property.getName())
+                && BooleanUtils.toBoolean(property.getValue())).findAny();
+        return foreignTablePropertyOpt.isPresent() ? true : false;
+    }
+
+    private String buildServerAndOptions(CreateTable node) {
+        StringBuilder sb = new StringBuilder();
+        Optional<Property> serverOpt = node.getProperties().stream().filter(property ->
+            StringUtils.equalsIgnoreCase(HoloPropertyKey.SERVER_NAME.getValue(), property.getName())).findAny();
+        serverOpt.ifPresent(server -> sb.append("\nSERVER ").append(server.getValue()).append("\n"));
+
+        List<String> options = new ArrayList<>();
+        Optional<Property> projectNameOpt = node.getProperties().stream().filter(property ->
+            StringUtils.equalsIgnoreCase("project_name", property.getName())).findAny();
+        projectNameOpt.ifPresent(projectName -> options.add("project_name " + StripUtils.addStrip(projectName.getValue())));
+        Optional<Property> tableNameOpt = node.getProperties().stream().filter(property ->
+            StringUtils.equalsIgnoreCase("table_name", property.getName())).findAny();
+        tableNameOpt.ifPresent(tableName -> options.add("table_name " + StripUtils.addStrip(tableName.getValue())));
+        if (CollectionUtils.isNotEmpty(options)) {
+            sb.append("OPTIONS(").append(StringUtils.join(options, ", ")).append(")");
+        }
+        return sb.toString();
     }
 }

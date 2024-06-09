@@ -47,7 +47,7 @@ public class FixedStrategy extends RuleStrategy {
     private final BaseFunction baseFunction;
 
     public FixedStrategy(BaseFunction baseFunction, ComparisonOperator comparisonOperator,
-                         BaseLiteral expectValue) {
+        BaseLiteral expectValue) {
         this.comparisonOperator = comparisonOperator;
         this.expectValue = expectValue;
         this.baseFunction = baseFunction;

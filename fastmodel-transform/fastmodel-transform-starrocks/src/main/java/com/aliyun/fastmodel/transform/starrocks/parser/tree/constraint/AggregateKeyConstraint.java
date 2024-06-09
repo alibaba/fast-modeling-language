@@ -1,4 +1,4 @@
-package com.aliyun.fastmodel.transform.starrocks.parser.tree;
+package com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint;
 
 import java.util.List;
 
@@ -16,18 +16,18 @@ import lombok.Getter;
  * @date 2023/9/11
  */
 @Getter
-public class AggregateConstraint extends CustomConstraint {
+public class AggregateKeyConstraint extends CustomConstraint {
 
     public static final String TYPE = "AGGREGATE";
 
     private final List<Identifier> columns;
 
-    public AggregateConstraint(Identifier constraintName, List<Identifier> columns, Boolean enable) {
+    public AggregateKeyConstraint(Identifier constraintName, List<Identifier> columns, Boolean enable) {
         super(constraintName, enable, TYPE);
         this.columns = columns;
     }
 
-    public AggregateConstraint(Identifier constraintName, List<Identifier> columns) {
+    public AggregateKeyConstraint(Identifier constraintName, List<Identifier> columns) {
         this(constraintName, columns, true);
     }
 

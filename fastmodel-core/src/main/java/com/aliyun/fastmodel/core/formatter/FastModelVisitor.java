@@ -662,16 +662,14 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         builder.append(indentString(ident));
         builder.append("INDEX ").append(formatExpression(tableIndex.getIndexName()));
         appendTableIndex(tableIndex.getIndexColumnNames());
+        appendProperties(builder, tableIndex.getProperties());
         return true;
     }
 
-    private void appendTableIndex(List<IndexColumnName> tableIndex) {
-        List<IndexColumnName> indexColumnNames = tableIndex;
+    protected void appendTableIndex(List<IndexColumnName> tableIndex) {
         builder.append(" (");
-        builder.append(indexColumnNames.stream().map(
-            x -> {
-                return formatIndexColumnName(x);
-            }
+        builder.append(tableIndex.stream().map(
+            this::formatIndexColumnName
         ).collect(joining(",")));
         builder.append(")");
     }

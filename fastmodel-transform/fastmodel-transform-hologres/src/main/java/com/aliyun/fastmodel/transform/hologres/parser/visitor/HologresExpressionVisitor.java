@@ -13,6 +13,9 @@ import java.util.StringJoiner;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.CurrentTimestamp;
+import com.aliyun.fastmodel.core.tree.expr.literal.DateLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.ArrayBounds;
@@ -70,5 +73,20 @@ public class HologresExpressionVisitor extends DefaultExpressionVisitor implemen
             String strip = StripUtils.strip(value);
             return StripUtils.addDoubleStrip(strip);
         }
+    }
+
+    @Override
+    public String visitTimestampLiteral(TimestampLiteral node, Void context) {
+        return node.getTimestampFormat();
+    }
+
+    @Override
+    public String visitDateLiteral(DateLiteral dateLiteral, Void context) {
+        return dateLiteral.getValue();
+    }
+
+    @Override
+    public String visitCurrentTimestamp(CurrentTimestamp currentTimestamp, Void context) {
+        return CURRENT_TIMESTAMP;
     }
 }

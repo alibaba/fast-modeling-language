@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.common.parser.ParserHelper;
 import com.aliyun.fastmodel.common.utils.StripUtils;
-import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -31,6 +30,7 @@ import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.DecimalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.EscapeStringLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
@@ -50,34 +50,23 @@ import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.TableElement;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.DefaultValueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.NotNullConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Any_nameContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CommentColumnContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CommentObjectTypeContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Comment_textContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ConstintervalContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_array_boundsContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.OptpartitionspecContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Part_elemContext;
-import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.PartitionspecContext;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.BeginWork;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.CommitWork;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.ArrayBounds;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresArrayDataType;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresGenericDataType;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresRowDataType;
-import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresRowDataType.RowType;
+import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
+import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.A_exprContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.AexprconstContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Any_nameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.AnysconstContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Array_boundsContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.BitwithlengthContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.BitwithoutlengthContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.C_expr_exprContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CallstmtContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CharacterContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ColconstraintContext;
@@ -87,21 +76,31 @@ import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CollabelC
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ColumnDefContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ColumnElemContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ColumnlistContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CommentColumnContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CommentObjectTypeContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Comment_textContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ConstdatetimeContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.ConstraintelemContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CreateforeigntablestmtContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.CreatestmtContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.FconstContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Func_applicationContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Func_arg_listContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Func_nameContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Generic_option_elemContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.GenerictypeContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.IconstContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.IndirectionContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.NameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.NumericContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_array_boundsContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_sort_clauseContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_type_modifiersContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.OptpartitionspecContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Part_elemContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.PartitionspecContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Qualified_nameContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Reloption_elemContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.SconstContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.SimpletypenameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Sort_clauseContext;
@@ -112,6 +111,14 @@ import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Transacti
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Type_function_nameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.TypenameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParserBaseVisitor;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.BeginWork;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.CommitWork;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.ArrayBounds;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresArrayDataType;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresGenericDataType;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresRowDataType;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresRowDataType.RowType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -242,13 +249,59 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
             partitionedBy = (PartitionedBy)visit(ctx.optpartitionspec());
             partitionedBy = mapColumn(partitionedBy, columnDefinitions);
         }
+        List<Property> properties = buildProperties(ctx);
         return CreateTable.builder()
             .ifNotExist(isNotExist)
             .columns(columnDefinitions)
             .tableName(qualifiedName)
             .constraints(constraints)
             .partition(partitionedBy)
+            .properties(properties)
             .build();
+    }
+
+    @Override
+    public Node visitCreateforeigntablestmt(PostgreSQLParser.CreateforeigntablestmtContext ctx) {
+        QualifiedName qualifiedName = (QualifiedName)visit(ctx.qualified_name(0));
+        boolean isNotExist = ctx.EXISTS() != null && ctx.NOT() != null;
+        List<TableElement> visit = ParserHelper.visit(this, ctx.opttableelementlist().tableelementlist().tableelement(), TableElement.class);
+        List<ColumnDefinition> columnDefinitions = visit.stream().filter(
+            t -> t instanceof ColumnDefinition
+        ).map(t -> (ColumnDefinition)t).collect(Collectors.toList());
+
+        List<BaseConstraint> constraints = visit.stream().filter(
+            t -> t instanceof BaseConstraint
+        ).map(t -> (BaseConstraint)t).collect(Collectors.toList());
+
+        List<Property> properties = new ArrayList<>();
+        if (ctx.FOREIGN() != null) {
+            properties.add(new Property(HoloPropertyKey.FOREIGN.getValue(), new BooleanLiteral(BooleanLiteral.TRUE)));
+        }
+
+        // server
+        if (ctx.SERVER() != null) {
+            Identifier serverName = (Identifier) visit(ctx.name().colid());
+            properties.add(new Property(HoloPropertyKey.SERVER_NAME.getValue(), serverName.getValue()));
+        }
+
+        //options
+        List<Property> options = buildOptions(ctx);
+        properties.addAll(options);
+
+        return CreateTable.builder()
+            .ifNotExist(isNotExist)
+            .columns(columnDefinitions)
+            .tableName(qualifiedName)
+            .constraints(constraints)
+            .properties(properties)
+            .build();
+    }
+
+    @Override
+    public Property visitReloption_elem(PostgreSQLParser.Reloption_elemContext ctx) {
+        String key = ctx.collabel().get(0).identifier().Identifier().getText();
+        String value = ctx.def_arg().sconst().anysconst().StringConstant().getText();
+        return new Property(key, StripUtils.strip(value));
     }
 
     private PartitionedBy mapColumn(PartitionedBy partitionedBy, List<ColumnDefinition> columnDefinitions) {
@@ -298,6 +351,7 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
             .dataType(baseDataType)
             .notNull(toNotNull(inlineConstraint))
             .primary(toPrimary(inlineConstraint))
+            .defaultValue(toDefaultValue(inlineConstraint))
             .build();
     }
 
@@ -322,12 +376,27 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
         if (ctx.PRIMARY() != null) {
             return new PrimaryConstraint(IdentifierUtil.sysIdentifier(), ImmutableList.of());
         }
+        if (ctx.DEFAULT() != null) {
+            BaseExpression baseExpression = (BaseExpression)visit(ctx.b_expr());
+            return new DefaultValueConstraint(IdentifierUtil.sysIdentifier(), baseExpression);
+        }
         return super.visitColconstraintelem(ctx);
     }
 
     @Override
     public Node visitQualified_name(Qualified_nameContext ctx) {
         return getQualifiedName(ctx.colid(), ctx.indirection());
+    }
+
+    @Override
+    public Node visitAexprconst(AexprconstContext ctx) {
+        if (ctx.FALSE_P() != null) {
+            return new BooleanLiteral("FALSE");
+        }
+        if (ctx.TRUE_P() != null) {
+            return new BooleanLiteral("TRUE");
+        }
+        return super.visitAexprconst(ctx);
     }
 
     private QualifiedName getQualifiedName(ColidContext context, IndirectionContext indirectionContext) {
@@ -448,6 +517,17 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
             orderBy
         );
         return functionCall;
+    }
+
+    @Override
+    public Node visitB_expr(PostgreSQLParser.B_exprContext ctx) {
+        if (ctx.c_expr() != null && ctx.c_expr() instanceof C_expr_exprContext) {
+            C_expr_exprContext exprExprContext = (C_expr_exprContext) ctx.c_expr();
+            if (exprExprContext.func_expr() != null && exprExprContext.func_expr().func_application() != null) {
+                return visit(exprExprContext.func_expr().func_application());
+            }
+        }
+        return visitChildren(ctx);
     }
 
     @Override
@@ -660,6 +740,14 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitGeneric_option_elem(PostgreSQLParser.Generic_option_elemContext ctx) {
+        String key = ctx.generic_option_name().collabel().identifier().Identifier().toString();
+        String value = ctx.generic_option_arg().sconst().anysconst().StringConstant().toString();
+
+        return new Property(key, StripUtils.strip(value));
+    }
+
+    @Override
     public Node visitAny_name(Any_nameContext ctx) {
         List<Identifier> list = Lists.newArrayList();
         Identifier identifier = (Identifier)visit(ctx.colid());
@@ -683,6 +771,61 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
             return c.getConstraintType() == ConstraintType.NOT_NULL;
         }).findFirst();
         return first.map(BaseConstraint::getEnable).orElse(null);
+    }
+
+    private BaseExpression toDefaultValue(List<BaseConstraint> inlineConstraint) {
+        Optional<BaseConstraint> first = inlineConstraint.stream().filter(c -> {
+            return c.getConstraintType() == ConstraintType.DEFAULT_VALUE;
+        }).findFirst();
+        if (first.isEmpty()) {
+            return null;
+        }
+        DefaultValueConstraint defaultValueConstraint = (DefaultValueConstraint)first.get();
+        return defaultValueConstraint.getValue();
+    }
+
+    private List<Property> buildProperties(CreatestmtContext ctx) {
+        if (ctx.optwith() == null) {
+            return Collections.emptyList();
+        }
+        if (ctx.optwith().reloptions() == null) {
+            return Collections.emptyList();
+        }
+        if (ctx.optwith().reloptions().reloption_list() == null) {
+            return Collections.emptyList();
+        }
+        if (CollectionUtils.isEmpty(ctx.optwith().reloptions().reloption_list().reloption_elem())) {
+            return Collections.emptyList();
+        }
+
+        List<Property> properties = new ArrayList<>();
+        List<Reloption_elemContext> reloptionElemContexts = ctx.optwith().reloptions().reloption_list().reloption_elem();
+        reloptionElemContexts.forEach(reloptionElemContext -> {
+            Property property = (Property)visit(reloptionElemContext);
+            properties.add(property);
+        });
+        return properties;
+    }
+
+    private List<Property> buildOptions(CreateforeigntablestmtContext ctx) {
+        if (ctx.create_generic_options() == null) {
+            return Collections.emptyList();
+        }
+        if (ctx.create_generic_options().generic_option_list() == null) {
+            return Collections.emptyList();
+        }
+        if (CollectionUtils.isEmpty(ctx.create_generic_options().generic_option_list().generic_option_elem())) {
+            return Collections.emptyList();
+        }
+
+        List<Property> options = new ArrayList<>();
+        List<Generic_option_elemContext> genericOptionElemContexts =
+            ctx.create_generic_options().generic_option_list().generic_option_elem();
+        genericOptionElemContexts.forEach(genericOptionElemContext -> {
+            Property property = (Property)visit(genericOptionElemContext);
+            options.add(property);
+        });
+        return options;
     }
 
 }

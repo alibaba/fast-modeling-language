@@ -1,10 +1,5 @@
 package com.aliyun.fastmodel.transform.starrocks.parser.visitor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.aliyun.fastmodel.common.parser.ParserHelper;
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.exception.ParseException;
@@ -18,11 +13,15 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.CurrentTimestamp;
+import com.aliyun.fastmodel.core.tree.expr.literal.DecimalLiteral;
+import com.aliyun.fastmodel.core.tree.expr.literal.DoubleLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.IntervalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.ListStringLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
@@ -41,7 +40,9 @@ import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.starrocks.format.StarRocksProperty;
+import com.aliyun.fastmodel.transform.starrocks.format.TimeFunctionType;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksBaseVisitor;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.AggDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.ArrayTypeContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.BackQuotedIdentifierContext;
@@ -56,19 +57,21 @@ import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.DefaultDe
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.DigitIdentifierContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.DistributionDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.DoubleValueContext;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.DupKeysContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.EngineDescContext;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.FromRollupContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.IdentifierListContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.IndexDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.IndexTypeContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.IntegerValueContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.IntervalContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.KeyDescContext;
-import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.LiteralContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.MapTypeContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.MultiItemListPartitionDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.MultiRangePartitionContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.NullLiteralContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.NumericLiteralContext;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.OrderByDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionKeyDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionListIdentifierContext;
@@ -79,6 +82,7 @@ import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.Propertie
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PropertyContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.QualifiedNameContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.RollupDescContext;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.RollupItemContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.SingleItemListPartitionDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.SingleRangePartitionContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.SingleStatementContext;
@@ -89,11 +93,16 @@ import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.TypeConte
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.TypeListContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.TypeParameterContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.UnquotedIdentifierContext;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggregateConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.DuplicateConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupItem;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksDataTypeName;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionedBy;
@@ -107,6 +116,13 @@ import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleItem
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
 import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.Token;
+import org.apache.commons.lang3.BooleanUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getLocation;
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getOrigin;
@@ -167,9 +183,23 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         List<TableIndex> listTableIndex = ParserHelper.visit(this, ctx.indexDesc(), TableIndex.class);
         //constraint
         Optional<BaseConstraint> list = ParserHelper.visitIfPresent(this, ctx.keyDesc(), BaseConstraint.class);
-        List<BaseConstraint> constraints = null;
-        if (list.isPresent()) {
-            constraints = Lists.newArrayList(list.get());
+        List<BaseConstraint> constraints = Lists.newArrayList();
+        list.ifPresent(constraints::add);
+
+        //distrbiute key constraint
+        if (ctx.distributionDesc() != null) {
+            DistributeConstraint distributeKeyConstraint = (DistributeConstraint)visit(ctx.distributionDesc());
+            constraints.add(distributeKeyConstraint);
+        }
+        //rollup_index
+        if (ctx.rollupDesc() != null) {
+            RollupConstraint rollupConstraint = (RollupConstraint)visit(ctx.rollupDesc());
+            constraints.add(rollupConstraint);
+        }
+        //order by constraint
+        if (ctx.orderByDesc() != null) {
+            OrderByConstraint orderByConstraint = (OrderByConstraint)visit(ctx.orderByDesc());
+            constraints.add(orderByConstraint);
         }
         PropertiesContext properties = ctx.properties();
         List<Property> propertyList = Lists.newArrayList();
@@ -209,7 +239,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         List<Property> properties = Lists.newArrayList();
         IndexTypeContext indexTypeContext = ctx.indexType();
         if (indexTypeContext != null) {
-            Property property = new Property(StarRocksProperty.TABLE_INDEX_TYPE.getValue(), "USING BITMAP");
+            Property property = new Property(StarRocksProperty.TABLE_INDEX_TYPE.getValue(), "BITMAP");
             properties.add(property);
         }
         if (ctx.comment() != null) {
@@ -252,6 +282,49 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitPartitionFunctionCall(StarRocksParser.PartitionFunctionCallContext ctx) {
+        return visit(ctx.functionCall());
+    }
+
+    @Override
+    public Node visitSimpleFunctionCall(StarRocksParser.SimpleFunctionCallContext ctx) {
+        QualifiedName funcName = (QualifiedName)visit(ctx.qualifiedName());
+
+        Identifier columnName = null;
+        FunctionCall functionCall = null;
+        if (TimeFunctionType.DATE_TRUNC.getValue().equalsIgnoreCase(funcName.getFirst())) {
+            StringLiteral timeUnit = (StringLiteral)visit(ctx.expression(0));
+            List<BaseExpression> arguments = Lists.newArrayList(timeUnit);
+            functionCall = new FunctionCall(funcName, false, arguments);
+            columnName = (Identifier)visit(ctx.expression(1));
+        } else if (TimeFunctionType.TIME_SLICE.getValue().equalsIgnoreCase(funcName.getFirst())) {
+            columnName = (Identifier)visit(ctx.expression(0));
+            IntervalLiteral interval = (IntervalLiteral)visit(ctx.expression(1));
+            List<BaseExpression> arguments = Lists.newArrayList(interval);
+            functionCall = new FunctionCall(funcName, false, arguments);
+        } else {
+            // 目前仅支持这两种函数
+            return null;
+        }
+
+        ColumnDefinition columnDefinition = ColumnDefinition.builder()
+                .colName(columnName)
+                .build();
+
+        return new ExpressionPartitionBy(Lists.newArrayList(columnDefinition), functionCall, null);
+    }
+
+    @Override
+    public Node visitPartitionListIdentiifer(StarRocksParser.PartitionListIdentiiferContext ctx) {
+        IdentifierListContext identifierListContext = ctx.identifierList();
+        List<Identifier> list = ParserHelper.visit(this, identifierListContext.identifier(), Identifier.class);
+        List<ColumnDefinition> columnDefinitions = list.stream().map(identifier -> ColumnDefinition.builder()
+                .colName(identifier)
+                .build()).collect(Collectors.toList());
+        return new ExpressionPartitionBy(columnDefinitions, null, null);
+    }
+
+    @Override
     public Node visitSingleItemListPartitionDesc(SingleItemListPartitionDescContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
         ListStringLiteral listStringLiteral = (ListStringLiteral)visit(ctx.stringList());
@@ -260,6 +333,14 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
             properList = ParserHelper.visit(this, ctx.propertyList().property(), Property.class);
         }
         return new SingleItemListPartition(identifier, ctx.IF() != null, listStringLiteral, properList);
+    }
+
+    @Override
+    public Node visitStringList(StarRocksParser.StringListContext ctx) {
+        List<StringLiteral> stringLiteralList = ctx.string().stream()
+                .map(value -> new StringLiteral(value.getText())).collect(Collectors.toList());
+        return new ListStringLiteral(getLocation(ctx),
+                getOrigin(ctx), stringLiteralList);
     }
 
     @Override
@@ -327,11 +408,28 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         if (ctx.string() != null) {
             stringLiteral = (StringLiteral)visit(ctx.string());
         }
-        PartitionValue partitionValue = new PartitionValue(
+        return new PartitionValue(
             ctx.MAXVALUE() != null,
             stringLiteral
         );
-        return partitionValue;
+    }
+
+    @Override
+    public Node visitDistributionDesc(DistributionDescContext ctx) {
+        Integer bucket = null;
+        if (ctx.BUCKETS() != null) {
+            bucket = Integer.parseInt(ctx.INTEGER_VALUE().getText());
+        }
+        if (ctx.RANDOM() != null) {
+            return new DistributeConstraint(true, bucket);
+        }
+        if (ctx.identifierList() != null) {
+            return new DistributeConstraint(
+                ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class),
+                bucket
+            );
+        }
+        return super.visitDistributionDesc(ctx);
     }
 
     private List<Property> toExtend(CreateTableStatementContext ctx) {
@@ -339,17 +437,6 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         EngineDescContext engineDescContext = ctx.engineDesc();
         if (engineDescContext != null) {
             Property property = (Property)visit(engineDescContext);
-            list.add(property);
-        }
-        DistributionDescContext distributionDescContext = ctx.distributionDesc();
-        if (distributionDescContext != null) {
-            List<Property> property = toList(distributionDescContext);
-            list.addAll(property);
-        }
-        //roll up
-        RollupDescContext rollupDescContext = ctx.rollupDesc();
-        if (rollupDescContext != null) {
-            Property property = (Property)visit(rollupDescContext);
             list.add(property);
         }
         return list;
@@ -366,25 +453,35 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
 
     @Override
     public Node visitRollupDesc(RollupDescContext ctx) {
-        return super.visitRollupDesc(ctx);
+        List<RollupItem> rollupItemList = ParserHelper.visit(this, ctx.rollupItem(), RollupItem.class);
+        return new RollupConstraint(rollupItemList);
     }
 
-    public List<Property> toList(DistributionDescContext ctx) {
-        List<Identifier> list = null;
-        if (ctx.identifierList() != null) {
-            list = ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class);
+    @Override
+    public Node visitRollupItem(RollupItemContext ctx) {
+        List<Identifier> identifiers = ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class);
+        DupKeysContext dupKeysContext = ctx.dupKeys();
+        List<Identifier> duplicateKeyList = null;
+        if (dupKeysContext != null) {
+            duplicateKeyList = ParserHelper.visit(this, ctx.dupKeys().identifierList().identifier(), Identifier.class);
         }
-        List<Property> propertyList = Lists.newArrayList();
-        if (list != null) {
-            Property property = new Property(StarRocksProperty.TABLE_DISTRIBUTED_HASH.getValue(),
-                list.stream().map(Identifier::getValue).collect(Collectors.joining(",")));
-            propertyList.add(property);
+        Identifier fromRollup = ParserHelper.visitIfPresent(this, ctx.fromRollup(), Identifier.class).orElse(null);
+        List<Property> properties = null;
+        if (ctx.properties() != null) {
+            properties = ParserHelper.visit(this, ctx.properties().property(), Property.class);
         }
-        if (ctx.BUCKETS() != null) {
-            Property property = new Property(StarRocksProperty.TABLE_DISTRIBUTED_BUCKETS.getValue(), ctx.INTEGER_VALUE().getText());
-            propertyList.add(property);
-        }
-        return propertyList;
+        return new RollupItem(
+            (Identifier)visit(ctx.rollupName),
+            identifiers,
+            duplicateKeyList,
+            fromRollup,
+            properties
+        );
+    }
+
+    @Override
+    public Node visitFromRollup(FromRollupContext ctx) {
+        return visit(ctx.identifier());
     }
 
     @Override
@@ -398,7 +495,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         IdentifierListContext identifierListContext = ctx.identifierList();
         List<Identifier> list = ParserHelper.visit(this, identifierListContext.identifier(), Identifier.class);
         if (ctx.AGGREGATE() != null) {
-            return new AggregateConstraint(IdentifierUtil.sysIdentifier(), list, true);
+            return new AggregateKeyConstraint(IdentifierUtil.sysIdentifier(), list, true);
         }
         if (ctx.PRIMARY() != null) {
             return new PrimaryConstraint(IdentifierUtil.sysIdentifier(), list);
@@ -407,9 +504,18 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
             return new UniqueConstraint(IdentifierUtil.sysIdentifier(), list);
         }
         if (ctx.DUPLICATE() != null) {
-            return new DuplicateConstraint(IdentifierUtil.sysIdentifier(), list, true);
+            return new DuplicateKeyConstraint(IdentifierUtil.sysIdentifier(), list, true);
         }
         return super.visitKeyDesc(ctx);
+    }
+
+    @Override
+    public Node visitOrderByDesc(OrderByDescContext ctx) {
+        List<Identifier> identifierList = ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class);
+        return new OrderByConstraint(
+            IdentifierUtil.sysIdentifier(),
+            identifierList
+        );
     }
 
     @Override
@@ -430,9 +536,9 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         }
         //default value
         DefaultDescContext defaultDescContext = ctx.defaultDesc();
-        BaseLiteral baseLiteral = null;
+        BaseExpression baseLiteral = null;
         if (defaultDescContext != null) {
-            baseLiteral = (BaseLiteral)visit(ctx.defaultDesc());
+            baseLiteral = (BaseExpression)visit(ctx.defaultDesc());
         }
 
         //agg desc
@@ -442,13 +548,19 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
             Property property = new Property(StarRocksProperty.COLUMN_AGG_DESC.getValue(), aggDescContext.getText());
             properties.add(property);
         }
+
         if (ctx.charsetName() != null) {
-            Identifier identifier1 = (Identifier)visit(ctx.charsetName().identifier());
-            Property property = new Property(StarRocksProperty.COLUMN_CHAR_SET.getValue(), identifier1.getValue());
+            Identifier value = (Identifier)visit(ctx.charsetName().identifier());
+            Property property = new Property(StarRocksProperty.COLUMN_CHAR_SET.getValue(), value.getValue());
             properties.add(property);
         }
         if (ctx.KEY() != null) {
             Property property = new Property(StarRocksProperty.COLUMN_KEY.getValue(), "KEY");
+            properties.add(property);
+        }
+
+        if (ctx.AUTO_INCREMENT() != null) {
+            Property property = new Property(StarRocksProperty.COLUMN_AUTO_INCREMENT.getValue(), BooleanUtils.toStringTrueFalse(true));
             properties.add(property);
         }
         return ColumnDefinition.builder()
@@ -471,6 +583,10 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         }
         if (ctx.CURRENT_TIMESTAMP() != null) {
             return new CurrentTimestamp();
+        }
+        if (ctx.qualifiedName() != null) {
+            QualifiedName qualifiedName = (QualifiedName)visit(ctx.qualifiedName());
+            return new FunctionCall(qualifiedName, false, Lists.newArrayList());
         }
         return super.visitDefaultDesc(ctx);
     }
@@ -547,11 +663,6 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitLiteral(LiteralContext ctx) {
-        return super.visitLiteral(ctx);
-    }
-
-    @Override
     public Node visitNullLiteral(NullLiteralContext ctx) {
         return new NullLiteral();
     }
@@ -568,17 +679,17 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
 
     @Override
     public Node visitDecimalValue(DecimalValueContext ctx) {
-        return super.visitDecimalValue(ctx);
+        return new DecimalLiteral(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx), ctx.getText());
     }
 
     @Override
     public Node visitDoubleValue(DoubleValueContext ctx) {
-        return super.visitDoubleValue(ctx);
+        return new DoubleLiteral(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx), ctx.getText());
     }
 
     @Override
     public Node visitIntegerValue(IntegerValueContext ctx) {
-        return super.visitIntegerValue(ctx);
+        return new LongLiteral(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx), ctx.getText());
     }
 
     @Override

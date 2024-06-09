@@ -190,7 +190,7 @@ public class HologresClientConverterTest {
         assertNotNull(convertToTable);
         assertEquals(convertToTable.getName(), "b");
         assertEquals(convertToTable.getComment(), "abc");
-        assertEquals(convertToTable.getProperties().size(), 2);
+        assertEquals(convertToTable.getProperties().size(), 1);
         assertEquals(convertToTable.getLifecycleSeconds(), new Long(100L));
     }
 

@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ClusterKey extends BaseClientProperty<List<String>> {
 
-    public static final String CLUSTERING_KEY = "clustering_key";
+    public static final String CLUSTERING_KEY = HoloPropertyKey.CLUSTERING_KEY.getValue();
 
     public ClusterKey() {
         this.setKey(CLUSTERING_KEY);

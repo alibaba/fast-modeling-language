@@ -16,7 +16,12 @@
 
 package com.aliyun.fastmodel.common.utils;
 
+import com.aliyun.fastmodel.core.tree.util.StringLiteralUtil;
 import org.apache.commons.lang3.StringUtils;
+
+import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.DOUBLE_QUOTE;
+import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.PREFIX;
+import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.SINGLE;
 
 /**
  * 去除字符串两边的引号内容
@@ -27,9 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 public class StripUtils {
 
     public static final String SUFFIX = ";";
-    public static final String SINGLE = "'";
-    public static final String PREFIX = "`";
-    public static final String DOUBLE_QUOTE = "\"";
 
     /**
      * 将字符串坐下strip
@@ -38,40 +40,17 @@ public class StripUtils {
      * @return 处理后的字符串
      */
     public static String strip(String src) {
-        String prefix = SINGLE;
-        if (src.startsWith(prefix)) {
-            return stripOne(src, prefix);
-        }
-        prefix = DOUBLE_QUOTE;
-        if (src.startsWith(prefix)) {
-            return stripOne(src, prefix);
-        }
-        prefix = PREFIX;
-        if (src.startsWith(prefix)) {
-            return stripOne(src, prefix);
-        }
-        return src;
+        return StringLiteralUtil.strip(src);
     }
 
     /**
      * 将双引号去掉
+     *
      * @param src
      * @return 去除之后的双引号
      */
-    public static String removeDoubleStrip(String src){
+    public static String removeDoubleStrip(String src) {
         return StringUtils.remove(src, DOUBLE_QUOTE);
-    }
-
-    private static String unquote(String value) {
-        return value.substring(1, value.length() - 1)
-            .replace("''", "'");
-    }
-
-    private static String stripOne(String src, String prefix) {
-        if (src.startsWith(prefix) && src.endsWith(prefix)) {
-            return unquote(src);
-        }
-        return src;
     }
 
     /**

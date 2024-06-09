@@ -34,7 +34,7 @@ import lombok.Getter;
  * @date 2021/8/30
  */
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class IndexColumnName extends AbstractFmlNode {
 
     private final Identifier columnName;
@@ -44,7 +44,7 @@ public class IndexColumnName extends AbstractFmlNode {
     private final SortType sortType;
 
     public IndexColumnName(Identifier columnName, LongLiteral columnLength,
-                           SortType sortType) {
+        SortType sortType) {
         this.columnName = columnName;
         this.columnLength = columnLength;
         this.sortType = sortType;

@@ -26,7 +26,7 @@ public class MultiRangePartitionProperty extends BaseClientProperty<MultiRangeCl
 
     @Override
     public void setValueString(String value) {
-        if (StringUtils.isNotBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             return;
         }
         this.setValue(JSON.parseObject(value, MultiRangeClientPartition.class));

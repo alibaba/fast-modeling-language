@@ -14,6 +14,7 @@ import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
@@ -77,9 +78,7 @@ public class HologresAstVisitorTest {
         assertEquals(string, "BEGIN;\n"
             + "CREATE TABLE abc (\n"
             + "   c1 TEXT PRIMARY KEY\n"
-            + ") PARTITION BY LIST(c1);\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'time_to_live_in_seconds', '3153600000');\n"
+            + ") PARTITION BY LIST(c1);\n\n"
             + "COMMIT;");
     }
 
@@ -153,9 +152,7 @@ public class HologresAstVisitorTest {
             + "   c1 JSON PRIMARY KEY,\n"
             + "   c2 JSON PRIMARY KEY,\n"
             + "   c3 TEXT PRIMARY KEY\n"
-            + ") PARTITION BY LIST(c1,c2,c3);\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('abc', 'time_to_live_in_seconds', '3153600000');\n"
+            + ") PARTITION BY LIST(c1,c2,c3);\n\n"
             + "COMMIT;");
     }
 
@@ -199,5 +196,37 @@ public class HologresAstVisitorTest {
         assertEquals("BEGIN;\n"
             + "CALL SET_TABLE_PROPERTY('tbl', 'binlog.ttl', '1000');\n"
             + "COMMIT;", s);
+    }
+
+    @Test
+    public void testDefaultValue() {
+        HologresAstVisitor hologresAstVisitor = new HologresAstVisitor(HologresTransformContext.builder().build(), HologresVersion.V2);
+        ColumnDefinition build = ColumnDefinition.builder()
+            .colName(new Identifier("c1"))
+            .dataType(DataTypeUtil.simpleType("string", null))
+            .primary(true)
+            .defaultValue(new StringLiteral("abc"))
+            .build();
+        hologresAstVisitor.visitColumnDefine(build, 0);
+        String string = hologresAstVisitor.getBuilder().toString();
+        assertEquals("c1 TEXT PRIMARY KEY DEFAULT 'abc'", string);
+    }
+
+    @Test
+    public void testVisitChangeCol() {
+        HologresAstVisitor hologresAstVisitor = new HologresAstVisitor(HologresTransformContext.builder().build(), HologresVersion.V2);
+        ChangeCol changeCol1 = new ChangeCol(
+            QualifiedName.of("t1"),
+            new Identifier("c1"),
+            ColumnDefinition.builder()
+                .colName(new Identifier("c1"))
+                .dataType(DataTypeUtil.simpleType("string", null))
+                .defaultValue(new StringLiteral("st"))
+                .build()
+        );
+        Boolean b = hologresAstVisitor.visitChangeCol(changeCol1, 0);
+        assertEquals("BEGIN;\n"
+            + "ALTER TABLE t1 ALTER COLUMN c1 SET DEFAULT 'st';\n"
+            + "COMMIT;", hologresAstVisitor.getBuilder().toString());
     }
 }

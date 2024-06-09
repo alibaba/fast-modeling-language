@@ -1,16 +1,12 @@
 package com.aliyun.fastmodel.transform.starrocks.format;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import com.aliyun.fastmodel.core.formatter.ExpressionVisitor;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.ListStringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
@@ -27,9 +23,15 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstrain
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggregateConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.DuplicateConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.NonKeyConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupItem;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
+import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionedBy;
@@ -42,10 +44,14 @@ import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleItem
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
 import com.aliyun.fastmodel.transform.starrocks.parser.visitor.StarRocksAstVisitor;
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * StarRocksVisitor
@@ -95,9 +101,11 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             first.ifPresent(property -> builder.append("\nENGINE=").append(property.getValue()));
         }
 
-        //constraint
+        //key constraint
         if (!node.isConstraintEmpty()) {
-            appendConstraint(node, indent);
+            List<BaseConstraint> keyConstraint = node.getConstraintStatements().stream().filter(
+                c -> !(c instanceof NonKeyConstraint)).collect(Collectors.toList());
+            appendConstraint(keyConstraint, indent);
         }
 
         if (node.getComment() != null) {
@@ -116,9 +124,12 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             }
         }
 
-        //distribute desc
-        appendDistributeBy(node.getProperties());
-
+        //non key constraint
+        if (!node.isConstraintEmpty()) {
+            List<BaseConstraint> nonKeyConstraint = node.getConstraintStatements().stream().filter(
+                c -> c instanceof NonKeyConstraint).collect(Collectors.toList());
+            appendConstraint(nonKeyConstraint, indent);
+        }
 
         if (!node.isPropertyEmpty()) {
             String prop = formatProperty(node.getProperties());
@@ -129,29 +140,8 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
                 builder.append(")");
             }
         }
+        builder.append(";");
         return executable;
-    }
-
-    private void appendDistributeBy(List<Property> properties) {
-        String propertyValue = PropertyUtil.getPropertyValue(properties, StarRocksProperty.TABLE_DISTRIBUTED_HASH.getValue());
-        if (StringUtils.isBlank(propertyValue)) {
-            return;
-        }
-        builder.append("\n");
-        builder.append("DISTRIBUTED BY HASH");
-        String formatPropertyValue = formatIdentifierListValue(propertyValue);
-        builder.append("(").append(formatPropertyValue).append(")");
-
-        String buckets = PropertyUtil.getPropertyValue(properties, StarRocksProperty.TABLE_DISTRIBUTED_BUCKETS.getValue());
-        if (StringUtils.isNotBlank(buckets)) {
-            builder.append(" BUCKETS ");
-            builder.append(buckets);
-        }
-    }
-
-    private String formatIdentifierListValue(String propertyValue) {
-        return Lists.newArrayList(propertyValue.split(",")).stream()
-            .map(Identifier::new).map(this::formatExpression).collect(Collectors.joining(","));
     }
 
     @Override
@@ -196,25 +186,31 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             sb.append(" NULL");
         }
         if (column.getDefaultValue() != null) {
-            sb.append(" DEFAULT ").append(formatExpression(column.getDefaultValue()));
+            String expressionValue = formatExpression(column.getDefaultValue());
+            if (column.getDefaultValue() instanceof FunctionCall) {
+                sb.append(" DEFAULT (").append(expressionValue).append(")");
+            } else {
+                sb.append(" DEFAULT ").append(expressionValue);
+            }
+        }
+        //auto increment
+        String autoIncrement = PropertyUtil.getPropertyValue(columnProperties, StarRocksProperty.COLUMN_AUTO_INCREMENT.getValue());
+        if (StringUtils.equalsIgnoreCase(BooleanLiteral.TRUE, autoIncrement)) {
+            sb.append(" ").append("AUTO_INCREMENT");
         }
         sb.append(formatComment(column.getComment(), isEndNewLine(sb.toString())));
         return sb.toString();
     }
 
-    private void appendConstraint(CreateTable node, Integer indent) {
-        List<BaseConstraint> constraintStatements = node.getConstraintStatements();
-        if (CollectionUtils.isEmpty(constraintStatements)) {
-            return;
-        }
-        for (BaseConstraint baseConstraint : node.getConstraintStatements()) {
+    private void appendConstraint(List<BaseConstraint> constraints, Integer indent) {
+        for (BaseConstraint baseConstraint : constraints) {
             builder.append("\n");
             process(baseConstraint, indent);
         }
     }
 
     @Override
-    public Boolean visitAggregateConstraint(AggregateConstraint aggregateConstraint, Integer context) {
+    public Boolean visitAggregateConstraint(AggregateKeyConstraint aggregateConstraint, Integer context) {
         builder.append("AGGREGATE KEY (");
         List<Identifier> colNames = aggregateConstraint.getColumns();
         builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
@@ -223,7 +219,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
     }
 
     @Override
-    public Boolean visitDuplicateConstraint(DuplicateConstraint duplicateConstraint, Integer context) {
+    public Boolean visitDuplicateConstraint(DuplicateKeyConstraint duplicateConstraint, Integer context) {
         builder.append("DUPLICATE KEY (");
         List<Identifier> colNames = duplicateConstraint.getColumns();
         builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
@@ -238,6 +234,50 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
         builder.append(")");
         return true;
+    }
+
+    @Override
+    public Boolean visitRollupConstraint(RollupConstraint rollupConstraint, Integer context) {
+        builder.append("ROLLUP (");
+        if (CollectionUtils.isNotEmpty(rollupConstraint.getRollupItemList())) {
+            String s = rollupConstraint.getRollupItemList().stream().map(
+                this::formatRollupItem
+            ).collect(Collectors.joining(","));
+            builder.append(s);
+        }
+        builder.append(")");
+        return true;
+    }
+
+    private String formatRollupItem(RollupItem item) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(formatExpression(item.getRollupName()));
+        stringBuilder.append(" (");
+        String columnList = getCollect(item.getColumnList());
+        stringBuilder.append(columnList);
+        stringBuilder.append(")");
+        if (CollectionUtils.isNotEmpty(item.getDuplicateList())) {
+            stringBuilder.append(" DUPLICATE KEY (");
+            String duplicate = getCollect(item.getDuplicateList());
+            stringBuilder.append(duplicate);
+            stringBuilder.append(")");
+        }
+        if (item.getFromRollup() != null) {
+            stringBuilder.append(" FROM ");
+            stringBuilder.append(formatExpression(item.getFromRollup()));
+        }
+
+        if (CollectionUtils.isNotEmpty(item.getProperties())) {
+            stringBuilder.append(" PROPERTIES (");
+            String p = formatProperty(item.getProperties());
+            stringBuilder.append(p);
+            stringBuilder.append(")");
+        }
+        return stringBuilder.toString();
+    }
+
+    private String getCollect(List<Identifier> item) {
+        return item.stream().map(this::formatExpression).collect(Collectors.joining(","));
     }
 
     @Override
@@ -334,6 +374,29 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
     }
 
     @Override
+    public Boolean visitTableIndex(TableIndex tableIndex, Integer ident) {
+        builder.append(indentString(ident));
+        builder.append("INDEX ").append(formatExpression(tableIndex.getIndexName()));
+        appendTableIndex(tableIndex.getIndexColumnNames());
+        List<Property> properties = tableIndex.getProperties();
+        if (CollectionUtils.isEmpty(properties)) {
+            return true;
+        }
+        Optional<Property> first = properties.stream().filter(p -> {
+            StarRocksProperty tableIndexType = StarRocksProperty.TABLE_INDEX_TYPE;
+            return StringUtils.equalsIgnoreCase(p.getName(), tableIndexType.getValue());
+        }).findFirst();
+        first.ifPresent(property -> builder.append(" USING ").append(property.getValue()));
+
+        Optional<Property> comment = properties.stream().filter(p -> {
+            StarRocksProperty tableIndexType = StarRocksProperty.TABLE_INDEX_COMMENT;
+            return StringUtils.equalsIgnoreCase(p.getName(), tableIndexType.getValue());
+        }).findFirst();
+        comment.ifPresent(property -> builder.append(" COMMENT ").append(formatStringLiteral(property.getValue())));
+        return true;
+    }
+
+    @Override
     public Boolean visitRangePartitionedBy(RangePartitionedBy starRocksPartitionedBy, Integer indent) {
         builder.append("PARTITION BY RANGE (");
         List<ColumnDefinition> partitioned = starRocksPartitionedBy.getColumnDefinitions();
@@ -371,7 +434,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         ).collect(Collectors.joining(","));
         builder.append(collect).append(")");
         builder.append("\n");
-        List<PartitionDesc> rangePartitions = listPartitionedBy.getRangePartitions();
+        List<PartitionDesc> rangePartitions = listPartitionedBy.getListPartitions();
         Iterator<PartitionDesc> iterator = rangePartitions.iterator();
         if (iterator.hasNext()) {
             builder.append("(\n");
@@ -382,6 +445,33 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             }
             builder.append("\n)");
         }
+        return true;
+    }
+
+    @Override
+    public Boolean visitExpressionPartitionedBy(ExpressionPartitionBy expressionPartitionedBy, Integer indent) {
+        builder.append("PARTITION BY ");
+        List<ColumnDefinition> partitioned = expressionPartitionedBy.getColumnDefinitions();
+        String col = partitioned.stream().map(
+                x -> formatExpression(x.getColName())
+        ).collect(Collectors.joining(","));
+        if (expressionPartitionedBy.getFunctionCall() == null) {
+            // 列表达式
+            builder.append("(").append(col).append(")");
+        } else {
+            // 时间函数表达式
+            FunctionCall functionCall = expressionPartitionedBy.getFunctionCall();
+            String functionName = functionCall.getFuncName().getFirst();
+            builder.append(functionName).append("(");
+            if (TimeFunctionType.DATE_TRUNC.getValue().equalsIgnoreCase(functionName)) {
+                builder.append(expressionPartitionedBy.getTimeUnitArg().getOrigin()).append(", ");
+                builder.append(col).append(")");
+            } else if (TimeFunctionType.TIME_SLICE.getValue().equalsIgnoreCase(functionName)) {
+                builder.append(col).append(", ");
+                builder.append(formatExpression(expressionPartitionedBy.getIntervalLiteralArg())).append(")");
+            }
+        }
+
         return true;
     }
 
@@ -443,6 +533,37 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         builder.append(collect);
         builder.append(")");
         appendProperty(multiItemListPartition.getPropertyList());
+        return true;
+    }
+
+    @Override
+    public Boolean visitOrderByConstraint(OrderByConstraint orderByConstraint, Integer context) {
+        builder.append("ORDER BY (");
+        List<Identifier> colNames = orderByConstraint.getColumns();
+        builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
+        builder.append(")");
+        return true;
+    }
+
+    @Override
+    public Boolean visitDistributeKeyConstraint(DistributeConstraint distributeKeyConstraint, Integer context) {
+        builder.append("DISTRIBUTED BY ");
+        boolean random = BooleanUtils.isTrue(distributeKeyConstraint.getRandom());
+        if (random) {
+            builder.append("RANDOM");
+        } else {
+            builder.append("HASH");
+        }
+        if (CollectionUtils.isNotEmpty(distributeKeyConstraint.getColumns())) {
+            List<Identifier> colNames = distributeKeyConstraint.getColumns();
+            builder.append(" (");
+            builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
+            builder.append(")");
+        }
+        if (distributeKeyConstraint.getBucket() != null) {
+            builder.append(" BUCKETS ");
+            builder.append(distributeKeyConstraint.getBucket());
+        }
         return true;
     }
 

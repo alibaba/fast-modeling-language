@@ -67,12 +67,6 @@ public class HologresPropertyConverterTest {
     }
 
     @Test
-    public void testUnsupported() {
-        BaseClientProperty baseClientProperty = hologresPropertyConverter.create("upsupport", "a,b");
-        assertNull(baseClientProperty);
-    }
-
-    @Test
     public void testIsValidProperty() {
         boolean validProperty = hologresPropertyConverter.isValidProperty(TimeToLiveSeconds.TIME_TO_LIVE_IN_SECONDS);
         assertTrue(validProperty);

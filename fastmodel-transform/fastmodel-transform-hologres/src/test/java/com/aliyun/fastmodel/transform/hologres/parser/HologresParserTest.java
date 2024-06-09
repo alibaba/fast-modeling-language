@@ -15,6 +15,7 @@ import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
@@ -27,7 +28,8 @@ import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresData
 import com.google.common.base.Preconditions;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Desc:
@@ -154,5 +156,28 @@ public class HologresParserTest {
             IDataTypeName dataTypeName = baseDataType.getTypeName();
             assertEquals(dataTypeName.getValue(), hologresDataTypeName.getValue());
         }
+    }
+
+    @Test
+    public void testParseDefaultValue() {
+        CreateTable o = hologresParser2.parseNode("CREATE TABLE tbl_default (    \n"
+            + "  smallint_col smallint DEFAULT 0,    \n"
+            + "  int_col int DEFAULT 0,    \n"
+            + "  bigint_col bigint DEFAULT 0,    \n"
+            + "  boolean_col boolean DEFAULT FALSE,    \n"
+            + "  float_col real DEFAULT 0.0,    \n"
+            + "  double_col double precision DEFAULT 0.0,    \n"
+            + "  decimal_col decimal(2, 1) DEFAULT 0.0,    \n"
+            + "  text_col text DEFAULT 'N',    \n"
+            + "  char_col char(2) DEFAULT 'N',    \n"
+            + "  varchar_col varchar(200) DEFAULT 'N',    \n"
+            + "  timestamptz_col timestamptz DEFAULT now(),    \n"
+            + "  date_col date DEFAULT now(),    \n"
+            + "  timestamp_col timestamp DEFAULT now()\n"
+            + ");\n");
+        List<ColumnDefinition> columnDefines = o.getColumnDefines();
+        ColumnDefinition columnDefinition = columnDefines.get(0);
+        BaseExpression defaultValue = columnDefinition.getDefaultValue();
+        assertEquals(defaultValue.getOrigin(), "0");
     }
 }

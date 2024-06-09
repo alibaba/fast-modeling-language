@@ -107,6 +107,7 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
 
     private static final ThreadLocal<DecimalFormat> DOUBLE_FORMATTER = ThreadLocal.withInitial(
         () -> new DecimalFormat("0.###################E0###", new DecimalFormatSymbols(Locale.US)));
+    public static final String CURRENT_TIMESTAMP = "CURRENT_TIMESTAMP";
 
     @Override
     public String visitExpression(BaseExpression expression, Void context) {
@@ -687,7 +688,7 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
 
     @Override
     public String visitCurrentTimestamp(CurrentTimestamp currentTimestamp, Void context) {
-        return "CURRENT_TIMESTAMP";
+        return CURRENT_TIMESTAMP;
     }
 
     @Override

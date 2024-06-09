@@ -51,6 +51,16 @@ public enum StarRocksProperty implements PropertyKey {
     TABLE_PARTITION_RAW("range_partition_raw"),
 
     /**
+     * list partition
+     */
+    TABLE_LIST_PARTITION("list_partition"),
+
+    /**
+     * expression partition
+     */
+    TABLE_EXPRESSION_PARTITION("expression_partition"),
+
+    /**
      * char set
      */
     COLUMN_CHAR_SET("char_set"),
@@ -61,6 +71,11 @@ public enum StarRocksProperty implements PropertyKey {
     COLUMN_KEY("column_key"),
 
     /**
+     * 自增列信息
+     */
+    COLUMN_AUTO_INCREMENT("column_auto_increment"),
+
+    /**
      * column agg desc
      */
     COLUMN_AGG_DESC("column_agg_desc"),
@@ -68,7 +83,12 @@ public enum StarRocksProperty implements PropertyKey {
     /**
      * REPLICATION_NUM
      */
-    TABLE_REPLICATION_NUM("replication_num", true);
+    TABLE_REPLICATION_NUM("replication_num", true),
+
+    /**
+     * 保留最近多少数量的分区
+     */
+    PARTITION_LIVE_NUMBER("partition_live_number", true);
 
     private final String value;
 

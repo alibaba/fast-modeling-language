@@ -701,7 +701,7 @@ public interface IAstVisitor<R, C> {
      * @return
      */
     default R visitTimestampLocalTzLiteral(TimestampLocalTzLiteral timestampLocalTzLiteral,
-                                           C context) {
+        C context) {
         return visitExpression(timestampLocalTzLiteral, context);
     }
 
@@ -922,7 +922,7 @@ public interface IAstVisitor<R, C> {
      * @return R
      */
     default R visitBitOperationExpression(BitOperationExpression bitOperationExpression,
-                                          C context) {
+        C context) {
         return visitExpression(bitOperationExpression, context);
     }
 

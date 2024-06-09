@@ -49,7 +49,7 @@ public class EnableBinLogLevel extends BaseClientProperty<BinLogLevel> {
 
     }
 
-    public static final String ENABLE_BINLOG = "binlog.level";
+    public static final String ENABLE_BINLOG = HoloPropertyKey.ENABLE_BINLOG.getValue();
 
     public EnableBinLogLevel() {
         this.setKey(ENABLE_BINLOG);

@@ -58,9 +58,9 @@ public class IntervalExpression extends BaseExpression {
     private final Boolean interval;
 
     public IntervalExpression(NodeLocation location, String origin,
-                              BaseLiteral intervalValue,
-                              IntervalQualifiers intervalQualifiers,
-                              BaseExpression baseExpression, Boolean interval) {
+        BaseLiteral intervalValue,
+        IntervalQualifiers intervalQualifiers,
+        BaseExpression baseExpression, Boolean interval) {
         super(location, origin);
         this.intervalValue = intervalValue;
         this.intervalQualifiers = intervalQualifiers;

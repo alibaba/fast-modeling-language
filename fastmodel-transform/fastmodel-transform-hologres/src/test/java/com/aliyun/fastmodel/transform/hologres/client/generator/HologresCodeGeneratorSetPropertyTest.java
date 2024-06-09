@@ -101,8 +101,6 @@ public class HologresCodeGeneratorSetPropertyTest {
             + "   \"double\" BIGINT NOT NULL\n"
             + ");\n"
             + "CALL SET_TABLE_PROPERTY('t1', 'clustering_key', '\"int,double\"');\n"
-            + "COMMENT ON COLUMN t1.\"int\" IS NULL;\n"
-            + "COMMENT ON COLUMN t1.\"double\" IS NULL;\n"
             + "COMMIT;", node);
     }
 
@@ -134,8 +132,6 @@ public class HologresCodeGeneratorSetPropertyTest {
             + "   \"double\" BIGINT NOT NULL\n"
             + ");\n"
             + "CALL SET_TABLE_PROPERTY('t1', 'clustering_key', '\"int\",\"double\"');\n"
-            + "COMMENT ON COLUMN t1.\"int\" IS NULL;\n"
-            + "COMMENT ON COLUMN t1.\"double\" IS NULL;\n"
             + "COMMIT;", node);
     }
 

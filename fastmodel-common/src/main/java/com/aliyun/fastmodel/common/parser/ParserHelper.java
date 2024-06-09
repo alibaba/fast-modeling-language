@@ -124,14 +124,14 @@ public class ParserHelper {
     // ******** Helper ************
 
     public static <T> Optional<T> visitIfPresent(AbstractParseTreeVisitor visitor, ParseTree context,
-                                                 Class<T> clazz) {
+        Class<T> clazz) {
         return Optional.ofNullable(context)
             .map(visitor::visit)
             .map(clazz::cast);
     }
 
     public static <T> List<T> visit(AbstractParseTreeVisitor visitor, List<? extends ParseTree> contexts,
-                                    Class<T> clazz) {
+        Class<T> clazz) {
         return contexts.stream()
             .map(visitor::visit)
             .filter(Objects::nonNull)

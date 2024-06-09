@@ -25,8 +25,8 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
-import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnCategory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -71,9 +71,11 @@ public class ColumnDefinition extends TableElement {
     private Boolean notNull;
 
     /**
-     * 默认值
+     * 默认值, 从baseLiteral升级到BaseExpression
+     *
+     * @since 0.5.10
      */
-    private final BaseLiteral defaultValue;
+    private final BaseExpression defaultValue;
 
     /**
      * 分类
@@ -173,7 +175,7 @@ public class ColumnDefinition extends TableElement {
         /**
          * 默认值
          */
-        private BaseLiteral defaultValue;
+        private BaseExpression defaultValue;
 
         /**
          * 分类
@@ -220,7 +222,7 @@ public class ColumnDefinition extends TableElement {
             return this;
         }
 
-        public ColumnBuilder defaultValue(BaseLiteral defaultValue) {
+        public ColumnBuilder defaultValue(BaseExpression defaultValue) {
             this.defaultValue = defaultValue;
             return this;
         }

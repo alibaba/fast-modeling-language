@@ -10,7 +10,9 @@ package com.aliyun.fastmodel.transform.api.client.dto.constraint;
 
 import java.util.List;
 
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +25,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Constraint {
     /**
      * 约束名称
@@ -37,8 +40,14 @@ public class Constraint {
     private List<String> columns;
 
     /**
+     * 约束类型
      * 必选{@link ConstraintType}
      */
-    public ConstraintType type;
+    private ConstraintType type;
+
+    /**
+     * index的属性信息
+     */
+    private List<BaseClientProperty> properties;
 
 }

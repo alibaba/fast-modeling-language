@@ -38,7 +38,7 @@ public class TimestampLiteral extends BaseLiteral {
     }
 
     public TimestampLiteral(NodeLocation location, String origin,
-                            String timestampFormat) {
+        String timestampFormat) {
         super(location, origin);
         this.timestampFormat = timestampFormat;
     }

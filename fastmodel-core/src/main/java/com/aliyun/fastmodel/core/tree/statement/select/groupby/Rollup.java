@@ -23,7 +23,7 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 
 /**
- * Desc:
+ * rollup
  *
  * @author panguanjing
  * @date 2020/11/10

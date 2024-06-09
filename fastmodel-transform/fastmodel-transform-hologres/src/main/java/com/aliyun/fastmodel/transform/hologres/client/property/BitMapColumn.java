@@ -23,7 +23,7 @@ import com.google.common.base.Joiner;
  */
 public class BitMapColumn extends BaseClientProperty<List<ColumnStatus>> {
 
-    public static final String BITMAP_COLUMN = "bitmap_columns";
+    public static final String BITMAP_COLUMN = HoloPropertyKey.BITMAP_COLUMN.getValue();
 
     public BitMapColumn() {
         this.setKey(BITMAP_COLUMN);

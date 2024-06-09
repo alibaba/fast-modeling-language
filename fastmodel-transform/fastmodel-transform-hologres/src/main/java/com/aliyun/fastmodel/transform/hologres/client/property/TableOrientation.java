@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class TableOrientation extends BaseClientProperty<List<String>> {
 
-    public static final String ORIENTATION = "orientation";
+    public static final String ORIENTATION = HoloPropertyKey.ORIENTATION.getValue();
 
     public enum Orientation {
         /**

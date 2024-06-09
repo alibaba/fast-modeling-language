@@ -22,7 +22,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
- * Desc:
+ * TimestampLocalTzLiteral
  *
  * @author panguanjing
  * @date 2020/9/25
@@ -36,8 +36,7 @@ public class TimestampLocalTzLiteral extends BaseLiteral {
         this(null, null, timestamp);
     }
 
-    public TimestampLocalTzLiteral(NodeLocation location, String origin,
-                                   String timestamp) {
+    public TimestampLocalTzLiteral(NodeLocation location, String origin, String timestamp) {
         super(location, origin);
         this.timestamp = timestamp;
     }

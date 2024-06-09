@@ -72,8 +72,6 @@ public class HologresFormatterTest {
             + "   a TIMESTAMP,\n"
             + "   b TEXT PRIMARY KEY\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE a IS 'comment';\n"
             + "COMMENT ON COLUMN a.a IS 'hello';\n"
             + "COMMIT;", format.getNode());
@@ -91,9 +89,7 @@ public class HologresFormatterTest {
         assertEquals(dialectNode.getNode(), "BEGIN;\n"
             + "CREATE TABLE a (\n"
             + "   co1 BIGINT\n"
-            + ");\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '3153600000');\n"
+            + ");\n\n"
             + "COMMIT;");
     }
 
@@ -127,8 +123,6 @@ public class HologresFormatterTest {
             + "   p1 TIMESTAMP,\n"
             + "   PRIMARY KEY(a,b)\n"
             + ") PARTITION BY LIST(p1);\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '3153600000');\n"
             + "COMMENT ON TABLE a IS 'comment';\n"
             + "COMMENT ON COLUMN a.a IS 'hello';\n"
             + "COMMENT ON COLUMN a.p1 IS 'comment';\n"

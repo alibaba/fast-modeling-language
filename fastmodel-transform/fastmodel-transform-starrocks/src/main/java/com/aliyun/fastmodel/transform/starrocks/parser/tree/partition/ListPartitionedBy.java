@@ -20,12 +20,12 @@ public class ListPartitionedBy extends PartitionedBy {
     /**
      * rangePartitions
      */
-    private final List<PartitionDesc> rangePartitions;
+    private final List<PartitionDesc> listPartitions;
 
     public ListPartitionedBy(List<ColumnDefinition> columnDefinitions,
-        List<PartitionDesc> rangePartitions) {
+        List<PartitionDesc> listPartitions) {
         super(columnDefinitions);
-        this.rangePartitions = rangePartitions;
+        this.listPartitions = listPartitions;
     }
 
     @Override
