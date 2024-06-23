@@ -81,3 +81,21 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.11
+新功能（new features）
+Core
+• 新增支持IndexExpr表达
+
+
+Transformer
+• 支持Doris的DDL逆向和转换
+• 支持OceanBase Mysql的DDL逆向和转换
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无
