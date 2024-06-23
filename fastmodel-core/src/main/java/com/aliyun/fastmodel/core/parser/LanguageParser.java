@@ -46,12 +46,24 @@ public interface LanguageParser<T extends Node, C> {
     /**
      * parse data type
      *
-     * @param code
+     * @param text
      * @param context
      * @return {@link BaseDataType}
      * @throws ParseException
      */
-    default BaseDataType parseDataType(String code, C context) throws ParseException {
+    default BaseDataType parseDataType(String text, C context) throws ParseException {
+        return null;
+    }
+
+    /**
+     * 解析表达式，支持泛型, 不需要强转
+     *
+     * @param text¬ 表达式
+     * @param <T>   T
+     * @return T
+     * @throws ParseException 解析异常
+     */
+    default <T> T parseExpression(String text) throws ParseException {
         return null;
     }
 }

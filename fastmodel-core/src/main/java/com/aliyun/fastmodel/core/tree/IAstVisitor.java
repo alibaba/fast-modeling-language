@@ -110,6 +110,7 @@ import com.aliyun.fastmodel.core.tree.statement.select.sort.SortBy;
 import com.aliyun.fastmodel.core.tree.statement.show.ConditionElement;
 import com.aliyun.fastmodel.core.tree.statement.show.LikeCondition;
 import com.aliyun.fastmodel.core.tree.statement.show.WhereCondition;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexExpr;
 
 /**
  * AST visitor interface
@@ -1353,5 +1354,9 @@ public interface IAstVisitor<R, C> {
      */
     default R visitJsonDataType(JsonDataType jsonDataType, C context) {
         return visitRowDataType(jsonDataType, context);
+    }
+
+    default R visitIndexExpr(IndexExpr indexExpr, C context) {
+        return visitNode(indexExpr, context);
     }
 }

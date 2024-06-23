@@ -62,6 +62,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.RedundantConstr
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.TimePeriodConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexSortKey;
 import com.aliyun.fastmodel.core.tree.statement.table.index.SortType;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
@@ -234,7 +235,7 @@ public class TableVisitor extends AstBuilder {
 
     @Override
     public Node visitTableIndex(TableIndexContext ctx) {
-        List<IndexColumnName> list = visit(ctx.indexColumnNames().indexColumnName(), IndexColumnName.class);
+        List<IndexSortKey> list = visit(ctx.indexColumnNames().indexColumnName(), IndexSortKey.class);
         List<Property> indexProperties = ImmutableList.of();
         if (ctx.indexOption() != null) {
             indexProperties = getProperties(ctx.indexOption().setProperties());
@@ -397,7 +398,7 @@ public class TableVisitor extends AstBuilder {
         return new CreateIndex(
             getQualifiedName(ctx.qualifiedName()),
             getQualifiedName(ctx.tableName()),
-            visit(ctx.indexColumnNames().indexColumnName(), IndexColumnName.class),
+            visit(ctx.indexColumnNames().indexColumnName(), IndexSortKey.class),
             list
         );
     }

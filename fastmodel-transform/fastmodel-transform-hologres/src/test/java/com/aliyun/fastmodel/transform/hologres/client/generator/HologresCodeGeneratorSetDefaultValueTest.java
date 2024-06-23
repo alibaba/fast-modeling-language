@@ -88,7 +88,7 @@ public class HologresCodeGeneratorSetDefaultValueTest {
         String result =
             generate.getDialectNodes().stream().filter(DialectNode::isExecutable).map(DialectNode::getNode).collect(Collectors.joining("\n"));
         assertEquals("BEGIN;\n"
-            + "ALTER TABLE a ALTER COLUMN c1 SET DEFAULT null;\n"
+            + "ALTER TABLE a ALTER COLUMN c1 SET DEFAULT NULL;\n"
             + "COMMIT;", result);
     }
 

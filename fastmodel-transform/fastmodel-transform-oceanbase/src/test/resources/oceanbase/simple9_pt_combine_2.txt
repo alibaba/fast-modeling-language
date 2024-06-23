@@ -1,0 +1,16 @@
+CREATE TABLE tbl2_f_llc(col1 INT,col2 DATE)
+       PARTITION BY LIST(col1)
+       SUBPARTITION BY LIST COLUMNS(col2)
+        (PARTITION p0 VALUES IN(100)
+           (SUBPARTITION sp0 VALUES IN('2021/04/01'),
+            SUBPARTITION sp1 VALUES IN('2021/07/01'),
+            SUBPARTITION sp2 VALUES IN('2021/10/01'),
+            SUBPARTITION sp3 VALUES IN('2022/01/01')
+           ),
+         PARTITION p1 VALUES IN(200)
+           (SUBPARTITION sp4 VALUES IN('2021/04/01'),
+            SUBPARTITION sp5 VALUES IN('2021/07/01'),
+            SUBPARTITION sp6 VALUES IN('2021/10/01'),
+            SUBPARTITION sp7 VALUES IN('2022/01/01')
+            )
+         );

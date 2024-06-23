@@ -11,6 +11,7 @@ package com.aliyun.fastmodel.transform.api.client.dto.table;
 import java.util.List;
 
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
+import com.aliyun.fastmodel.transform.api.client.dto.index.Index;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
  *
  * @author panguanjing
  * @date 2022/6/6
+ * @date 2024/2/19 add the index
  */
 @Data
 @Builder
@@ -70,6 +72,11 @@ public class Table {
      * 约束的clientDTO
      */
     private List<Constraint> constraints;
+
+    /**
+     * 索引列表
+     */
+    private List<Index> indices;
 
     /**
      * 生命周期, 单位秒

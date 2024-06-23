@@ -1,5 +1,10 @@
 package com.aliyun.fastmodel.transform.starrocks.format;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
@@ -13,6 +18,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropCol;
+import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameCol;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
@@ -22,36 +28,40 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstrai
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.NonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupItem;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiItemListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleItemListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ArrayPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.LessThanPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ListPartitionValue;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
+import com.aliyun.fastmodel.transform.api.format.PropertyKey;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.NonKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.OrderByConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupItem;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ExpressionPartitionBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiItemListPartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiRangePartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionDesc;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.RangePartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleItemListPartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
 import com.aliyun.fastmodel.transform.starrocks.parser.visitor.StarRocksAstVisitor;
 import com.google.common.base.Objects;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_AGG_DESC;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_AUTO_INCREMENT;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_KEY;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_ENGINE;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_INDEX_COMMENT;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_INDEX_TYPE;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_PARTITION_RAW;
 
 /**
  * StarRocksVisitor
@@ -97,7 +107,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         //format engine
         if (node.getProperties() != null) {
             Optional<Property> first = node.getProperties().stream().filter(
-                p -> StringUtils.equalsIgnoreCase(p.getName(), StarRocksProperty.TABLE_ENGINE.getValue())).findFirst();
+                p -> StringUtils.equalsIgnoreCase(p.getName(), TABLE_ENGINE.getValue())).findFirst();
             first.ifPresent(property -> builder.append("\nENGINE=").append(property.getValue()));
         }
 
@@ -117,7 +127,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             builder.append("\n");
             process(node.getPartitionedBy(), indent);
         } else {
-            String propertyValue = PropertyUtil.getPropertyValue(node.getProperties(), StarRocksProperty.TABLE_PARTITION_RAW.getValue());
+            String propertyValue = PropertyUtil.getPropertyValue(node.getProperties(), TABLE_PARTITION_RAW.getValue());
             if (StringUtils.isNotBlank(propertyValue)) {
                 builder.append("\n");
                 builder.append(propertyValue);
@@ -148,8 +158,8 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
     protected String formatProperty(List<Property> properties) {
         List<Property> collect = properties.stream().filter(
             p -> {
-                StarRocksProperty byValue = StarRocksProperty.getByValue(p.getName());
-                return byValue == null || byValue.isSupportPrint();
+                PropertyKey propertyKey = StarRocksPropertyKey.getByValue(p.getName());
+                return propertyKey == null || propertyKey.isSupportPrint();
             }
         ).collect(Collectors.toList());
         return super.formatProperty(collect);
@@ -165,17 +175,17 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         }
         List<Property> columnProperties = column.getColumnProperties();
         //charset
-        String charSet = PropertyUtil.getPropertyValue(columnProperties, StarRocksProperty.COLUMN_CHAR_SET.getValue());
+        String charSet = PropertyUtil.getPropertyValue(columnProperties, StarRocksPropertyKey.COLUMN_CHAR_SET.getValue());
         if (StringUtils.isNotBlank(charSet)) {
             sb.append(" ").append("CHARSET ").append(charSet);
         }
         //key
-        String key = PropertyUtil.getPropertyValue(columnProperties, StarRocksProperty.COLUMN_KEY.getValue());
+        String key = PropertyUtil.getPropertyValue(columnProperties, COLUMN_KEY.getValue());
         if (StringUtils.isNotBlank(key)) {
             sb.append(" ").append("KEY");
         }
         //aggDesc
-        String propertyValue = PropertyUtil.getPropertyValue(columnProperties, StarRocksProperty.COLUMN_AGG_DESC.getValue());
+        String propertyValue = PropertyUtil.getPropertyValue(columnProperties, COLUMN_AGG_DESC.getValue());
         if (StringUtils.isNotBlank(propertyValue)) {
             sb.append(" ").append(propertyValue);
         }
@@ -194,7 +204,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             }
         }
         //auto increment
-        String autoIncrement = PropertyUtil.getPropertyValue(columnProperties, StarRocksProperty.COLUMN_AUTO_INCREMENT.getValue());
+        String autoIncrement = PropertyUtil.getPropertyValue(columnProperties, COLUMN_AUTO_INCREMENT.getValue());
         if (StringUtils.equalsIgnoreCase(BooleanLiteral.TRUE, autoIncrement)) {
             sb.append(" ").append("AUTO_INCREMENT");
         }
@@ -383,17 +393,29 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             return true;
         }
         Optional<Property> first = properties.stream().filter(p -> {
-            StarRocksProperty tableIndexType = StarRocksProperty.TABLE_INDEX_TYPE;
-            return StringUtils.equalsIgnoreCase(p.getName(), tableIndexType.getValue());
+            return StringUtils.equalsIgnoreCase(p.getName(), TABLE_INDEX_TYPE.getValue());
         }).findFirst();
         first.ifPresent(property -> builder.append(" USING ").append(property.getValue()));
 
         Optional<Property> comment = properties.stream().filter(p -> {
-            StarRocksProperty tableIndexType = StarRocksProperty.TABLE_INDEX_COMMENT;
-            return StringUtils.equalsIgnoreCase(p.getName(), tableIndexType.getValue());
+            return StringUtils.equalsIgnoreCase(p.getName(), TABLE_INDEX_COMMENT.getValue());
         }).findFirst();
         comment.ifPresent(property -> builder.append(" COMMENT ").append(formatStringLiteral(property.getValue())));
         return true;
+    }
+
+    @Override
+    public Boolean visitPartitionedBy(PartitionedBy partitionedBy, Integer context) {
+        if (partitionedBy instanceof RangePartitionedBy) {
+            return visitRangePartitionedBy((RangePartitionedBy)partitionedBy, context);
+        }
+        if (partitionedBy instanceof ListPartitionedBy) {
+            return visitListPartitionedBy((ListPartitionedBy)partitionedBy, context);
+        }
+        if (partitionedBy instanceof ExpressionPartitionBy) {
+            return visitExpressionPartitionedBy((ExpressionPartitionBy)partitionedBy, context);
+        }
+        return super.visitPartitionedBy(partitionedBy, context);
     }
 
     @Override
@@ -453,7 +475,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         builder.append("PARTITION BY ");
         List<ColumnDefinition> partitioned = expressionPartitionedBy.getColumnDefinitions();
         String col = partitioned.stream().map(
-                x -> formatExpression(x.getColName())
+            x -> formatExpression(x.getColName())
         ).collect(Collectors.joining(","));
         if (expressionPartitionedBy.getFunctionCall() == null) {
             // 列表达式
@@ -519,6 +541,14 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         return formatExpression(partitionValue.getStringLiteral());
     }
 
+    private String formatListPartitionValue(ListPartitionValue listPartitionValue) {
+        return listPartitionValue.getPartitionValueList().stream().map(
+            p -> {
+                return formatPartitionValue(p);
+            }
+        ).collect(Collectors.joining(","));
+    }
+
     @Override
     public Boolean visitMultiItemListPartition(MultiItemListPartition multiItemListPartition, Integer context) {
         builder.append("PARTITION ");
@@ -556,7 +586,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         }
         if (CollectionUtils.isNotEmpty(distributeKeyConstraint.getColumns())) {
             List<Identifier> colNames = distributeKeyConstraint.getColumns();
-            builder.append(" (");
+            builder.append("(");
             builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
             builder.append(")");
         }
@@ -616,12 +646,12 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
     public Boolean visitMultiRangePartition(MultiRangePartition multiRangePartition, Integer context) {
         String s = indentString(context);
         builder.append(s).append("START");
-        builder.append("(").append(formatExpression(multiRangePartition.getStart()));
+        builder.append("(").append(formatListPartitionValue(multiRangePartition.getStart()));
         builder.append(")");
         builder.append(" ");
         builder.append("END");
         builder.append("(");
-        builder.append(formatExpression(multiRangePartition.getEnd()));
+        builder.append(formatListPartitionValue(multiRangePartition.getEnd()));
         builder.append(")");
         builder.append(" EVERY (");
         if (multiRangePartition.getIntervalLiteral() != null) {
@@ -630,6 +660,12 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             builder.append(formatExpression(multiRangePartition.getLongLiteral()));
         }
         builder.append(")");
+        return true;
+    }
+
+    @Override
+    public Boolean visitListPartitionValue(ListPartitionValue listPartitionValue, Integer context) {
+        builder.append(formatListPartitionValue(listPartitionValue));
         return true;
     }
 }

@@ -1,0 +1,5 @@
+CREATE TABLE tbl2_l (col1 INT,col2 DATE)
+       PARTITION BY LIST(col1)
+        (PARTITION p0 VALUES IN (100),
+         PARTITION p1 VALUES IN (200)
+        );

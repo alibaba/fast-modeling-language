@@ -1,0 +1,16 @@
+CREATE TABLE tbl3_f_hk (col1 INT,col2 VARCHAR(50))
+     PARTITION BY HASH(col1)
+     SUBPARTITION BY KEY(col2)
+      (PARTITION p1
+       (SUBPARTITION sp0
+       ,SUBPARTITION sp1
+       ,SUBPARTITION sp2
+       ,SUBPARTITION sp3
+       ),
+       PARTITION p2
+       (SUBPARTITION sp4
+       ,SUBPARTITION sp5
+       ,SUBPARTITION sp6
+       ,SUBPARTITION sp7
+       )
+      );

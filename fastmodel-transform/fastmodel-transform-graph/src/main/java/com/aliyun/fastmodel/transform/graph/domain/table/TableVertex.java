@@ -21,7 +21,7 @@ import java.util.Set;
 
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
-import com.aliyun.fastmodel.transform.api.domain.factory.DomainFactorys;
+import com.aliyun.fastmodel.transform.api.domain.factory.DomainFactorySingleton;
 import com.aliyun.fastmodel.transform.api.domain.table.TableDataModel;
 import com.aliyun.fastmodel.transform.graph.domain.Vertex;
 import com.aliyun.fastmodel.transform.graph.domain.VertexType;
@@ -52,7 +52,7 @@ public class TableVertex implements Vertex {
 
     public TableVertex(CreateTable createTable) {
         creatTable = createTable;
-        tableDataModel = DomainFactorys.newTableFactory().create(createTable);
+        tableDataModel = DomainFactorySingleton.newTableFactory().create(createTable);
         if (CollectionUtils.isNotEmpty(tableDataModel.getCols())) {
             maps.put(COLUMNS, tableDataModel.getCols());
         }

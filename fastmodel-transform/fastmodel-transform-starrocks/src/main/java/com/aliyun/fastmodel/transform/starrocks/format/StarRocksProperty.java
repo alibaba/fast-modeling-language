@@ -1,5 +1,6 @@
 package com.aliyun.fastmodel.transform.starrocks.format;
 
+import com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey;
 import com.aliyun.fastmodel.transform.api.format.PropertyKey;
 import org.apache.commons.lang3.StringUtils;
 
@@ -11,29 +12,6 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2023/9/14
  */
 public enum StarRocksProperty implements PropertyKey {
-    /**
-     * engine
-     */
-    TABLE_ENGINE("engine"),
-
-    /**
-     * distribute hash
-     */
-    TABLE_DISTRIBUTED_HASH("distributed_hash"),
-
-    /**
-     * distribute buckets
-     */
-    TABLE_DISTRIBUTED_BUCKETS("distributed_buckets"),
-
-    /**
-     * index type
-     */
-    TABLE_INDEX_TYPE("index_type"),
-    /**
-     * index comment
-     */
-    TABLE_INDEX_COMMENT("index_comment"),
 
     /**
      * rollup
@@ -41,54 +19,9 @@ public enum StarRocksProperty implements PropertyKey {
     TABLE_ROLLUP("rollup"),
 
     /**
-     * range partition
-     */
-    TABLE_RANGE_PARTITION("range_partition"),
-
-    /**
-     * table range partition raw
-     */
-    TABLE_PARTITION_RAW("range_partition_raw"),
-
-    /**
-     * list partition
-     */
-    TABLE_LIST_PARTITION("list_partition"),
-
-    /**
-     * expression partition
-     */
-    TABLE_EXPRESSION_PARTITION("expression_partition"),
-
-    /**
      * char set
      */
-    COLUMN_CHAR_SET("char_set"),
-
-    /**
-     * column key
-     */
-    COLUMN_KEY("column_key"),
-
-    /**
-     * 自增列信息
-     */
-    COLUMN_AUTO_INCREMENT("column_auto_increment"),
-
-    /**
-     * column agg desc
-     */
-    COLUMN_AGG_DESC("column_agg_desc"),
-
-    /**
-     * REPLICATION_NUM
-     */
-    TABLE_REPLICATION_NUM("replication_num", true),
-
-    /**
-     * 保留最近多少数量的分区
-     */
-    PARTITION_LIVE_NUMBER("partition_live_number", true);
+    COLUMN_CHAR_SET("char_set");
 
     private final String value;
 
@@ -103,11 +36,16 @@ public enum StarRocksProperty implements PropertyKey {
         this.supportPrint = supportPrint;
     }
 
-    public static StarRocksProperty getByValue(String value) {
+    public static PropertyKey getByValue(String value) {
         StarRocksProperty[] starRocksProperties = StarRocksProperty.values();
         for (StarRocksProperty starRocksProperty : starRocksProperties) {
             if (StringUtils.equalsIgnoreCase(starRocksProperty.getValue(), value)) {
                 return starRocksProperty;
+            }
+        }
+        for (ExtensionPropertyKey extensionPropertyKey : ExtensionPropertyKey.values()) {
+            if (StringUtils.equalsIgnoreCase(extensionPropertyKey.getValue(), value)) {
+                return extensionPropertyKey;
             }
         }
         return null;

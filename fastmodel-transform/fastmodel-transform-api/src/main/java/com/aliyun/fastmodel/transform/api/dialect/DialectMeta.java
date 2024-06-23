@@ -49,6 +49,16 @@ public class DialectMeta {
     public static final DialectMeta DEFAULT_STARROCKS = createDefault(DialectName.STARROCKS);
 
     /**
+     * starRocks
+     */
+    public static final DialectMeta DEFAULT_DORIS = createDefault(DialectName.DORIS);
+
+    /**
+     * oceanbase mysql
+     */
+    public static final DialectMeta DEFAULT_OB_MYSQL = createDefault(DialectName.OB_MYSQL);
+
+    /**
      * 引擎的名字，唯一标示，大小写不敏感
      */
     private final IDialectName dialectName;

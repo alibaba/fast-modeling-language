@@ -20,20 +20,20 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.dialect.IVersion;
-import com.aliyun.fastmodel.transform.starrocks.client.constraint.StarRocksConstraintType;
-import com.aliyun.fastmodel.transform.starrocks.client.constraint.StarRocksDistributeConstraint;
-import com.aliyun.fastmodel.transform.starrocks.client.property.column.AggrColumnProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.MultiRangePartitionProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.ReplicationNum;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.SingleRangePartitionProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.TablePartitionRaw;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.LessThanClientPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.MultiRangeClientPartition;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ClientConstraintType;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.client.property.column.AggrColumnProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.MultiRangePartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ReplicationNum;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.SingleRangePartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.LessThanClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.MultiRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.column.AggregateDesc;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggDesc;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksDataTypeName;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -205,7 +205,7 @@ public class StarRocksGeneratorTest {
             + ")");
         properties.add(e);
 
-        StarRocksDistributeConstraint starRocksDistributeConstraint = new StarRocksDistributeConstraint();
+        DistributeClientConstraint starRocksDistributeConstraint = new DistributeClientConstraint();
         starRocksDistributeConstraint.setColumns(Lists.newArrayList("c1"));
         List<Constraint> list = Lists.newArrayList(starRocksDistributeConstraint);
 
@@ -231,7 +231,7 @@ public class StarRocksGeneratorTest {
             + "  PARTITION p2 VALUES LESS THAN (\"20210103\"),\n"
             + "  PARTITION p3 VALUES LESS THAN MAXVALUE\n"
             + ")\n"
-            + "DISTRIBUTED BY HASH (c1);", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
+            + "DISTRIBUTED BY HASH(c1);", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
     }
 
     @Test
@@ -244,7 +244,7 @@ public class StarRocksGeneratorTest {
             .nullable(true)
             .build());
 
-        StarRocksDistributeConstraint starRocksDistributeConstraint = new StarRocksDistributeConstraint();
+        DistributeClientConstraint starRocksDistributeConstraint = new DistributeClientConstraint();
         starRocksDistributeConstraint.setColumns(Lists.newArrayList("c1"));
         starRocksDistributeConstraint.setBucket(1);
         List<Constraint> list = Lists.newArrayList(starRocksDistributeConstraint);
@@ -265,7 +265,7 @@ public class StarRocksGeneratorTest {
             + "   c1 INT NULL\n"
             + ")\n"
             + "COMMENT \"comment\"\n"
-            + "DISTRIBUTED BY HASH (c1) BUCKETS 1;", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
+            + "DISTRIBUTED BY HASH(c1) BUCKETS 1;", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
     }
 
     @Test
@@ -421,7 +421,7 @@ public class StarRocksGeneratorTest {
         List<Column> columns = Lists.newArrayList();
         List<BaseClientProperty> columnProp = Lists.newArrayList();
         AggrColumnProperty aggrColumnProperty = new AggrColumnProperty();
-        aggrColumnProperty.setValueString(AggDesc.MIN.name());
+        aggrColumnProperty.setValueString(AggregateDesc.MIN.name());
         columnProp.add(aggrColumnProperty);
 
         columns.add(Column.builder()
@@ -478,7 +478,7 @@ public class StarRocksGeneratorTest {
         List<Column> columns = Lists.newArrayList();
         List<BaseClientProperty> columnProp = Lists.newArrayList();
         AggrColumnProperty aggrColumnProperty = new AggrColumnProperty();
-        aggrColumnProperty.setValueString(AggDesc.MIN.name());
+        aggrColumnProperty.setValueString(AggregateDesc.MIN.name());
         columnProp.add(aggrColumnProperty);
 
         columns.add(Column.builder()
@@ -614,7 +614,7 @@ public class StarRocksGeneratorTest {
         ArrayList<String> add = Lists.newArrayList("add");
         Constraint distributeConstraint = Constraint.builder().name(null)
             .columns(add)
-            .type(StarRocksConstraintType.DISTRIBUTE)
+            .type(ClientConstraintType.DISTRIBUTE)
             .build();
         constraints.add(distributeConstraint);
         Table after = Table.builder()
@@ -634,7 +634,7 @@ public class StarRocksGeneratorTest {
             + ")\n"
             + "PRIMARY KEY (`add`)\n"
             + "COMMENT \"comment\"\n"
-            + "DISTRIBUTED BY HASH (`add`);", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
+            + "DISTRIBUTED BY HASH(`add`);", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
     }
 
     @Test
@@ -722,7 +722,7 @@ public class StarRocksGeneratorTest {
         ArrayList<String> es = Lists.newArrayList("c1");
         Constraint constraint = Constraint.builder().name(null)
             .columns(es)
-            .type(StarRocksConstraintType.DUPLICATE_KEY)
+            .type(ClientConstraintType.DUPLICATE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -765,7 +765,7 @@ public class StarRocksGeneratorTest {
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().
             columns(strings)
-            .type(StarRocksConstraintType.AGGREGATE_KEY)
+            .type(ClientConstraintType.AGGREGATE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -807,7 +807,7 @@ public class StarRocksGeneratorTest {
         List<Constraint> constraints = Lists.newArrayList();
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().columns(strings)
-            .type(StarRocksConstraintType.UNIQUE_KEY)
+            .type(ClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -896,7 +896,7 @@ public class StarRocksGeneratorTest {
         List<Constraint> constraints = Lists.newArrayList();
         Constraint constraint = Constraint.builder()
             .columns(Lists.newArrayList("c1", "c2"))
-            .type(StarRocksConstraintType.UNIQUE_KEY)
+            .type(ClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()

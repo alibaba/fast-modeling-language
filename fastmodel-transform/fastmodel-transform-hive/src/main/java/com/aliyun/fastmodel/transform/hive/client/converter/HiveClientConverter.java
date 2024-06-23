@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.exception.ParseException;
+import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
@@ -96,7 +97,12 @@ public class HiveClientConverter extends BaseClientConverter<HiveTransformContex
     }
 
     @Override
-    protected BaseDataType getDataType(Column column) {
+    public LanguageParser getLanguageParser() {
+        return hiveLanguageParser;
+    }
+
+    @Override
+    public BaseDataType getDataType(Column column) {
         String dataTypeName = column.getDataType();
         if (StringUtils.isBlank(dataTypeName)) {
             throw new IllegalArgumentException("dataType name can't be null:" + column.getName());

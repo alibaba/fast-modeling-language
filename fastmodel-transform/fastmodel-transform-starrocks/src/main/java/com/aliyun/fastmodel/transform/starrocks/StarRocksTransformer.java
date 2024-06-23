@@ -38,13 +38,13 @@ public class StarRocksTransformer implements Transformer<BaseStatement> {
     @Override
     public DialectNode transform(BaseStatement source, TransformContext context) {
         DialectMeta dialectMeta = new DialectMeta(DialectName.STARROCKS, IVersion.getDefault());
-        StarRocksContext mysqlTransformContext = new StarRocksContext(context);
-        StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, dialectMeta, mysqlTransformContext);
+        StarRocksContext starRocksContext = new StarRocksContext(context);
+        StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, dialectMeta, starRocksContext);
         if (builder == null) {
             throw new UnsupportedOperationException(
                 "UnSupported statement transform with target Dialect, source: " + source.getClass());
         }
-        return builder.build(source, mysqlTransformContext);
+        return builder.build(source, starRocksContext);
     }
 
     @Override

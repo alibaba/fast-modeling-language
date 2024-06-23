@@ -44,6 +44,16 @@ public enum BitOperator {
     NOT_MARK("!"),
 
     /**
+     * <<
+     */
+    SHIFT_LEFT("<<"),
+
+    /**
+     * >>
+     */
+    SHIFT_RIGHT(">>"),
+
+    /**
      * ^
      */
     BITWISE_XOR("^");

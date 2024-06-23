@@ -1,5 +1,8 @@
 package com.aliyun.fastmodel.transform.starrocks;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
@@ -15,25 +18,22 @@ import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
-import com.aliyun.fastmodel.transform.starrocks.client.constraint.StarRocksDistributeConstraint;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.ColumnExpressionPartitionProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.TimeExpressionPartitionProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.ListPartitionProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.TablePartitionRaw;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.ColumnExpressionClientPartition;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.TimeExpressionClientPartition;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.ListClientPartition;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.starrocks.format.StarRocksProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ColumnExpressionPartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ListPartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.TimeExpressionPartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ColumnExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ListClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.TimeExpressionClientPartition;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Optional;
-
 import static com.aliyun.fastmodel.core.formatter.ExpressionFormatter.formatExpression;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_ENGINE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -104,25 +104,25 @@ public class StarRocksTransformerTest {
         List<BaseClientProperty> properties = table.getProperties();
         assertEquals(6, properties.size());
         Optional<BaseClientProperty> first = properties.stream().filter(
-            c -> StringUtils.equalsIgnoreCase(c.getKey(), StarRocksProperty.TABLE_ENGINE.getValue())).findFirst();
-        assertEquals(StarRocksProperty.TABLE_ENGINE.getValue(), first.get().getKey());
+            c -> StringUtils.equalsIgnoreCase(c.getKey(), TABLE_ENGINE.getValue())).findFirst();
+        assertEquals(TABLE_ENGINE.getValue(), first.get().getKey());
     }
 
     @Test
     public void testTransformTableDistributedKey() {
         DialectNode dialectNode = new DialectNode(
-                "CREATE TABLE example_db.table_hash\n" +
-                        "(\n" +
-                        "    k1 TINYINT AUTO_INCREMENT,\n" +
-                        "    k2 DECIMAL(10, 2) DEFAULT \"10.5\"\n" +
-                        ")\n" +
-                        "DISTRIBUTED BY RANDOM BUCKETS 56;"
+            "CREATE TABLE example_db.table_hash\n" +
+                "(\n" +
+                "    k1 TINYINT AUTO_INCREMENT,\n" +
+                "    k2 DECIMAL(10, 2) DEFAULT \"10.5\"\n" +
+                ")\n" +
+                "DISTRIBUTED BY RANDOM BUCKETS 56;"
         );
         Node node = starRocksTransformer.reverse(dialectNode);
         Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
         assertNotNull(table.getConstraints());
         assertEquals(1, table.getConstraints().size());
-        StarRocksDistributeConstraint distributedKey = (StarRocksDistributeConstraint)table.getConstraints().get(0);
+        DistributeClientConstraint distributedKey = (DistributeClientConstraint)table.getConstraints().get(0);
         assertTrue(distributedKey.getRandom());
         assertEquals(56, distributedKey.getBucket().intValue());
     }
@@ -161,9 +161,9 @@ public class StarRocksTransformerTest {
         List<BaseClientProperty> properties = table.getProperties();
         assertEquals(6, properties.size());
         Optional<BaseClientProperty> first = properties.stream().filter(c -> {
-            return StringUtils.equalsIgnoreCase(c.getKey(), StarRocksProperty.TABLE_ENGINE.getValue());
+            return StringUtils.equalsIgnoreCase(c.getKey(), TABLE_ENGINE.getValue());
         }).findFirst();
-        assertEquals(StarRocksProperty.TABLE_ENGINE.getValue(), first.get().getKey());
+        assertEquals(TABLE_ENGINE.getValue(), first.get().getKey());
     }
 
     @Test
@@ -267,7 +267,7 @@ public class StarRocksTransformerTest {
             + "   total_price BIGINT COMMENT \"price of an order\"\n"
             + ")\n"
             + "UNIQUE KEY (create_time,order_id)\n"
-            + "DISTRIBUTED BY HASH (order_id)\n"
+            + "DISTRIBUTED BY HASH(order_id)\n"
             + "PROPERTIES (\"replication_num\"=\"3\");", transform.getNode());
     }
 
@@ -314,7 +314,7 @@ public class StarRocksTransformerTest {
             + "   property3   TINYINT NOT NULL\n"
             + ")\n"
             + "PRIMARY KEY (`user_id`)\n"
-            + "DISTRIBUTED BY HASH (`user_id`)\n"
+            + "DISTRIBUTED BY HASH(`user_id`)\n"
             + "ORDER BY (`address`,`last_active`)\n"
             + "PROPERTIES (\"replication_num\"=\"3\",\"enable_persistent_index\"=\"true\");", transform.getNode());
     }
@@ -345,7 +345,7 @@ public class StarRocksTransformerTest {
             + "   channel     INT COMMENT \"\"\n"
             + ")\n"
             + "DUPLICATE KEY (event_time,event_type)\n"
-            + "DISTRIBUTED BY HASH (user_id)\n"
+            + "DISTRIBUTED BY HASH(user_id)\n"
             + "PROPERTIES (\"replication_num\"=\"3\");", transform.getNode());
     }
 
@@ -389,7 +389,7 @@ public class StarRocksTransformerTest {
             + "   property3   TINYINT NOT NULL\n"
             + ")\n"
             + "PRIMARY KEY (`user_id`)\n"
-            + "DISTRIBUTED BY HASH (`user_id`)\n"
+            + "DISTRIBUTED BY HASH(`user_id`)\n"
             + "ORDER BY (`address`,`last_active`)\n"
             + "PROPERTIES (\"replication_num\"=\"3\",\"enable_persistent_index\"=\"true\");", transform.getNode());
     }
@@ -422,7 +422,7 @@ public class StarRocksTransformerTest {
             + "ENGINE=olap\n"
             + "AGGREGATE KEY (k1,k2)\n"
             + "COMMENT \"my first starrocks table\"\n"
-            + "DISTRIBUTED BY HASH (k1) BUCKETS 10\n"
+            + "DISTRIBUTED BY HASH(k1) BUCKETS 10\n"
             + "PROPERTIES (\"storage_type\"=\"column\");", transform.getNode());
     }
 
@@ -455,7 +455,7 @@ public class StarRocksTransformerTest {
             + "ENGINE=olap\n"
             + "AGGREGATE KEY (k1,k2)\n"
             + "COMMENT \"my first starrocks table\"\n"
-            + "DISTRIBUTED BY HASH (k1) BUCKETS 10\n"
+            + "DISTRIBUTED BY HASH(k1) BUCKETS 10\n"
             + "ROLLUP (a (a,b) DUPLICATE KEY (b,c) FROM c PROPERTIES (\"a\"=\"d\"))\n"
             + "PROPERTIES (\"storage_type\"=\"column\");", transform.getNode());
     }
@@ -487,15 +487,15 @@ public class StarRocksTransformerTest {
     public void testTransformListPartition() {
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE t_recharge_detail2 (\n" +
-                            "    id bigint,\n" +
-                            "    city varchar(20) not null,\n" +
-                            "    dt varchar(20) not null\n" +
-                            ")\n" +
-                            "PARTITION BY LIST (city) (\n" +
-                            "   PARTITION pCalifornia VALUES IN (\"Los Angeles\",\"San Francisco\",\"San Diego\"),\n" +
-                            "   PARTITION pTexas VALUES IN (\"Houston\",\"Dallas\",\"Austin\")\n" +
-                            ");"
+                "CREATE TABLE t_recharge_detail2 (\n" +
+                    "    id bigint,\n" +
+                    "    city varchar(20) not null,\n" +
+                    "    dt varchar(20) not null\n" +
+                    ")\n" +
+                    "PARTITION BY LIST (city) (\n" +
+                    "   PARTITION pCalifornia VALUES IN (\"Los Angeles\",\"San Francisco\",\"San Diego\"),\n" +
+                    "   PARTITION pTexas VALUES IN (\"Houston\",\"Dallas\",\"Austin\")\n" +
+                    ");"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
@@ -511,36 +511,36 @@ public class StarRocksTransformerTest {
             ListClientPartition listClientPartition = property.getValue();
             assertEquals("pCalifornia", listClientPartition.getName());
             List<List<PartitionClientValue>> partitionValue =
-                    ((ArrayClientPartitionKey) listClientPartition.getPartitionKey()).getPartitionValue();
+                ((ArrayClientPartitionKey)listClientPartition.getPartitionKey()).getPartitionValue();
 
             assertEquals("[[PartitionClientValue(maxValue=false, value=Los Angeles)], " +
-                    "[PartitionClientValue(maxValue=false, value=San Francisco)], " +
-                    "[PartitionClientValue(maxValue=false, value=San Diego)]]", partitionValue.toString());
+                "[PartitionClientValue(maxValue=false, value=San Francisco)], " +
+                "[PartitionClientValue(maxValue=false, value=San Diego)]]", partitionValue.toString());
         }
 
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE t_recharge_detail4 (\n" +
-                            "    id bigint,\n" +
-                            "    user_id bigint,\n" +
-                            "    recharge_money decimal(32,2), \n" +
-                            "    city varchar(20) not null,\n" +
-                            "    dt varchar(20) not null\n" +
-                            ")\n" +
-                            "PARTITION BY LIST (dt,city) (\n" +
-                            "   PARTITION p202204_California VALUES IN (\n" +
-                            "       (\"2022-04-01\", \"Los Angeles\"),\n" +
-                            "       (\"2022-04-01\", \"San Francisco\"),\n" +
-                            "       (\"2022-04-02\", \"Los Angeles\"),\n" +
-                            "       (\"2022-04-02\", \"San Francisco\")\n" +
-                            "    ),\n" +
-                            "   PARTITION p202204_Texas VALUES IN (\n" +
-                            "       (\"2022-04-01\", \"Houston\"),\n" +
-                            "       (\"2022-04-01\", \"Dallas\"),\n" +
-                            "       (\"2022-04-02\", \"Houston\"),\n" +
-                            "       (\"2022-04-02\", \"Dallas\")\n" +
-                            "   )\n" +
-                            ");"
+                "CREATE TABLE t_recharge_detail4 (\n" +
+                    "    id bigint,\n" +
+                    "    user_id bigint,\n" +
+                    "    recharge_money decimal(32,2), \n" +
+                    "    city varchar(20) not null,\n" +
+                    "    dt varchar(20) not null\n" +
+                    ")\n" +
+                    "PARTITION BY LIST (dt,city) (\n" +
+                    "   PARTITION p202204_California VALUES IN (\n" +
+                    "       (\"2022-04-01\", \"Los Angeles\"),\n" +
+                    "       (\"2022-04-01\", \"San Francisco\"),\n" +
+                    "       (\"2022-04-02\", \"Los Angeles\"),\n" +
+                    "       (\"2022-04-02\", \"San Francisco\")\n" +
+                    "    ),\n" +
+                    "   PARTITION p202204_Texas VALUES IN (\n" +
+                    "       (\"2022-04-01\", \"Houston\"),\n" +
+                    "       (\"2022-04-01\", \"Dallas\"),\n" +
+                    "       (\"2022-04-02\", \"Houston\"),\n" +
+                    "       (\"2022-04-02\", \"Dallas\")\n" +
+                    "   )\n" +
+                    ");"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
@@ -554,16 +554,16 @@ public class StarRocksTransformerTest {
             ListClientPartition listClientPartition = property.getValue();
             assertEquals("p202204_California", listClientPartition.getName());
             List<List<PartitionClientValue>> partitionValue =
-                    ((ArrayClientPartitionKey) listClientPartition.getPartitionKey()).getPartitionValue();
+                ((ArrayClientPartitionKey)listClientPartition.getPartitionKey()).getPartitionValue();
 
             assertEquals("[[PartitionClientValue(maxValue=false, value=2022-04-01), " +
-                    "PartitionClientValue(maxValue=false, value=Los Angeles)], " +
-                    "[PartitionClientValue(maxValue=false, value=2022-04-01), " +
-                    "PartitionClientValue(maxValue=false, value=San Francisco)], " +
-                    "[PartitionClientValue(maxValue=false, value=2022-04-02), " +
-                    "PartitionClientValue(maxValue=false, value=Los Angeles)], " +
-                    "[PartitionClientValue(maxValue=false, value=2022-04-02), " +
-                    "PartitionClientValue(maxValue=false, value=San Francisco)]]", partitionValue.toString());
+                "PartitionClientValue(maxValue=false, value=Los Angeles)], " +
+                "[PartitionClientValue(maxValue=false, value=2022-04-01), " +
+                "PartitionClientValue(maxValue=false, value=San Francisco)], " +
+                "[PartitionClientValue(maxValue=false, value=2022-04-02), " +
+                "PartitionClientValue(maxValue=false, value=Los Angeles)], " +
+                "[PartitionClientValue(maxValue=false, value=2022-04-02), " +
+                "PartitionClientValue(maxValue=false, value=San Francisco)]]", partitionValue.toString());
         }
     }
 
@@ -571,90 +571,94 @@ public class StarRocksTransformerTest {
     public void testReverseListPartition() {
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE t_recharge_detail2 (\n" +
-                            "    id bigint,\n" +
-                            "    city varchar(20) not null,\n" +
-                            "    dt varchar(20) not null\n" +
-                            ")\n" +
-                            "PARTITION BY LIST (city) (\n" +
-                            "   PARTITION pCalifornia VALUES IN (\"Los Angeles\",\"San Francisco\",\"San Diego\"),\n" +
-                            "   PARTITION pTexas VALUES IN (\"Houston\",\"Dallas\",\"Austin\")\n" +
-                            ");"
+                "CREATE TABLE t_recharge_detail2 (\n" +
+                    "    id bigint,\n" +
+                    "    city varchar(20) not null,\n" +
+                    "    dt varchar(20) not null\n" +
+                    ")\n" +
+                    "PARTITION BY LIST (city) (\n" +
+                    "   PARTITION pCalifornia VALUES IN (\"Los Angeles\",\"San Francisco\",\"San Diego\"),\n" +
+                    "   PARTITION pTexas VALUES IN (\"Houston\",\"Dallas\",\"Austin\")\n" +
+                    ");"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
 
             DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
-                    .after(table)
-                    .config(TableConfig.builder()
-                            .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
-                            .build())
-                    .build();
+                .after(table)
+                .config(TableConfig.builder()
+                    .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
+                    .build())
+                .build();
             CodeGenerator codeGenerator = new DefaultCodeGenerator();
             DdlGeneratorResult generate = codeGenerator.generate(request);
             List<DialectNode> dialectNodes = generate.getDialectNodes();
             assertEquals("CREATE TABLE t_recharge_detail2\n" +
-                    "(\n" +
-                    "   id   BIGINT NULL,\n" +
-                    "   city VARCHAR(20) NOT NULL,\n" +
-                    "   dt   VARCHAR(20) NOT NULL\n" +
-                    ")\n" +
-                    "PARTITION BY LIST (city)\n" +
-                    "(\n" +
-                    "PARTITION pCalifornia VALUES IN (\"Los Angeles\",\"San Francisco\",\"San Diego\"),\n" +
-                    "PARTITION pTexas VALUES IN (\"Houston\",\"Dallas\",\"Austin\")\n" +
-                    ");", dialectNodes.get(0).getNode());
+                "(\n" +
+                "   id   BIGINT NULL,\n" +
+                "   city VARCHAR(20) NOT NULL,\n" +
+                "   dt   VARCHAR(20) NOT NULL\n" +
+                ")\n" +
+                "PARTITION BY LIST (city)\n" +
+                "(\n" +
+                "PARTITION pCalifornia VALUES IN (\"Los Angeles\",\"San Francisco\",\"San Diego\"),\n" +
+                "PARTITION pTexas VALUES IN (\"Houston\",\"Dallas\",\"Austin\")\n" +
+                ");", dialectNodes.get(0).getNode());
         }
 
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE t_recharge_detail4 (\n" +
-                            "    id bigint,\n" +
-                            "    user_id bigint,\n" +
-                            "    recharge_money decimal(32,2), \n" +
-                            "    city varchar(20) not null,\n" +
-                            "    dt varchar(20) not null\n" +
-                            ")\n" +
-                            "PARTITION BY LIST (dt,city) (\n" +
-                            "   PARTITION p202204_California VALUES IN (\n" +
-                            "       (\"2022-04-01\", \"Los Angeles\"),\n" +
-                            "       (\"2022-04-01\", \"San Francisco\"),\n" +
-                            "       (\"2022-04-02\", \"Los Angeles\"),\n" +
-                            "       (\"2022-04-02\", \"San Francisco\")\n" +
-                            "    ),\n" +
-                            "   PARTITION p202204_Texas VALUES IN (\n" +
-                            "       (\"2022-04-01\", \"Houston\"),\n" +
-                            "       (\"2022-04-01\", \"Dallas\"),\n" +
-                            "       (\"2022-04-02\", \"Houston\"),\n" +
-                            "       (\"2022-04-02\", \"Dallas\")\n" +
-                            "   )\n" +
-                            ");"
+                "CREATE TABLE t_recharge_detail4 (\n" +
+                    "    id bigint,\n" +
+                    "    user_id bigint,\n" +
+                    "    recharge_money decimal(32,2), \n" +
+                    "    city varchar(20) not null,\n" +
+                    "    dt varchar(20) not null\n" +
+                    ")\n" +
+                    "PARTITION BY LIST (dt,city) (\n" +
+                    "   PARTITION p202204_California VALUES IN (\n" +
+                    "       (\"2022-04-01\", \"Los Angeles\"),\n" +
+                    "       (\"2022-04-01\", \"San Francisco\"),\n" +
+                    "       (\"2022-04-02\", \"Los Angeles\"),\n" +
+                    "       (\"2022-04-02\", \"San Francisco\")\n" +
+                    "    ),\n" +
+                    "   PARTITION p202204_Texas VALUES IN (\n" +
+                    "       (\"2022-04-01\", \"Houston\"),\n" +
+                    "       (\"2022-04-01\", \"Dallas\"),\n" +
+                    "       (\"2022-04-02\", \"Houston\"),\n" +
+                    "       (\"2022-04-02\", \"Dallas\")\n" +
+                    "   )\n" +
+                    ");"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
 
             DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
-                    .after(table)
-                    .config(TableConfig.builder()
-                            .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
-                            .build())
-                    .build();
+                .after(table)
+                .config(TableConfig.builder()
+                    .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
+                    .build())
+                .build();
             CodeGenerator codeGenerator = new DefaultCodeGenerator();
             DdlGeneratorResult generate = codeGenerator.generate(request);
             List<DialectNode> dialectNodes = generate.getDialectNodes();
             assertEquals("CREATE TABLE t_recharge_detail4\n" +
-                    "(\n" +
-                    "   id             BIGINT NULL,\n" +
-                    "   user_id        BIGINT NULL,\n" +
-                    "   recharge_money DECIMAL(32,2) NULL,\n" +
-                    "   city           VARCHAR(20) NOT NULL,\n" +
-                    "   dt             VARCHAR(20) NOT NULL\n" +
-                    ")\n" +
-                    "PARTITION BY LIST (dt,city)\n" +
-                    "(\n" +
-                    "PARTITION p202204_California VALUES IN ((\"2022-04-01\",\"Los Angeles\"),(\"2022-04-01\",\"San Francisco\"),(\"2022-04-02\",\"Los Angeles\"),(\"2022-04-02\",\"San Francisco\")),\n" +
-                    "PARTITION p202204_Texas VALUES IN ((\"2022-04-01\",\"Houston\"),(\"2022-04-01\",\"Dallas\"),(\"2022-04-02\",\"Houston\"),(\"2022-04-02\",\"Dallas\"))\n" +
-                    ");", dialectNodes.get(0).getNode());
+                "(\n" +
+                "   id             BIGINT NULL,\n" +
+                "   user_id        BIGINT NULL,\n" +
+                "   recharge_money DECIMAL(32,2) NULL,\n" +
+                "   city           VARCHAR(20) NOT NULL,\n" +
+                "   dt             VARCHAR(20) NOT NULL\n" +
+                ")\n" +
+                "PARTITION BY LIST (dt,city)\n" +
+                "(\n" +
+                "PARTITION p202204_California VALUES IN ((\"2022-04-01\",\"Los Angeles\"),(\"2022-04-01\",\"San Francisco\"),(\"2022-04-02\",\"Los "
+                + "Angeles\"),(\"2022-04-02\",\"San Francisco\")),\n"
+                +
+                "PARTITION p202204_Texas VALUES IN ((\"2022-04-01\",\"Houston\"),(\"2022-04-01\",\"Dallas\"),(\"2022-04-02\",\"Houston\"),"
+                + "(\"2022-04-02\",\"Dallas\"))\n"
+                +
+                ");", dialectNodes.get(0).getNode());
         }
     }
 
@@ -662,14 +666,14 @@ public class StarRocksTransformerTest {
     public void testTransformExpressionPartition() {
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE site_access1 (\n" +
-                            "    event_day DATETIME NOT NULL,\n" +
-                            "    site_id INT DEFAULT '10',\n" +
-                            "    city_code VARCHAR(100),\n" +
-                            "    user_name VARCHAR(32) DEFAULT '',\n" +
-                            "    pv BIGINT DEFAULT '0'\n" +
-                            ")\n" +
-                            "PARTITION BY date_trunc('day', event_day);"
+                "CREATE TABLE site_access1 (\n" +
+                    "    event_day DATETIME NOT NULL,\n" +
+                    "    site_id INT DEFAULT '10',\n" +
+                    "    city_code VARCHAR(100),\n" +
+                    "    user_name VARCHAR(32) DEFAULT '',\n" +
+                    "    pv BIGINT DEFAULT '0'\n" +
+                    ")\n" +
+                    "PARTITION BY date_trunc('day', event_day);"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
@@ -689,14 +693,14 @@ public class StarRocksTransformerTest {
 
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE site_access3 (\n" +
-                            "    event_day DATETIME NOT NULL,\n" +
-                            "    site_id INT DEFAULT '10',\n" +
-                            "    city_code VARCHAR(100),\n" +
-                            "    user_name VARCHAR(32) DEFAULT '',\n" +
-                            "    pv BIGINT DEFAULT '0'\n" +
-                            ")\n" +
-                            "PARTITION BY time_slice(event_day, INTERVAL 7 day);"
+                "CREATE TABLE site_access3 (\n" +
+                    "    event_day DATETIME NOT NULL,\n" +
+                    "    site_id INT DEFAULT '10',\n" +
+                    "    city_code VARCHAR(100),\n" +
+                    "    user_name VARCHAR(32) DEFAULT '',\n" +
+                    "    pv BIGINT DEFAULT '0'\n" +
+                    ")\n" +
+                    "PARTITION BY time_slice(event_day, INTERVAL 7 day);"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
@@ -716,14 +720,14 @@ public class StarRocksTransformerTest {
 
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE t_recharge_detail1 (\n" +
-                            "    id bigint,\n" +
-                            "    user_id bigint,\n" +
-                            "    recharge_money decimal(32,2), \n" +
-                            "    city varchar(20) not null,\n" +
-                            "    dt varchar(20) not null\n" +
-                            ")\n" +
-                            "PARTITION BY (dt,city);"
+                "CREATE TABLE t_recharge_detail1 (\n" +
+                    "    id bigint,\n" +
+                    "    user_id bigint,\n" +
+                    "    recharge_money decimal(32,2), \n" +
+                    "    city varchar(20) not null,\n" +
+                    "    dt varchar(20) not null\n" +
+                    ")\n" +
+                    "PARTITION BY (dt,city);"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
@@ -745,104 +749,104 @@ public class StarRocksTransformerTest {
     public void testReverseExpressionPartition() {
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE site_access1 (\n" +
-                            "    event_day DATETIME NOT NULL,\n" +
-                            "    site_id INT DEFAULT '10',\n" +
-                            "    city_code VARCHAR(100),\n" +
-                            "    user_name VARCHAR(32) DEFAULT '',\n" +
-                            "    pv BIGINT DEFAULT '0'\n" +
-                            ")\n" +
-                            "PARTITION BY date_trunc('day', event_day);"
+                "CREATE TABLE site_access1 (\n" +
+                    "    event_day DATETIME NOT NULL,\n" +
+                    "    site_id INT DEFAULT '10',\n" +
+                    "    city_code VARCHAR(100),\n" +
+                    "    user_name VARCHAR(32) DEFAULT '',\n" +
+                    "    pv BIGINT DEFAULT '0'\n" +
+                    ")\n" +
+                    "PARTITION BY date_trunc('day', event_day);"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
 
             DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
-                    .after(table)
-                    .config(TableConfig.builder()
-                            .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
-                            .build())
-                    .build();
+                .after(table)
+                .config(TableConfig.builder()
+                    .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
+                    .build())
+                .build();
             CodeGenerator codeGenerator = new DefaultCodeGenerator();
             DdlGeneratorResult generate = codeGenerator.generate(request);
             List<DialectNode> dialectNodes = generate.getDialectNodes();
             assertEquals("CREATE TABLE site_access1\n" +
-                    "(\n" +
-                    "   event_day DATETIME NOT NULL,\n" +
-                    "   site_id   INT NULL DEFAULT \"10\",\n" +
-                    "   city_code VARCHAR(100) NULL,\n" +
-                    "   user_name VARCHAR(32) NULL DEFAULT \"\",\n" +
-                    "   pv        BIGINT NULL DEFAULT \"0\"\n" +
-                    ")\n" +
-                    "PARTITION BY date_trunc('day', event_day);", dialectNodes.get(0).getNode());
+                "(\n" +
+                "   event_day DATETIME NOT NULL,\n" +
+                "   site_id   INT NULL DEFAULT \"10\",\n" +
+                "   city_code VARCHAR(100) NULL,\n" +
+                "   user_name VARCHAR(32) NULL DEFAULT \"\",\n" +
+                "   pv        BIGINT NULL DEFAULT \"0\"\n" +
+                ")\n" +
+                "PARTITION BY date_trunc('day', event_day);", dialectNodes.get(0).getNode());
         }
 
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE site_access3 (\n" +
-                            "    event_day DATETIME NOT NULL,\n" +
-                            "    site_id INT DEFAULT '10',\n" +
-                            "    city_code VARCHAR(100),\n" +
-                            "    user_name VARCHAR(32) DEFAULT '',\n" +
-                            "    pv BIGINT DEFAULT '0'\n" +
-                            ")\n" +
-                            "PARTITION BY time_slice(event_day, INTERVAL 7 day);"
+                "CREATE TABLE site_access3 (\n" +
+                    "    event_day DATETIME NOT NULL,\n" +
+                    "    site_id INT DEFAULT '10',\n" +
+                    "    city_code VARCHAR(100),\n" +
+                    "    user_name VARCHAR(32) DEFAULT '',\n" +
+                    "    pv BIGINT DEFAULT '0'\n" +
+                    ")\n" +
+                    "PARTITION BY time_slice(event_day, INTERVAL 7 day);"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
 
             DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
-                    .after(table)
-                    .config(TableConfig.builder()
-                            .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
-                            .build())
-                    .build();
+                .after(table)
+                .config(TableConfig.builder()
+                    .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
+                    .build())
+                .build();
             CodeGenerator codeGenerator = new DefaultCodeGenerator();
             DdlGeneratorResult generate = codeGenerator.generate(request);
             List<DialectNode> dialectNodes = generate.getDialectNodes();
             assertEquals("CREATE TABLE site_access3\n" +
-                    "(\n" +
-                    "   event_day DATETIME NOT NULL,\n" +
-                    "   site_id   INT NULL DEFAULT \"10\",\n" +
-                    "   city_code VARCHAR(100) NULL,\n" +
-                    "   user_name VARCHAR(32) NULL DEFAULT \"\",\n" +
-                    "   pv        BIGINT NULL DEFAULT \"0\"\n" +
-                    ")\n" +
-                    "PARTITION BY time_slice(event_day, INTERVAL 7 DAY);", dialectNodes.get(0).getNode());
+                "(\n" +
+                "   event_day DATETIME NOT NULL,\n" +
+                "   site_id   INT NULL DEFAULT \"10\",\n" +
+                "   city_code VARCHAR(100) NULL,\n" +
+                "   user_name VARCHAR(32) NULL DEFAULT \"\",\n" +
+                "   pv        BIGINT NULL DEFAULT \"0\"\n" +
+                ")\n" +
+                "PARTITION BY time_slice(event_day, INTERVAL 7 DAY);", dialectNodes.get(0).getNode());
         }
 
         {
             DialectNode dialectNode = new DialectNode(
-                    "CREATE TABLE t_recharge_detail1 (\n" +
-                            "    id bigint,\n" +
-                            "    user_id bigint,\n" +
-                            "    recharge_money decimal(32,2), \n" +
-                            "    city varchar(20) not null,\n" +
-                            "    dt varchar(20) not null\n" +
-                            ")\n" +
-                            "PARTITION BY (dt,city);"
+                "CREATE TABLE t_recharge_detail1 (\n" +
+                    "    id bigint,\n" +
+                    "    user_id bigint,\n" +
+                    "    recharge_money decimal(32,2), \n" +
+                    "    city varchar(20) not null,\n" +
+                    "    dt varchar(20) not null\n" +
+                    ")\n" +
+                    "PARTITION BY (dt,city);"
             );
             Node node = starRocksTransformer.reverse(dialectNode);
             Table table = starRocksTransformer.transformTable(node, TransformContext.builder().build());
 
             DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
-                    .after(table)
-                    .config(TableConfig.builder()
-                            .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
-                            .build())
-                    .build();
+                .after(table)
+                .config(TableConfig.builder()
+                    .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
+                    .build())
+                .build();
             CodeGenerator codeGenerator = new DefaultCodeGenerator();
             DdlGeneratorResult generate = codeGenerator.generate(request);
             List<DialectNode> dialectNodes = generate.getDialectNodes();
             assertEquals("CREATE TABLE t_recharge_detail1\n" +
-                    "(\n" +
-                    "   id             BIGINT NULL,\n" +
-                    "   user_id        BIGINT NULL,\n" +
-                    "   recharge_money DECIMAL(32,2) NULL,\n" +
-                    "   city           VARCHAR(20) NOT NULL,\n" +
-                    "   dt             VARCHAR(20) NOT NULL\n" +
-                    ")\n" +
-                    "PARTITION BY (dt,city);", dialectNodes.get(0).getNode());
+                "(\n" +
+                "   id             BIGINT NULL,\n" +
+                "   user_id        BIGINT NULL,\n" +
+                "   recharge_money DECIMAL(32,2) NULL,\n" +
+                "   city           VARCHAR(20) NOT NULL,\n" +
+                "   dt             VARCHAR(20) NOT NULL\n" +
+                ")\n" +
+                "PARTITION BY (dt,city);", dialectNodes.get(0).getNode());
         }
     }
 

@@ -46,6 +46,8 @@
         <module>fastmodel-transform-adbmysql</module>
         <module>fastmodel-transform-sqlite</module>
         <module>fastmodel-transform-starrocks</module>
+        <module>fastmodel-transform-doris</module>
+        <module>fastmodel-transform-oceanbase</module>
     </modules>
 
 

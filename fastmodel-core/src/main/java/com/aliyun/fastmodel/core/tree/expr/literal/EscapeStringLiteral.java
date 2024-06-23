@@ -9,7 +9,7 @@
 package com.aliyun.fastmodel.core.tree.expr.literal;
 
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
-import lombok.Data;
+import lombok.Getter;
 
 /**
  * escape string literal
@@ -17,7 +17,7 @@ import lombok.Data;
  * @author panguanjing
  * @date 2022/6/10
  */
-@Data
+@Getter
 public class EscapeStringLiteral extends StringLiteral {
     /**
      * escape value

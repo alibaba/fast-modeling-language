@@ -18,6 +18,7 @@ import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
@@ -49,6 +50,10 @@ import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexExpr;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexSortKey;
+import com.aliyun.fastmodel.core.tree.statement.table.index.SortType;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.core.tree.util.StringLiteralUtil;
@@ -57,6 +62,9 @@ import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.ConstraintType;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.OutlineConstraintType;
+import com.aliyun.fastmodel.transform.api.client.dto.index.Index;
+import com.aliyun.fastmodel.transform.api.client.dto.index.IndexKey;
+import com.aliyun.fastmodel.transform.api.client.dto.index.IndexSortType;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
@@ -64,6 +72,8 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.UniqueKeyExprClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.UniqueKeyExprConstraint;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -88,12 +98,19 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     public static final int THIRD_INDEX = 3;
 
     /**
+     * 获取语言解析器
+     *
+     * @return
+     */
+    public abstract LanguageParser getLanguageParser();
+
+    /**
      * get DataType
      *
      * @param column
      * @return
      */
-    protected abstract BaseDataType getDataType(Column column);
+    public abstract BaseDataType getDataType(Column column);
 
     /**
      * get property converter
@@ -122,6 +139,10 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return false;
     }
 
+    protected String formatExpression(BaseExpression baseExpression) {
+        return baseExpression.toString();
+    }
+
     /**
      * @param table
      * @return {@link Node}
@@ -146,6 +167,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .tableIndex(tableIndexList)
             .comment(comment)
             .constraints(constraints)
+            .tableIndex(tableIndexList)
             .properties(properties)
             .build();
     }
@@ -168,6 +190,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         List<Column> columns = toTableColumns(createTable);
         List<Constraint> constraints = toOutlineConstraint(createTable);
         List<BaseClientProperty> properties = toBaseClientProperty(createTable);
+        List<Index> indices = toIndex(createTable);
         return Table.builder()
             .ifNotExist(createTable.isNotExists())
             .external(external)
@@ -177,11 +200,113 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .lifecycleSeconds(toLifeCycleSeconds(createTable))
             .columns(columns)
             .constraints(constraints)
+            .indices(indices)
             .properties(properties)
             .build();
     }
 
+    protected List<Index> toIndex(CreateTable createTable) {
+        if (createTable.isIndexEmpty()) {
+            return Collections.emptyList();
+        }
+        List<TableIndex> tableIndexList = createTable.getTableIndexList();
+        List<Index> indices = Lists.newArrayList();
+        for (TableIndex index : tableIndexList) {
+            List<IndexSortKey> indexSortKeys = index.getIndexColumnNames();
+            List<IndexKey> collect = indexSortKeys.stream().map(i -> getIndexKey(i)).filter(Objects::nonNull).collect(Collectors.toList());
+            List<BaseClientProperty> es = Lists.newArrayList();
+            List<Property> properties = index.getProperties();
+            if (properties != null) {
+                for (Property p : properties) {
+                    BaseClientProperty baseClientProperty = getPropertyConverter().create(p.getName(), p.getValue());
+                    es.add(baseClientProperty);
+                }
+            }
+            Index constraint = Index.builder()
+                .name(index.getIndexName().getValue())
+                .indexKeys(collect)
+                .properties(es)
+                .build();
+            indices.add(constraint);
+        }
+        return indices;
+    }
 
+    private IndexKey getIndexKey(IndexSortKey i) {
+        IndexKey indexKey = IndexKey.builder().build();
+        if (i instanceof IndexColumnName) {
+            IndexColumnName indexColumnName = (IndexColumnName)i;
+            String column = indexColumnName.getColumnName().toString();
+            indexKey.setColumn(column);
+            if (indexColumnName.getColumnLength() != null) {
+                indexKey.setLength(indexColumnName.getColumnLength().getValue());
+            }
+            indexKey.setSortType(getIndexSortType(indexColumnName.getSortType()));
+        }
+        if (i instanceof IndexExpr) {
+            IndexExpr indexExpr = (IndexExpr)i;
+            BaseExpression expression = indexExpr.getExpression();
+            String formatExpression = formatExpression(expression);
+            indexKey.setExpression(formatExpression);
+            indexKey.setSortType(getIndexSortType(indexExpr.getSortType()));
+        }
+        return indexKey;
+    }
+
+    private IndexSortType getIndexSortType(SortType sortType) {
+        if (sortType == SortType.ASC) {
+            return IndexSortType.ASC;
+        }
+        if (sortType == SortType.DESC) {
+            return IndexSortType.DESC;
+        }
+        return null;
+    }
+
+    protected List<TableIndex> toTableIndex(Table table, List<Column> columns) {
+        if (table == null || CollectionUtils.isEmpty(table.getIndices())) {
+            return Collections.emptyList();
+        }
+        return table.getIndices().stream().map(indexConstraint -> {
+            Identifier indexName = new Identifier(indexConstraint.getName());
+            List<IndexSortKey> indexSortKeys = null;
+            List<IndexKey> indexKeys = indexConstraint.getIndexKeys();
+            if (indexKeys != null) {
+                indexSortKeys = indexKeys.stream()
+                    .map(indexKey -> getIndexSortKey(indexKey)).collect(Collectors.toList());
+            }
+
+            List<Property> properties = null;
+            if (CollectionUtils.isNotEmpty(indexConstraint.getProperties())) {
+                properties = indexConstraint.getProperties().stream().map(property -> {
+                    return new Property(property.getKey(), (String)property.getValue());
+                }).collect(Collectors.toList());
+            }
+            return new TableIndex(indexName, indexSortKeys, properties);
+        }).collect(Collectors.toList());
+    }
+
+    private IndexSortKey getIndexSortKey(IndexKey indexKey) {
+        String column = indexKey.getColumn();
+        if (StringUtils.isNotBlank(column)) {
+            LongLiteral length = indexKey.getLength() != null ? new LongLiteral(String.valueOf(indexKey.getLength())) : null;
+            return new IndexColumnName(new Identifier(column), length, getSortType(indexKey.getSortType()));
+        } else {
+            BaseExpression o = (BaseExpression)getLanguageParser().parseExpression(indexKey.getExpression());
+            IndexExpr indexExpr = new IndexExpr(o, getSortType(indexKey.getSortType()));
+            return indexExpr;
+        }
+    }
+
+    private SortType getSortType(IndexSortType sortType) {
+        if (sortType == IndexSortType.ASC) {
+            return SortType.ASC;
+        }
+        if (sortType == IndexSortType.DESC) {
+            return SortType.DESC;
+        }
+        return null;
+    }
 
     protected String toSchema(CreateTable createTable, T transformContext) {
         QualifiedName qualifiedName = createTable.getQualifiedName();
@@ -199,6 +324,13 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return transformContext.getSchema();
     }
 
+    /**
+     * get database
+     *
+     * @param createTable
+     * @param database
+     * @return
+     */
     protected String toDatabase(CreateTable createTable, String database) {
         QualifiedName qualifiedName = createTable.getQualifiedName();
         boolean isThirdSchema = qualifiedName.isJoinPath() && qualifiedName.getOriginalParts().size() == THIRD_INDEX;
@@ -430,10 +562,6 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return new PartitionedBy(collect);
     }
 
-    protected List<TableIndex> toTableIndex(Table table, List<Column> columns) {
-        return Collections.emptyList();
-    }
-
     /**
      * to constraint
      *
@@ -464,12 +592,45 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
                     c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
                 constraintList.add(primaryConstraint);
             } else if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.UNIQUE.getCode())) {
-                UniqueConstraint primaryConstraint = new UniqueConstraint(constraintName,
-                    c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
-                constraintList.add(primaryConstraint);
+                if (c instanceof UniqueKeyExprClientConstraint) {
+                    UniqueKeyExprClientConstraint u = (UniqueKeyExprClientConstraint)c;
+                    List<IndexSortKey> indexSortKeys = toIndexSortKey(u);
+                    UniqueKeyExprConstraint keyExprConstraint = new UniqueKeyExprConstraint(
+                        constraintName, null, indexSortKeys, null
+                    );
+                    constraintList.add(keyExprConstraint);
+                } else {
+                    UniqueConstraint primaryConstraint = new UniqueConstraint(constraintName,
+                        c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
+                    constraintList.add(primaryConstraint);
+                }
             }
         }
         return constraintList;
+    }
+
+    private List<IndexSortKey> toIndexSortKey(UniqueKeyExprClientConstraint u) {
+        if (CollectionUtils.isNotEmpty(u.getExpression())) {
+            return u.getExpression().stream().map(
+                c -> {
+                    BaseExpression baseExpression = (BaseExpression)getLanguageParser().parseExpression(c);
+                    IndexExpr indexExpr = new IndexExpr(baseExpression, null);
+                    return indexExpr;
+                }
+            ).collect(Collectors.toList());
+        }
+        if (CollectionUtils.isNotEmpty(u.getColumns())) {
+            return u.getColumns().stream().map(
+                c -> {
+                    IndexColumnName indexColumnName = new IndexColumnName(
+                        new Identifier(c),
+                        null, null
+                    );
+                    return indexColumnName;
+                }
+            ).collect(Collectors.toList());
+        }
+        return null;
     }
 
     protected BaseConstraint setPrimaryConstraintColumns(List<Column> columns) {
@@ -498,7 +659,6 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .id(c.getColName().getValue())
             .name(c.getColName().getValue())
             .comment(c.getCommentValue())
-            .id(c.getColName().getValue())
             .dataType(dataType.getTypeName().getValue())
             .nullable(BooleanUtils.isNotTrue(c.getNotNull()))
             .primaryKey(BooleanUtils.isTrue(c.getPrimary()))

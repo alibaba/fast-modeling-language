@@ -56,11 +56,12 @@ public enum ComparisonOperator {
      */
     NOT_EQUAL_MS("!="),
 
+    NS_EQUAL("<=>"),
+
     /**
      * is distinct from
      */
     IS_DISTINCT_FROM("IS DISTINCT FROM");
-
 
     /**
      * code

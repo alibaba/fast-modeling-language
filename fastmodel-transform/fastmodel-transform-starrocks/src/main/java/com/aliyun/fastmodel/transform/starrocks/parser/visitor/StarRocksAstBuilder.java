@@ -1,5 +1,10 @@
 package com.aliyun.fastmodel.transform.starrocks.parser.visitor;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.aliyun.fastmodel.common.parser.ParserHelper;
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.exception.ParseException;
@@ -39,7 +44,26 @@ import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
-import com.aliyun.fastmodel.transform.starrocks.format.StarRocksProperty;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupItem;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiItemListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleItemListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ArrayPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.LessThanPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ListPartitionValue;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
+import com.aliyun.fastmodel.transform.starrocks.format.StarRocksPropertyKey;
 import com.aliyun.fastmodel.transform.starrocks.format.TimeFunctionType;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksBaseVisitor;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser;
@@ -93,39 +117,21 @@ import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.TypeConte
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.TypeListContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.TypeParameterContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.UnquotedIdentifierContext;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.OrderByConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.RollupItem;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksDataTypeName;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ExpressionPartitionBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiItemListPartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiRangePartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionDesc;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.RangePartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleItemListPartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.Token;
 import org.apache.commons.lang3.BooleanUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getLocation;
 import static com.aliyun.fastmodel.common.parser.ParserHelper.getOrigin;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_AGG_DESC;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_AUTO_INCREMENT;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_KEY;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_ENGINE;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_INDEX_COMMENT;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_INDEX_TYPE;
 
 /**
  * StarRocksAstBuilder
@@ -186,7 +192,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         List<BaseConstraint> constraints = Lists.newArrayList();
         list.ifPresent(constraints::add);
 
-        //distrbiute key constraint
+        //distribute key constraint
         if (ctx.distributionDesc() != null) {
             DistributeConstraint distributeKeyConstraint = (DistributeConstraint)visit(ctx.distributionDesc());
             constraints.add(distributeKeyConstraint);
@@ -239,12 +245,12 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         List<Property> properties = Lists.newArrayList();
         IndexTypeContext indexTypeContext = ctx.indexType();
         if (indexTypeContext != null) {
-            Property property = new Property(StarRocksProperty.TABLE_INDEX_TYPE.getValue(), "BITMAP");
+            Property property = new Property(TABLE_INDEX_TYPE.getValue(), "BITMAP");
             properties.add(property);
         }
         if (ctx.comment() != null) {
             Comment comment = (Comment)visit(ctx.comment());
-            Property property = new Property(StarRocksProperty.TABLE_INDEX_COMMENT.getValue(), comment.getComment());
+            Property property = new Property(TABLE_INDEX_COMMENT.getValue(), comment.getComment());
             properties.add(property);
         }
         return new TableIndex(
@@ -308,8 +314,8 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         }
 
         ColumnDefinition columnDefinition = ColumnDefinition.builder()
-                .colName(columnName)
-                .build();
+            .colName(columnName)
+            .build();
 
         return new ExpressionPartitionBy(Lists.newArrayList(columnDefinition), functionCall, null);
     }
@@ -319,8 +325,8 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         IdentifierListContext identifierListContext = ctx.identifierList();
         List<Identifier> list = ParserHelper.visit(this, identifierListContext.identifier(), Identifier.class);
         List<ColumnDefinition> columnDefinitions = list.stream().map(identifier -> ColumnDefinition.builder()
-                .colName(identifier)
-                .build()).collect(Collectors.toList());
+            .colName(identifier)
+            .build()).collect(Collectors.toList());
         return new ExpressionPartitionBy(columnDefinitions, null, null);
     }
 
@@ -338,9 +344,9 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     @Override
     public Node visitStringList(StarRocksParser.StringListContext ctx) {
         List<StringLiteral> stringLiteralList = ctx.string().stream()
-                .map(value -> new StringLiteral(value.getText())).collect(Collectors.toList());
+            .map(value -> new StringLiteral(value.getText())).collect(Collectors.toList());
         return new ListStringLiteral(getLocation(ctx),
-                getOrigin(ctx), stringLiteralList);
+            getOrigin(ctx), stringLiteralList);
     }
 
     @Override
@@ -376,7 +382,9 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         } else {
             intervalLiteral = (IntervalLiteral)visit(ctx.interval());
         }
-        return new MultiRangePartition(start, end, intervalLiteral, longLiteral);
+        ListPartitionValue fromValue = new ListPartitionValue(Lists.newArrayList(new PartitionValue(start)));
+        ListPartitionValue endValue = new ListPartitionValue(Lists.newArrayList(new PartitionValue(end)));
+        return new MultiRangePartition(fromValue, endValue, intervalLiteral, longLiteral);
     }
 
     @Override
@@ -487,7 +495,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     @Override
     public Node visitEngineDesc(EngineDescContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
-        return new Property(StarRocksProperty.TABLE_ENGINE.getValue(), identifier.getValue());
+        return new Property(TABLE_ENGINE.getValue(), identifier.getValue());
     }
 
     @Override
@@ -545,22 +553,22 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         AggDescContext aggDescContext = ctx.aggDesc();
         List<Property> properties = Lists.newArrayList();
         if (aggDescContext != null) {
-            Property property = new Property(StarRocksProperty.COLUMN_AGG_DESC.getValue(), aggDescContext.getText());
+            Property property = new Property(COLUMN_AGG_DESC.getValue(), aggDescContext.getText());
             properties.add(property);
         }
 
         if (ctx.charsetName() != null) {
             Identifier value = (Identifier)visit(ctx.charsetName().identifier());
-            Property property = new Property(StarRocksProperty.COLUMN_CHAR_SET.getValue(), value.getValue());
+            Property property = new Property(StarRocksPropertyKey.COLUMN_CHAR_SET.getValue(), value.getValue());
             properties.add(property);
         }
         if (ctx.KEY() != null) {
-            Property property = new Property(StarRocksProperty.COLUMN_KEY.getValue(), "KEY");
+            Property property = new Property(COLUMN_KEY.getValue(), "KEY");
             properties.add(property);
         }
 
         if (ctx.AUTO_INCREMENT() != null) {
-            Property property = new Property(StarRocksProperty.COLUMN_AUTO_INCREMENT.getValue(), BooleanUtils.toStringTrueFalse(true));
+            Property property = new Property(COLUMN_AUTO_INCREMENT.getValue(), BooleanUtils.toStringTrueFalse(true));
             properties.add(property);
         }
         return ColumnDefinition.builder()
@@ -605,7 +613,13 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
 
     @Override
     public Node visitMapType(MapTypeContext ctx) {
-        return super.visitMapType(ctx);
+        Node keyVisit = visit(ctx.type(0));
+        Node valueVisit = visit(ctx.type(1));
+        return new StarRocksGenericDataType(
+            getLocation(ctx),
+            getOrigin(ctx),
+            ctx.getText(),
+            ImmutableList.of(new TypeParameter((BaseDataType)keyVisit), new TypeParameter((BaseDataType)valueVisit)));
     }
 
     @Override

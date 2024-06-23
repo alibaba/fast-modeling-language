@@ -24,7 +24,7 @@ import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.statement.BaseOperatorStatement;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
-import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexSortKey;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -40,13 +40,13 @@ public class CreateIndex extends BaseOperatorStatement {
 
     private final QualifiedName tableName;
 
-    private final List<IndexColumnName> indexColumnNameList;
+    private final List<IndexSortKey> indexColumnNameList;
 
     private final List<Property> propertyList;
 
     public CreateIndex(QualifiedName qualifiedName, QualifiedName tableName,
-                       List<IndexColumnName> indexColumnNameList,
-                       List<Property> propertyList) {
+        List<IndexSortKey> indexColumnNameList,
+        List<Property> propertyList) {
         super(qualifiedName);
         this.tableName = tableName;
         this.indexColumnNameList = indexColumnNameList;
@@ -55,9 +55,9 @@ public class CreateIndex extends BaseOperatorStatement {
     }
 
     public CreateIndex(NodeLocation nodeLocation, String origin,
-                       QualifiedName qualifiedName, QualifiedName tableName,
-                       List<IndexColumnName> indexColumnNameList,
-                       List<Property> propertyList) {
+        QualifiedName qualifiedName, QualifiedName tableName,
+        List<IndexSortKey> indexColumnNameList,
+        List<Property> propertyList) {
         super(nodeLocation, origin, qualifiedName);
         this.tableName = tableName;
         this.indexColumnNameList = indexColumnNameList;

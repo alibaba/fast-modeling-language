@@ -1,0 +1,44 @@
+package com.aliyun.fastmodel.transform.api.extension.tree.constraint;
+
+import java.util.List;
+
+import com.aliyun.fastmodel.core.tree.IAstVisitor;
+import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.CustomConstraint;
+import com.aliyun.fastmodel.transform.api.extension.visitor.ExtensionAstVisitor;
+import lombok.Getter;
+
+/**
+ * aggregate constraint
+ *
+ * @author panguanjing
+ * @date 2023/9/11
+ */
+@Getter
+public class DuplicateKeyConstraint extends CustomConstraint {
+
+    public static final String TYPE = "DUPLICATE";
+
+    private final List<Identifier> columns;
+
+    public DuplicateKeyConstraint(Identifier constraintName, List<Identifier> columns, Boolean enable) {
+        super(constraintName, enable, TYPE);
+        this.columns = columns;
+    }
+
+    public DuplicateKeyConstraint(Identifier constraintName, List<Identifier> columns) {
+        this(constraintName, columns, true);
+    }
+
+    @Override
+    public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
+        ExtensionAstVisitor<R, C> extensionVisitor = (ExtensionAstVisitor<R, C>)visitor;
+        return extensionVisitor.visitDuplicateConstraint(this, context);
+    }
+
+    @Override
+    public List<? extends Node> getChildren() {
+        return columns;
+    }
+}

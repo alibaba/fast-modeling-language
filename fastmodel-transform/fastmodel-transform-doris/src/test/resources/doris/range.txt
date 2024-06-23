@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS example_db.example_range_tbl
+(
+    `user_id` LARGEINT NOT NULL COMMENT "User ID",
+    `date` DATE NOT NULL COMMENT "Date when the data are imported",
+    `timestamp` DATETIME NOT NULL COMMENT "Timestamp when the data are imported",
+    `city` VARCHAR(20) COMMENT "User location city",
+    `age` SMALLINT COMMENT "User age",
+    `sex` TINYINT COMMENT "User gender",
+    `last_visit_date` DATETIME REPLACE DEFAULT "1970-01-01 00:00:00" COMMENT "User last visit time",
+    `cost` BIGINT SUM DEFAULT "0" COMMENT "Total user consumption",
+    `max_dwell_time` INT MAX DEFAULT "0" COMMENT "Maximum user dwell time",
+    `min_dwell_time` INT MIN DEFAULT "99999" COMMENT "Minimum user dwell time"
+)
+ENGINE=olap
+AGGREGATE KEY(`user_id`, `date`, `timestamp`, `city`, `age`, `sex`)
+PARTITION BY RANGE(`date`)
+(
+    PARTITION `p201701` VALUES LESS THAN ("2017-02-01"),
+    PARTITION `p201702` VALUES LESS THAN ("2017-03-01"),
+    PARTITION `p201703` VALUES LESS THAN ("2017-04-01")
+)
+DISTRIBUTED BY HASH(`user_id`) BUCKETS 16
+PROPERTIES
+(
+    "replication_num" = "3",
+    "storage_medium" = "SSD",
+    "storage_cooldown_time" = "2018-01-01 12:00:00"
+);

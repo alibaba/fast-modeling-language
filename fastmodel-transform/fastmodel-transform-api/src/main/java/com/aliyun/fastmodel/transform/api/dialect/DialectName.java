@@ -117,9 +117,22 @@ public enum DialectName implements IDialectName {
     /**
      * StarRocks
      */
-    STARROCKS(Constants.STARROCKS)
+    STARROCKS(Constants.STARROCKS),
 
-    ;
+    /**
+     * Doris
+     */
+    DORIS(Constants.DORIS),
+
+    /**
+     * ObMysql
+     */
+    OB_MYSQL(Constants.OB_MYSQL),
+
+    /**
+     * ObOracle
+     */
+    OB_ORACLE(Constants.OB_ORACLE);
     @Getter
     private final String value;
 
@@ -147,6 +160,9 @@ public enum DialectName implements IDialectName {
         public static final String SQLITE = "SQLITE";
         public static final String JSON = "JSON";
         public static final String STARROCKS = "STAR_ROCKS";
+        public static final String DORIS = "DORIS";
+        public static final String OB_MYSQL = "OB_MYSQL";
+        public static final String OB_ORACLE = "OB_ORACLE";
     }
 
     public static DialectName getByCode(String name) {

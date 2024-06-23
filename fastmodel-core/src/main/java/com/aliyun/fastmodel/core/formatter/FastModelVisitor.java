@@ -1,17 +1,9 @@
 /*
- * Copyright 2021-2022 Alibaba Group Holding Ltd.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright (c)  2020. Aliyun.com All right reserved. This software is the
+ * confidential and proprietary information of Aliyun.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Aliyun.com.
  */
 
 package com.aliyun.fastmodel.core.formatter;
@@ -148,6 +140,8 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.RedundantConstr
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.TimePeriodConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexExpr;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexSortKey;
 import com.aliyun.fastmodel.core.tree.statement.table.index.SortType;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
@@ -441,7 +435,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             String elementIndent = indentString(newIndent);
             builder.append(formatColumnList(node.getColumnDefines(), elementIndent));
             if (!node.isConstraintEmpty()) {
-                Iterator<BaseConstraint> iterator = node.getConstraintStatements().iterator();
+                Iterator<BaseConstraint> iterator = node.getConstraintStatements().stream()
+                    .iterator();
                 while (iterator.hasNext()) {
                     builder.append(",\n");
                     process(iterator.next(), newIndent);
@@ -666,12 +661,34 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return true;
     }
 
-    protected void appendTableIndex(List<IndexColumnName> tableIndex) {
+    protected void appendTableIndex(List<IndexSortKey> tableIndex) {
         builder.append(" (");
         builder.append(tableIndex.stream().map(
-            this::formatIndexColumnName
+            index -> {
+                if (index instanceof IndexColumnName) {
+                    IndexColumnName indexColumnName = (IndexColumnName)index;
+                    return formatIndexColumnName(indexColumnName);
+                }
+                if (index instanceof IndexExpr) {
+                    IndexExpr indexExpr = (IndexExpr)index;
+                    return formatIndexExpr(indexExpr);
+                }
+                return StringUtils.EMPTY;
+            }
         ).collect(joining(",")));
         builder.append(")");
+    }
+
+    private String formatIndexExpr(IndexExpr indexExpr) {
+        StringBuilder stringBuilder = new StringBuilder("(");
+        String expression = formatExpression(indexExpr.getExpression());
+        stringBuilder.append(expression);
+        stringBuilder.append(")");
+        SortType sortType = indexExpr.getSortType();
+        if (sortType != null) {
+            stringBuilder.append(" ").append(sortType.name());
+        }
+        return stringBuilder.toString();
     }
 
     @Override
@@ -729,7 +746,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     }
 
     protected String formatColumnList(List<ColumnDefinition> list,
-                                      String elementIndent) {
+        String elementIndent) {
         OptionalInt max = list.stream().map(ColumnDefinition::getColName).mapToInt(
             x -> formatExpression(x).length()
         ).max();
@@ -1506,7 +1523,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     }
 
     protected void appendPartition(StringBuilder builder,
-                                   List<PartitionSpec> partitionSpecList, String split) {
+        List<PartitionSpec> partitionSpecList, String split) {
         if (partitionSpecList == null || partitionSpecList.isEmpty()) {
             return;
         }
@@ -1947,7 +1964,10 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return stringBuilder.toString();
     }
 
-    protected String indentString(int indent) {
+    protected String indentString(Integer indent) {
+        if (indent == null) {
+            return StringUtils.EMPTY;
+        }
         return Strings.repeat(INDENT, indent);
     }
 

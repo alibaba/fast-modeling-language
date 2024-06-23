@@ -11,6 +11,7 @@ package com.aliyun.fastmodel.transform.hologres.client.converter;
 import java.util.List;
 import java.util.Optional;
 
+import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
@@ -29,7 +30,6 @@ import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologresParser;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +46,11 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
 
     public HologresClientConverter() {
         hologresParser = new HologresParser();
+    }
+
+    @Override
+    public LanguageParser getLanguageParser() {
+        return hologresParser;
     }
 
     @Override

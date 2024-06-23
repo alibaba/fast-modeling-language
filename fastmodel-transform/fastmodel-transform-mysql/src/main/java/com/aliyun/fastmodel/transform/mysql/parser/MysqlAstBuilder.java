@@ -53,6 +53,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.NotNullConstrai
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.IndexColumnName;
+import com.aliyun.fastmodel.core.tree.statement.table.index.IndexSortKey;
 import com.aliyun.fastmodel.core.tree.statement.table.index.SortType;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
@@ -517,8 +518,8 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitSimpleIndexDeclaration(SimpleIndexDeclarationContext ctx) {
-        List<IndexColumnName> visit = ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(),
-            IndexColumnName.class);
+        List<IndexSortKey> visit = ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(),
+            IndexSortKey.class);
         List<Property> list = ImmutableList.of();
         List<IndexOptionContext> indexOptionContexts = ctx.indexOption();
         if (indexOptionContexts != null) {

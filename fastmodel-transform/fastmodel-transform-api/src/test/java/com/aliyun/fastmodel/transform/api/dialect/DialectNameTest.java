@@ -10,7 +10,7 @@ package com.aliyun.fastmodel.transform.api.dialect;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * DialectNameTest
@@ -27,5 +27,11 @@ public class DialectNameTest {
 
         maxcompute = DialectName.getByCode("Max_compute");
         assertEquals(maxcompute, DialectName.MAXCOMPUTE);
+    }
+
+    @Test
+    public void testDoris() {
+        DialectName dialectName = DialectName.getByCode("doris");
+        assertEquals(dialectName, DialectName.DORIS);
     }
 }

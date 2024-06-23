@@ -24,25 +24,28 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
+import com.aliyun.fastmodel.transform.api.extension.tree.column.AggregateDesc;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiItemListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleItemListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.LessThanPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ListPartitionValue;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.AggDesc;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.AggregateKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.constraint.desc.DistributeConstraint;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiItemListPartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiRangePartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionDesc;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.RangePartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleItemListPartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_AGG_DESC;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_ENGINE;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_PARTITION_RAW;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -171,13 +174,13 @@ public class StarRocksOutVisitorTest {
             + "(\n"
             + "   c1\n"
             + ")\n"
-            + "DISTRIBUTED BY HASH (c1) BUCKETS 4;", starRocksVisitor.getBuilder().toString());
+            + "DISTRIBUTED BY HASH(c1) BUCKETS 4;", starRocksVisitor.getBuilder().toString());
     }
 
     @Test
     public void testPartitionValueRaw() {
         List<Property> properties = Lists.newArrayList();
-        properties.add(new Property(StarRocksProperty.TABLE_PARTITION_RAW.getValue(), "PARTITION BY RANGE (pay_dt) (\n"
+        properties.add(new Property(TABLE_PARTITION_RAW.getValue(), "PARTITION BY RANGE (pay_dt) (\n"
             + "  PARTITION p1 VALUES LESS THAN (\"20210102\"),\n"
             + "  PARTITION p2 VALUES LESS THAN (\"20210103\"),\n"
             + "  PARTITION p3 VALUES LESS THAN MAXVALUE\n"
@@ -257,13 +260,13 @@ public class StarRocksOutVisitorTest {
 
     private List<Property> toColumnProperties() {
         List<Property> properties = Lists.newArrayList();
-        properties.add(new Property(StarRocksProperty.COLUMN_AGG_DESC.getValue(), AggDesc.SUM.name()));
+        properties.add(new Property(COLUMN_AGG_DESC.getValue(), AggregateDesc.SUM.name()));
         return properties;
     }
 
     private List<Property> toProperty() {
         List<Property> list = Lists.newArrayList();
-        list.add(new Property(StarRocksProperty.TABLE_ENGINE.getValue(), "mysql"));
+        list.add(new Property(TABLE_ENGINE.getValue(), "mysql"));
         return list;
     }
 

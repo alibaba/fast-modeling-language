@@ -17,37 +17,37 @@ import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
-import com.aliyun.fastmodel.transform.api.client.dto.constraint.OutlineConstraintType;
+import com.aliyun.fastmodel.transform.api.client.dto.index.Index;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.extension.client.property.column.AggrColumnProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.SingleRangePartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.BaseClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.LessThanClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.MultiRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ArrayPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.LessThanPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ListPartitionValue;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
 import com.aliyun.fastmodel.transform.starrocks.StarRocksTransformer;
-import com.aliyun.fastmodel.transform.starrocks.client.property.column.AggrColumnProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.SingleRangePartitionProperty;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.BaseClientPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.LessThanClientPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.MultiRangeClientPartition;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.starrocks.client.property.table.partition.SingleRangeClientPartition;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
-import com.aliyun.fastmodel.transform.starrocks.format.StarRocksProperty;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ArrayPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.LessThanPartitionKey;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.ListPartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.MultiRangePartition;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionDesc;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.PartitionValue;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.RangePartitionedBy;
-import com.aliyun.fastmodel.transform.starrocks.parser.tree.partition.SingleRangePartition;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_RANGE_PARTITION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -93,7 +93,7 @@ public class StarRocksClientConverterTest {
         List<BaseClientProperty> baseClientProperties = starRocksClientConverter.toBaseClientProperty(table);
         assertEquals(1, baseClientProperties.size());
         BaseClientProperty baseClientProperty = baseClientProperties.get(0);
-        assertEquals(StarRocksProperty.TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
+        assertEquals(TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
 
         SingleRangePartitionProperty singleRangePartitionProperty = (SingleRangePartitionProperty)baseClientProperty;
         SingleRangeClientPartition value1 = singleRangePartitionProperty.getValue();
@@ -128,7 +128,7 @@ public class StarRocksClientConverterTest {
         List<BaseClientProperty> baseClientProperties = starRocksClientConverter.toBaseClientProperty(table);
         assertEquals(1, baseClientProperties.size());
         BaseClientProperty baseClientProperty = baseClientProperties.get(0);
-        assertEquals(StarRocksProperty.TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
+        assertEquals(TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
         SingleRangeClientPartition value1 = (SingleRangeClientPartition)baseClientProperty.getValue();
         assertEquals("abc", value1.getName());
         assertFalse(value1.isIfNotExists());
@@ -159,7 +159,7 @@ public class StarRocksClientConverterTest {
         List<BaseClientProperty> baseClientProperties = starRocksClientConverter.toBaseClientProperty(table);
         assertEquals(1, baseClientProperties.size());
         BaseClientProperty baseClientProperty = baseClientProperties.get(0);
-        assertEquals(StarRocksProperty.TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
+        assertEquals(TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
         MultiRangeClientPartition value1 = (MultiRangeClientPartition)baseClientProperty.getValue();
         String start = value1.getStart();
         assertEquals("2021-01-01", start);
@@ -189,21 +189,13 @@ public class StarRocksClientConverterTest {
         List<BaseClientProperty> baseClientProperties = starRocksClientConverter.toBaseClientProperty(table);
         assertEquals(1, baseClientProperties.size());
         BaseClientProperty baseClientProperty = baseClientProperties.get(0);
-        assertEquals(StarRocksProperty.TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
+        assertEquals(TABLE_RANGE_PARTITION.getValue(), baseClientProperty.getKey());
         MultiRangeClientPartition value1 = (MultiRangeClientPartition)baseClientProperty.getValue();
         String start = value1.getStart();
         assertEquals("2021-01-01", start);
         assertEquals("2022-01-01", value1.getEnd());
         assertEquals(DateTimeEnum.DAY, value1.getDateTimeEnum());
         assertTrue(value1.getInterval() == Long.parseLong("10"));
-    }
-
-    @Test
-    public void getDataType() {
-        Column column = Column.builder()
-            .dataType("int")
-            .build();
-        starRocksClientConverter.getDataType(column);
     }
 
     @Test
@@ -224,13 +216,9 @@ public class StarRocksClientConverterTest {
             + "PROPERTIES (\"storage_type\"=\"column\");");
         Table table = starRocksClientConverter.convertToTable(node1, StarRocksContext.builder().build());
         List<Constraint> constraints = table.getConstraints();
-        assertEquals(3, constraints.size());
-        Constraint constraint = constraints.stream().filter(c -> {
-            return StringUtils.equalsIgnoreCase(c.getType().getCode(), OutlineConstraintType.INDEX.getCode());
-        }).findFirst().get();
-        assertEquals("k1_idx", constraint.getName());
-        List<BaseClientProperty> properties = constraint.getProperties();
-        assertEquals(2, properties.size());
+        assertEquals(2, constraints.size());
+        List<Index> indices = table.getIndices();
+        assertEquals("k1_idx", indices.get(0).getName());
     }
 
     @Test
@@ -305,6 +293,25 @@ public class StarRocksClientConverterTest {
         assertEquals("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
             + "   c1 BIGINT REPLACE NOT NULL\n"
+            + ");", transform.getNode());
+    }
+
+    @Test
+    public void testMapTypeToFmlTable() {
+        List<Column> columns = Lists.newArrayList();
+        List<BaseClientProperty> properties = Lists.newArrayList();
+        AggrColumnProperty e = new AggrColumnProperty();
+        e.setValueString("REPLACE");
+        properties.add(e);
+        columns.add(Column.builder().name("c1").dataType("MAP<STRING, STRING>").properties(properties).build());
+        Table table = Table.builder().name("t1").columns(columns).build();
+        BaseStatement node = (BaseStatement)starRocksClientConverter.covertToNode(table,
+            TableConfig.builder().dialectMeta(DialectMeta.DEFAULT_STARROCKS).build());
+        StarRocksTransformer starRocksTransformer = new StarRocksTransformer();
+        DialectNode transform = starRocksTransformer.transform(node);
+        assertEquals("CREATE TABLE IF NOT EXISTS t1\n"
+            + "(\n"
+            + "   c1 MAP<STRING,STRING> REPLACE NOT NULL\n"
             + ");", transform.getNode());
 
     }

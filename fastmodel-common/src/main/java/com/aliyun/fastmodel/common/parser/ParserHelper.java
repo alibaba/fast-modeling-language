@@ -13,7 +13,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
+import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
+import com.aliyun.fastmodel.common.utils.StripUtils;
+import com.aliyun.fastmodel.core.tree.ListNode;
+import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.NodeLocation;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
@@ -21,9 +26,17 @@ import com.aliyun.fastmodel.core.tree.expr.literal.DecimalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.DoubleLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointCharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -158,5 +171,65 @@ public class ParserHelper {
     private static Identifier getIdentifier(String text, String regex, ParserRuleContext ctx) {
         text = text.substring(1, text.length() - 1).replaceAll(regex, StringUtils.EMPTY);
         return new Identifier(getLocation(ctx), getOrigin(ctx), text, true);
+    }
+
+    public static ParserRuleContext getNode(String text,
+        Function<CharStream, Lexer> lexerFunction,
+        Function<TokenStream, Parser> parserFunction,
+        Function<Parser, ParserRuleContext> functionalInterface) {
+
+        String code = StripUtils.appendSemicolon(text);
+        CodePointCharStream charStream = CharStreams.fromString(code);
+        CaseChangingCharStream caseChangingCharStream = new CaseChangingCharStream(charStream, true);
+        Lexer lexer = lexerFunction.apply(caseChangingCharStream);
+        lexer.removeErrorListeners();
+        ThrowingErrorListener LISTENER = new ThrowingErrorListener();
+        lexer.addErrorListener(LISTENER);
+        CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
+        Parser parser = parserFunction.apply(commonTokenStream);
+        parser.removeErrorListeners();
+        parser.addErrorListener(LISTENER);
+        ParserRuleContext tree;
+        try {
+            parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+            tree = functionalInterface.apply(parser);
+        } catch (Throwable e) {
+            commonTokenStream.seek(0);
+            parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+            tree = functionalInterface.apply(parser);
+        }
+        return tree;
+    }
+
+    public static <T extends Node> T getNode(ListNode node, Class<T> clazz) {
+        List<T> listNode = getListNode(node, clazz);
+        if (listNode == null || listNode.isEmpty()) {
+            return null;
+        }
+        return listNode.get(0);
+    }
+
+    public static <T> List<T> getListNode(ListNode node, Class<T> clazz) {
+        if (node == null || node.getChildren() == null || node.getChildren().isEmpty()) {
+            return null;
+        }
+        if (clazz == null) {
+            return null;
+        }
+        List<T> list = Lists.newArrayList();
+        List<? extends Node> children = node.getChildren();
+        for (Node node1 : children) {
+            if (node1.getClass().getName() == clazz.getName()) {
+                list.add((T)node1);
+            }
+            if (node1 instanceof ListNode) {
+                ListNode node2 = (ListNode)node1;
+                List<T> listNode = getListNode(node2, clazz);
+                if (listNode != null) {
+                    list.addAll(listNode);
+                }
+            }
+        }
+        return list;
     }
 }

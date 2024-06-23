@@ -21,7 +21,7 @@ import com.aliyun.fastmodel.transform.starrocks.parser.visitor.StarRocksAstVisit
 import lombok.Getter;
 
 /**
- * HologresGenericDataType
+ * StarRocksGenericDataType
  *
  * @author panguanjing
  * @date 2022/6/9
