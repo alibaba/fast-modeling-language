@@ -19,6 +19,8 @@ package com.aliyun.fastmodel.transform.adbmysql.parser.tree;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * AdbMysqlDataTypeNameTest
  *

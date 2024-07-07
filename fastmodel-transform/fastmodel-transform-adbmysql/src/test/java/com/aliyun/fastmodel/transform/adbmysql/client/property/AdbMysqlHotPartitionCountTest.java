@@ -18,6 +18,8 @@ package com.aliyun.fastmodel.transform.adbmysql.client.property;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * AdbMysqlHotPartitionCountTest
  *

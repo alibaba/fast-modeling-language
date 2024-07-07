@@ -29,6 +29,8 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * <a href="https://help.aliyun.com/zh/analyticdb-for-mysql/use-cases/schema-design?spm=a2c4g.11186623.0.0.47563f47boqajz#section-4s5-di5-bjt">...</a>
  * adb mysql generator
