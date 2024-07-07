@@ -18,7 +18,6 @@ import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.Distrib
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**

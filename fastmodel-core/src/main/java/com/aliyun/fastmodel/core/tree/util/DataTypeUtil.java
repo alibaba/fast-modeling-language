@@ -19,7 +19,6 @@ package com.aliyun.fastmodel.core.tree.util;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
-import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;

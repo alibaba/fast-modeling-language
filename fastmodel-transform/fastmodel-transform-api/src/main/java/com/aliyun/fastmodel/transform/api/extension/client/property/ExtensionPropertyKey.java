@@ -12,6 +12,11 @@ import org.apache.commons.lang3.StringUtils;
 public enum ExtensionPropertyKey implements PropertyKey {
 
     /**
+     * life cycle
+     */
+    LIFE_CYCLE("life_cycle"),
+
+    /**
      * engine
      */
     TABLE_ENGINE("engine"),
