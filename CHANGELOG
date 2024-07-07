@@ -117,3 +117,22 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.12
+新功能（new features）
+Core
+• 无
+
+
+Transformer
+• 支持Adb Mysql转换中date_format函数
+• 支持Hologres的Text字段转换
+• 修复Hologres的Compare的bug
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无
