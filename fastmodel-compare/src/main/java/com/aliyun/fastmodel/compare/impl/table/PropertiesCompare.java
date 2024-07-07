@@ -36,7 +36,7 @@ public class PropertiesCompare implements TableElementCompare {
             return ImmutableList.of();
         }
         //如果原来为空，目标不是空，那么直接设置
-        if (isBeforeEmpty && !isAfterEmpty) {
+        if (isBeforeEmpty) {
             return ImmutableList.of(new SetTableProperties(after.getQualifiedName(), afterProperties));
         }
         if (isAfterEmpty) {

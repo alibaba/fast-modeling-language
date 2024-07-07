@@ -29,8 +29,8 @@ public class StarRocksLanguageParser implements LanguageParser<Node, ReverseCont
     private Node getNode(String text, ReverseContext context, Function<StarRocksParser, ParserRuleContext> functionalInterface) {
         ParserRuleContext tree = ParserHelper.getNode(
             text,
-            charStream -> new StarRocksLexer(charStream),
-            tokenStream -> new StarRocksParser(tokenStream),
+            StarRocksLexer::new,
+            StarRocksParser::new,
             parser -> {
                 StarRocksParser starRocksParser = (StarRocksParser)parser;
                 return functionalInterface.apply(starRocksParser);

@@ -2,6 +2,7 @@ package com.aliyun.fastmodel.transform.hologres.dialect;
 
 import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * hologres version
@@ -27,6 +28,16 @@ public enum HologresVersion implements IVersion {
     public static class Constants {
         public static final String V1 = "1.0";
         public static final String V2 = "2.0";
+    }
+
+    public static HologresVersion getByValue(String value) {
+        HologresVersion[] hologresVersions = HologresVersion.values();
+        for (HologresVersion version : hologresVersions) {
+            if (StringUtils.equalsIgnoreCase(version.getValue(), value)) {
+                return version;
+            }
+        }
+        return HologresVersion.V1;
     }
 
     @Override

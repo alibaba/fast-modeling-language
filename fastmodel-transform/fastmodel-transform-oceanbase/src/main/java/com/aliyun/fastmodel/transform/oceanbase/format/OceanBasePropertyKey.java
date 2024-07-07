@@ -16,86 +16,93 @@ public enum OceanBasePropertyKey implements PropertyKey {
     /**
      * on update
      */
-    SORT_KEY("sortkey"),
+    SORT_KEY("SORTKEY"),
 
     /**
      * table mode
      */
-    TABLE_MODE("table_mode"),
+    TABLE_MODE("TABLE_MODE"),
 
     /**
      * DUPLICATE_SCOPE
      */
-    DUPLICATE_SCOPE("duplicate_scope"),
+    DUPLICATE_SCOPE("DUPLICATE_SCOPE"),
 
     /**
      * comment
      */
-    COMMENT("comment"),
+    COMMENT("COMMENT"),
 
     /**
      * COMPRESSION
      */
-    COMPRESSION("compression"),
+    COMPRESSION("COMPRESSION"),
 
     /**
      * charset key
      */
-    CHARSET_KEY("charset_key", PropertyValueType.IDENTIFIER),
+    CHARSET_KEY("CHARSET_KEY", PropertyValueType.IDENTIFIER),
 
     /**
      * collate
      */
-    COLLATE("collate", PropertyValueType.IDENTIFIER),
+    COLLATE("COLLATE", PropertyValueType.IDENTIFIER),
 
     /**
      * row format
      */
-    ROW_FORMAT("row_format", PropertyValueType.IDENTIFIER),
+    ROW_FORMAT("ROW_FORMAT", PropertyValueType.IDENTIFIER),
 
     /**
      * PCTFREE
      */
-    PCTFREE("pctfree", PropertyValueType.NUMBER_LITERAL),
+    PCTFREE("PCTFREE", PropertyValueType.NUMBER_LITERAL),
 
     /**
      * progressive_merge_num
      */
-    PROGRESSIVE_MERGE_NUM("progressive_merge_num", PropertyValueType.NUMBER_LITERAL),
+    PROGRESSIVE_MERGE_NUM("PROGRESSIVE_MERGE_NUM", PropertyValueType.NUMBER_LITERAL),
     /**
      * block size
      */
-    BLOCK_SIZE("block_size", PropertyValueType.NUMBER_LITERAL),
+    BLOCK_SIZE("BLOCK_SIZE", PropertyValueType.NUMBER_LITERAL),
     /**
      * table id
      */
-    TABLE_ID("table_id", PropertyValueType.NUMBER_LITERAL),
+    TABLE_ID("TABLE_ID", PropertyValueType.NUMBER_LITERAL),
     /**
      * replica num
      */
-    REPLICA_NUM("replica_num", PropertyValueType.NUMBER_LITERAL),
+    REPLICA_NUM("REPLICA_NUM", PropertyValueType.NUMBER_LITERAL),
     /**
      * storage format version
      */
-    STORAGE_FORMAT_VERSION("storage_format_version", PropertyValueType.NUMBER_LITERAL),
+    STORAGE_FORMAT_VERSION("STORAGE_FORMAT_VERSION", PropertyValueType.NUMBER_LITERAL),
     /**
      * tablet size
      */
-    TABLET_SIZE("tablet_size", PropertyValueType.NUMBER_LITERAL),
+    TABLET_SIZE("TABLET_SIZE", PropertyValueType.NUMBER_LITERAL),
     /**
      * id
      */
-    MAX_USED_PART_ID("max_used_part_id", PropertyValueType.NUMBER_LITERAL),
+    MAX_USED_PART_ID("MAX_USED_PART_ID", PropertyValueType.NUMBER_LITERAL),
 
     /**
      * PARALLEL
      */
-    PARALLEL("parallel", PropertyValueType.NUMBER_LITERAL),
+    PARALLEL("PARALLEL", PropertyValueType.NUMBER_LITERAL),
 
     /**
      * Partition
      */
-    PARTITION("partition", PropertyValueType.EXPRESSION);
+    PARTITION("PARTITION", false, PropertyValueType.EXPRESSION),
+
+    /**
+     * use bloom filter
+     */
+    USE_BLOOM_FILTER("USE_BLOOM_FILTER", PropertyValueType.EXPRESSION),
+
+    ;
 
     private final String value;
 

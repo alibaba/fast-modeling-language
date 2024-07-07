@@ -2315,7 +2315,7 @@ partitionDesc
     : PARTITION BY RANGE identifierList '(' (rangePartitionDesc (',' rangePartitionDesc)*)? ')' #partitionRangeIdentifier
     | PARTITION BY RANGE primaryExpression '(' (rangePartitionDesc (',' rangePartitionDesc)*)? ')' #partititonRangeExpression
     | PARTITION BY LIST? identifierList '(' (listPartitionDesc (',' listPartitionDesc)*)? ')' #partitionListIdentifier
-    | PARTITION BY LIST? identifierList                                                       #partitionListIdentiifer
+    | PARTITION BY LIST? identifierList                                                       #partitionExpression
     | PARTITION BY functionCall '(' (rangePartitionDesc (',' rangePartitionDesc)*)? ')'       #partitionFunctionCall
     | PARTITION BY functionCall                                                               #partitionFunctionCall
     ;

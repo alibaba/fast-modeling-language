@@ -68,4 +68,8 @@ public class HologresParser implements LanguageParser<Node, ReverseContext> {
         return (BaseDataType)getNode(code, context, PostgreSQLParser::typename);
     }
 
+    @Override
+    public <T> T parseExpression(String code) throws ParseException {
+        return (T)getNode(code, ReverseContext.builder().build(), PostgreSQLParser::b_expr);
+    }
 }

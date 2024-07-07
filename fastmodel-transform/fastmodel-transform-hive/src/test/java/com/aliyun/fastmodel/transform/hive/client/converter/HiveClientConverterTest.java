@@ -164,7 +164,7 @@ public class HiveClientConverterTest {
             .constraints(constraints)
             .comment("comment")
             .build();
-        Node node = hiveClientConverter.covertToNode(build, TableConfig.builder().build());
+        Node node = hiveClientConverter.convertToNode(build, TableConfig.builder().build());
         CreateTable createTable = (CreateTable)node;
         assertEquals(createTable.getQualifiedName(), QualifiedName.of("t1"));
         assertEquals(createTable.getCommentValue(), "comment");
@@ -210,7 +210,7 @@ public class HiveClientConverterTest {
             .name("abc")
             .properties(properties)
             .build();
-        Node node = hiveClientConverter.covertToNode(table, TableConfig.builder().build());
+        Node node = hiveClientConverter.convertToNode(table, TableConfig.builder().build());
         assertEquals(node.toString(), "CREATE TABLE IF NOT EXISTS abc \n"
             + "(\n"
             + "   n1 BIGINT NOT NULL\n"

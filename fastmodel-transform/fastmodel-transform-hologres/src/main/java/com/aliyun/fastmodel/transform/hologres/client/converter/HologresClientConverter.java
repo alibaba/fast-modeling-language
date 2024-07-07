@@ -17,8 +17,10 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
+import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.core.tree.util.StringLiteralUtil;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.converter.BaseClientConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
@@ -30,6 +32,7 @@ import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologresParser;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -101,6 +104,15 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
     }
 
     @Override
+    protected String toDefaultBaseValue(BaseExpression defaultValue) {
+        if (defaultValue instanceof WithDataTypeNameExpression) {
+            WithDataTypeNameExpression withDataTypeNameExpression = (WithDataTypeNameExpression)defaultValue;
+            return super.toDefaultBaseValue(withDataTypeNameExpression.getBaseExpression());
+        }
+        return super.toDefaultBaseValue(defaultValue);
+    }
+
+    @Override
     public PropertyConverter getPropertyConverter() {
         return HologresPropertyConverter.getInstance();
     }
@@ -154,7 +166,20 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
         if (StringUtils.equalsIgnoreCase(HologresDataTypeName.TIMESTAMPTZ.getValue(), type)) {
             return new TimestampLiteral(value);
         }
-        return super.toDefaultValueExpression(baseDataType, defaultValue);
+        BaseExpression baseExpression = super.getBaseExpression(baseDataType, defaultValue);
+        if (baseExpression != null) {
+            return baseExpression;
+        }
+        return getDefaultExpression(defaultValue);
+    }
+
+    protected BaseExpression getDefaultExpression(String defaultValue) {
+        if (defaultValue.contains("::")) {
+            return (BaseExpression)getLanguageParser().parseExpression(defaultValue);
+        } else {
+            String strip = StringLiteralUtil.strip(defaultValue);
+            return new StringLiteral(strip);
+        }
     }
 
 }

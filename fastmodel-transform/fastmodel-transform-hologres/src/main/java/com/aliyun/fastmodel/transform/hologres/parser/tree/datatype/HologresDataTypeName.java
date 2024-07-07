@@ -83,12 +83,12 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
     VARCHAR("VARCHAR", "", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
-     * serial:https://help.aliyun.com/document_detail/187391.html
+     * serial:<a href="https://help.aliyun.com/document_detail/187391.html">...</a>
      */
     SERIAL("SERIAL", "", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
     /**
-     * 自增序列字段:https://help.aliyun.com/document_detail/187391.html
+     * 自增序列字段:<a href="https://help.aliyun.com/document_detail/187391.html">...</a>
      */
     BIGSERIAL("BIGSERIAL", "", Dimension.ZERO, SimpleDataTypeName.NUMBER),
 
@@ -112,6 +112,7 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
 
     /**
      * roaring bitmap
+     * <a href="https://help.aliyun.com/zh/hologres/user-guide/roaring-bitmap-functions?spm=a2c4g.11174283.0.i1">...</a>
      */
     ROARING_BITMAP("ROARINGBITMAP", "", Dimension.ZERO, SimpleDataTypeName.STRING),
 
@@ -168,14 +169,13 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
      */
     private final Dimension dimension;
 
-
     private final SimpleDataTypeName simpleDataTypeName;
 
     HologresDataTypeName(String value, String alias, Dimension dimension, SimpleDataTypeName simpleDataTypeName) {
         this.value = value;
         this.alias = alias;
         this.dimension = dimension;
-        this.simpleDataTypeName =simpleDataTypeName;
+        this.simpleDataTypeName = simpleDataTypeName;
     }
 
     /**

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.client.CodeGenerator;
@@ -16,12 +17,13 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
+import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.dialect.IVersion;
-import com.aliyun.fastmodel.transform.api.extension.client.constraint.ClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.property.column.AggrColumnProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.MultiRangePartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.ReplicationNum;
@@ -33,6 +35,7 @@ import com.aliyun.fastmodel.transform.api.extension.client.property.table.partit
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.tree.column.AggregateDesc;
+import com.aliyun.fastmodel.transform.starrocks.StarRocksTransformer;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksDataTypeName;
 import com.google.common.collect.Lists;
@@ -49,9 +52,11 @@ import static org.junit.Assert.assertNotNull;
  * @date 2023/9/17
  */
 public class StarRocksGeneratorTest {
-    CodeGenerator codeGenerator = new DefaultCodeGenerator();
+    private final CodeGenerator codeGenerator = new DefaultCodeGenerator();
 
-    StarRocksLanguageParser starRocksLanguageParser = new StarRocksLanguageParser();
+    private final StarRocksLanguageParser starRocksLanguageParser = new StarRocksLanguageParser();
+
+    private final StarRocksTransformer starRocksTransformer = new StarRocksTransformer();
 
     /**
      * 通过string property传入
@@ -614,7 +619,7 @@ public class StarRocksGeneratorTest {
         ArrayList<String> add = Lists.newArrayList("add");
         Constraint distributeConstraint = Constraint.builder().name(null)
             .columns(add)
-            .type(ClientConstraintType.DISTRIBUTE)
+            .type(ExtensionClientConstraintType.DISTRIBUTE)
             .build();
         constraints.add(distributeConstraint);
         Table after = Table.builder()
@@ -722,7 +727,7 @@ public class StarRocksGeneratorTest {
         ArrayList<String> es = Lists.newArrayList("c1");
         Constraint constraint = Constraint.builder().name(null)
             .columns(es)
-            .type(ClientConstraintType.DUPLICATE_KEY)
+            .type(ExtensionClientConstraintType.DUPLICATE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -765,7 +770,7 @@ public class StarRocksGeneratorTest {
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().
             columns(strings)
-            .type(ClientConstraintType.AGGREGATE_KEY)
+            .type(ExtensionClientConstraintType.AGGREGATE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -807,7 +812,7 @@ public class StarRocksGeneratorTest {
         List<Constraint> constraints = Lists.newArrayList();
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().columns(strings)
-            .type(ClientConstraintType.UNIQUE_KEY)
+            .type(ExtensionClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -896,7 +901,7 @@ public class StarRocksGeneratorTest {
         List<Constraint> constraints = Lists.newArrayList();
         Constraint constraint = Constraint.builder()
             .columns(Lists.newArrayList("c1", "c2"))
-            .type(ClientConstraintType.UNIQUE_KEY)
+            .type(ExtensionClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -924,5 +929,35 @@ public class StarRocksGeneratorTest {
             + "COMMENT \"comment\";", node);
         CreateTable o = starRocksLanguageParser.parseNode(node);
         assertNotNull(o);
+    }
+
+    @Test
+    public void testListPartition() {
+        String text = "CREATE TABLE t_recharge_detail1 (\n" +
+            "    id bigint,\n" +
+            "    user_id bigint,\n" +
+            "    recharge_money decimal(32,2), \n" +
+            "    city varchar(20) not null,\n" +
+            "    dt varchar(20) not null\n" +
+            ")\n" +
+            "PARTITION BY (dt,city);";
+
+        BaseStatement reverse = starRocksTransformer.reverse(new DialectNode(text));
+        Table table = starRocksTransformer.transformTable(reverse, TransformContext.builder().build());
+        DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
+        request.setAfter(table);
+        request.setConfig(TableConfig.builder()
+            .dialectMeta(DialectMeta.DEFAULT_STARROCKS)
+            .build());
+        DdlGeneratorResult generate = codeGenerator.generate(request);
+        assertEquals("CREATE TABLE t_recharge_detail1\n"
+            + "(\n"
+            + "   id             BIGINT NULL,\n"
+            + "   user_id        BIGINT NULL,\n"
+            + "   recharge_money DECIMAL(32,2) NULL,\n"
+            + "   city           VARCHAR(20) NOT NULL,\n"
+            + "   dt             VARCHAR(20) NOT NULL\n"
+            + ")\n"
+            + "PARTITION BY (dt,city);", generate.getDialectNodes().get(0).getNode());
     }
 }

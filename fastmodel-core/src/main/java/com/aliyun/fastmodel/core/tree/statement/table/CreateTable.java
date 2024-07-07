@@ -16,6 +16,10 @@
 
 package com.aliyun.fastmodel.core.tree.statement.table;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import com.aliyun.fastmodel.core.semantic.table.CreateTableSemanticCheck;
 import com.aliyun.fastmodel.core.tree.AliasedName;
 import com.aliyun.fastmodel.core.tree.AstVisitor;
@@ -34,10 +38,6 @@ import com.aliyun.fastmodel.core.tree.statement.table.type.ITableDetailType;
 import com.google.common.collect.ImmutableList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 创建表的语句
@@ -142,8 +142,7 @@ public class CreateTable extends BaseCreate {
      * @return
      */
     public boolean isPartitionEmpty() {
-        return partitionedBy == null || partitionedBy.getColumnDefinitions() == null || partitionedBy
-            .getColumnDefinitions().isEmpty();
+        return partitionedBy == null || !partitionedBy.isNotEmpty();
     }
 
     /**

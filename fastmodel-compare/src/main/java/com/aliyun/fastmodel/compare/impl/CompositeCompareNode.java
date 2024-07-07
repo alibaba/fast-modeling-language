@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.aliyun.fastmodel.compare.impl.helper.ComparePair;
 import com.aliyun.fastmodel.compare.CompareStrategy;
+import com.aliyun.fastmodel.compare.impl.helper.ComparePair;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
@@ -71,8 +71,8 @@ public class CompositeCompareNode extends BaseCompareNode<CompositeStatement> {
 
     @Override
     public List<BaseStatement> compareResult(CompositeStatement before,
-                                             CompositeStatement after,
-                                             CompareStrategy strategy) {
+        CompositeStatement after,
+        CompareStrategy strategy) {
 
         List<BaseStatement> result = getBaseStatementsIfOneNull(before, after, strategy);
         if (result != null) {return result;}
@@ -84,7 +84,7 @@ public class CompositeCompareNode extends BaseCompareNode<CompositeStatement> {
         List<QualifiedName> afterQualifiedName = getQualifiedNames(afterList);
         int beforeSize = beforeList.size();
         int afterSize = afterList.size();
-        int size = beforeSize > afterSize ? afterSize : beforeSize;
+        int size = Math.min(beforeSize, afterSize);
 
         //如果before集合大小，大于after的集合大小，那么将before集合按照after的集合的名字进行排序
         if (beforeSize >= afterSize) {
@@ -161,7 +161,7 @@ public class CompositeCompareNode extends BaseCompareNode<CompositeStatement> {
     }
 
     private List<BaseStatement> getBaseStatementsIfOneNull(CompositeStatement before, CompositeStatement after,
-                                                           CompareStrategy strategy) {
+        CompareStrategy strategy) {
         if (before == null) {
             List<BaseStatement> result = new ArrayList<>();
             List<BaseStatement> statements = after.getStatements();

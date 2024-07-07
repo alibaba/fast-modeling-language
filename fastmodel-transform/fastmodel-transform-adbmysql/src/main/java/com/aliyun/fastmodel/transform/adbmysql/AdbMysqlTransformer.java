@@ -1,11 +1,15 @@
 package com.aliyun.fastmodel.transform.adbmysql;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.transform.adbmysql.client.converter.AdbMysqlClientConverter;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlLanguageParser;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.builder.BuilderFactory;
 import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
+import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.Dialect;
@@ -28,6 +32,8 @@ public class AdbMysqlTransformer implements Transformer<BaseStatement> {
 
     private final AdbMysqlLanguageParser adbMysqlLanguageParser = new AdbMysqlLanguageParser();
 
+    private final AdbMysqlClientConverter adbMysqlClientConverter = new AdbMysqlClientConverter();
+
     @Override
     public BaseStatement reverse(DialectNode dialectNode, ReverseContext context) {
         return (BaseStatement)adbMysqlLanguageParser.parseNode(dialectNode.getNode(), context);
@@ -43,5 +49,15 @@ public class AdbMysqlTransformer implements Transformer<BaseStatement> {
                 "UnSupported statement transform with target Dialect, source: " + source.getClass());
         }
         return builder.build(source, mysqlTransformContext);
+    }
+
+    @Override
+    public Table transformTable(Node table, TransformContext context) {
+        return adbMysqlClientConverter.convertToTable(table, new AdbMysqlTransformContext(context));
+    }
+
+    @Override
+    public Node reverseTable(Table table, ReverseContext context) {
+        return adbMysqlClientConverter.convertToNode(table, TableConfig.builder().build());
     }
 }

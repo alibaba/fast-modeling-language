@@ -10,7 +10,7 @@ import lombok.Getter;
  * @date 2023/12/13
  */
 @Getter
-public enum ClientConstraintType implements ConstraintType {
+public enum ExtensionClientConstraintType implements ConstraintType {
 
     AGGREGATE_KEY("aggregate_key"),
 
@@ -36,15 +36,15 @@ public enum ClientConstraintType implements ConstraintType {
 
     private final String code;
 
-    ClientConstraintType(String code) {this.code = code;}
+    ExtensionClientConstraintType(String code) {this.code = code;}
 
     @Override
     public String getCode() {
         return code;
     }
 
-    public static ClientConstraintType getByValue(String value) {
-        for (ClientConstraintType starRocksConstraintType : ClientConstraintType.values()) {
+    public static ExtensionClientConstraintType getByValue(String value) {
+        for (ExtensionClientConstraintType starRocksConstraintType : ExtensionClientConstraintType.values()) {
             if (starRocksConstraintType.code.equalsIgnoreCase(value)) {
                 return starRocksConstraintType;
             }

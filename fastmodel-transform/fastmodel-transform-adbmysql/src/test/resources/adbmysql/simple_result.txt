@@ -1,0 +1,17 @@
+CREATE TABLE customer
+(
+   customer_id    BIGINT NOT NULL COMMENT '顾客ID',
+   customer_name  VARCHAR NOT NULL COMMENT '顾客姓名',
+   phone_num      BIGINT NOT NULL COMMENT '电话',
+   city_name      VARCHAR NOT NULL COMMENT '所属城市',
+   sex            INT NOT NULL COMMENT '性别',
+   id_number      VARCHAR NOT NULL COMMENT '身份证号码',
+   home_address   VARCHAR NOT NULL COMMENT '家庭住址',
+   office_address VARCHAR NOT NULL COMMENT '办公地址',
+   age            INT NOT NULL COMMENT '年龄',
+   login_time     TIMESTAMP NOT NULL COMMENT '登录时间',
+   PRIMARY KEY(login_time,customer_id,phone_num)
+)
+DISTRIBUTE BY HASH(customer_id)
+PARTITION BY VALUE(date_format(login_time, '%Y%m%d')) LIFECYCLE 30
+COMMENT '客户信息表'

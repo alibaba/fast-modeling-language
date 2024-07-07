@@ -42,6 +42,9 @@ public class DataTypeUtil {
      */
     public static BaseDataType simpleType(IDataTypeName dataTypeEnums, DataTypeParameter... parameters) {
         Identifier identifier = new Identifier(dataTypeEnums.getValue(), false);
+        if (parameters == null) {
+            return new GenericDataType(identifier.getValue());
+        }
         return new GenericDataType(identifier.getValue(), ImmutableList.copyOf(parameters));
     }
 

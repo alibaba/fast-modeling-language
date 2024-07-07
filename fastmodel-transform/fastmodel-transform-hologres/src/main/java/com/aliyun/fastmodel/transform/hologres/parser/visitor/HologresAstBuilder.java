@@ -56,8 +56,9 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstrai
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
-import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
+import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.A_exprContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.AexprconstContext;
@@ -119,6 +120,8 @@ import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresData
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresGenericDataType;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresRowDataType;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresRowDataType.RowType;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
+import com.aliyun.fastmodel.transform.hologres.parser.util.HologresPropertyUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -148,6 +151,14 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
 
     public HologresAstBuilder(ReverseContext context) {
         this.context = context == null ? ReverseContext.builder().build() : context;
+    }
+
+    private HologresVersion getVersion(ReverseContext context) {
+        IVersion version = context.getVersion();
+        if (version == null) {
+            return HologresVersion.V1;
+        }
+        return HologresVersion.getByValue(version.getName());
     }
 
     @Override
@@ -280,7 +291,7 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
 
         // server
         if (ctx.SERVER() != null) {
-            Identifier serverName = (Identifier) visit(ctx.name().colid());
+            Identifier serverName = (Identifier)visit(ctx.name().colid());
             properties.add(new Property(HoloPropertyKey.SERVER_NAME.getValue(), serverName.getValue()));
         }
 
@@ -483,17 +494,33 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
         if (!(baseExpression instanceof StringLiteral)) {
             return call;
         }
-        StringLiteral one = (StringLiteral)baseExpression;
-        StringLiteral two = (StringLiteral)arguments.get(1);
-        StringLiteral three = (StringLiteral)arguments.get(2);
+        StringLiteral tableOrColumn = (StringLiteral)baseExpression;
+        StringLiteral propertyKey = (StringLiteral)arguments.get(1);
+        StringLiteral propertyValue = (StringLiteral)arguments.get(2);
         Property property = new Property(
-            two.getValue(),
-            three.getValue()
+            propertyKey.getValue(),
+            convertUnionValue(propertyKey.getValue(), propertyValue.getValue())
         );
         return new SetTableProperties(
-            QualifiedName.of(one.getValue()),
+            QualifiedName.of(tableOrColumn.getValue()),
             Collections.singletonList(property)
         );
+    }
+
+    /**
+     * 根据key，将值转为统一的value
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    private String convertUnionValue(String key, String value) {
+        HoloPropertyKey byValue = HoloPropertyKey.getByValue(key);
+        //如果不在我们指定的内容，那么直接返回
+        if (byValue == null) {
+            return value;
+        }
+        return HologresPropertyUtil.getPropertyValue(getVersion(context), key, value);
     }
 
     @Override
@@ -522,10 +549,17 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
     @Override
     public Node visitB_expr(PostgreSQLParser.B_exprContext ctx) {
         if (ctx.c_expr() != null && ctx.c_expr() instanceof C_expr_exprContext) {
-            C_expr_exprContext exprExprContext = (C_expr_exprContext) ctx.c_expr();
+            C_expr_exprContext exprExprContext = (C_expr_exprContext)ctx.c_expr();
             if (exprExprContext.func_expr() != null && exprExprContext.func_expr().func_application() != null) {
                 return visit(exprExprContext.func_expr().func_application());
             }
+        }
+        if (ctx.typename() != null) {
+            BaseExpression baseExpression = (BaseExpression)visit(ctx.b_expr(0));
+            BaseDataType dataTypeName = (BaseDataType)visit(ctx.typename());
+            return new WithDataTypeNameExpression(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx),
+                baseExpression, dataTypeName
+            );
         }
         return visitChildren(ctx);
     }

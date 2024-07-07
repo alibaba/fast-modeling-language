@@ -5,6 +5,7 @@ import java.util.List;
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.literal.IntervalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
@@ -27,11 +28,12 @@ public class ExpressionPartitionBy extends PartitionedBy {
     /**
      * 函数表达式
      */
-    private FunctionCall functionCall;
+    private final FunctionCall functionCall;
 
     /**
      * rangePartitions
      */
+
     private final List<PartitionDesc> rangePartitions;
 
     public ExpressionPartitionBy(List<ColumnDefinition> columnDefinitions,
@@ -48,21 +50,34 @@ public class ExpressionPartitionBy extends PartitionedBy {
         return extensionVisitor.visitExpressionPartitionedBy(this, context);
     }
 
-    public StringLiteral getTimeUnitArg() {
+    public TableOrColumn getColumn(Integer argIndex) {
         if (this.functionCall == null || CollectionUtils.isEmpty(this.functionCall.getArguments())) {
             return null;
         }
 
-        BaseExpression baseExpression = this.functionCall.getArguments().get(0);
+        BaseExpression baseExpression = this.functionCall.getArguments().get(argIndex);
+        return baseExpression instanceof TableOrColumn ? (TableOrColumn)baseExpression : null;
+    }
+
+    public StringLiteral getTimeUnitArg(Integer argIndex) {
+        if (this.functionCall == null || CollectionUtils.isEmpty(this.functionCall.getArguments())) {
+            return null;
+        }
+
+        BaseExpression baseExpression = this.functionCall.getArguments().get(argIndex);
         return baseExpression instanceof StringLiteral ? (StringLiteral)baseExpression : null;
     }
 
-    public IntervalLiteral getIntervalLiteralArg() {
+    public IntervalLiteral getIntervalLiteralArg(Integer argIndex) {
         if (this.functionCall == null || CollectionUtils.isEmpty(this.functionCall.getArguments())) {
             return null;
         }
-        BaseExpression baseExpression = this.functionCall.getArguments().get(0);
+        BaseExpression baseExpression = this.functionCall.getArguments().get(argIndex);
         return baseExpression instanceof IntervalLiteral ? (IntervalLiteral)baseExpression : null;
     }
 
+    @Override
+    public boolean isNotEmpty() {
+        return super.isNotEmpty() || functionCall != null;
+    }
 }

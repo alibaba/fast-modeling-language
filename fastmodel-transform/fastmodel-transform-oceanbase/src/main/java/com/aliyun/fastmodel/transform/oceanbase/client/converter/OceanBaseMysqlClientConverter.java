@@ -622,8 +622,7 @@ public class OceanBaseMysqlClientConverter extends ExtensionClientConverter<Ocea
         if (StringUtils.isNotBlank(value)) {
             baseExpression = (BaseExpression)getLanguageParser().parseExpression(value);
         }
-        PartitionValue partitionValue = new PartitionValue(partitionClientValue.isMaxValue(), baseExpression);
-        return partitionValue;
+        return new PartitionValue(partitionClientValue.isMaxValue(), baseExpression);
     }
 
     public StringProperty getStringProperty(Property e) {
@@ -649,10 +648,10 @@ public class OceanBaseMysqlClientConverter extends ExtensionClientConverter<Ocea
         if (createTable.isConstraintEmpty()) {
             return outlineConstraint;
         }
-        List<BaseConstraint> constraintStatements = createTable.getConstraintStatements();
         if (outlineConstraint == null || outlineConstraint.isEmpty()) {
             outlineConstraint = Lists.newArrayList();
         }
+        List<BaseConstraint> constraintStatements = createTable.getConstraintStatements();
         if (!constraintStatements.isEmpty()) {
             for (BaseConstraint baseConstraint : constraintStatements) {
                 convertConstraint(baseConstraint, outlineConstraint);
@@ -694,7 +693,7 @@ public class OceanBaseMysqlClientConverter extends ExtensionClientConverter<Ocea
             return null;
         }
         return columnList.stream()
-            .map(c -> c.getValue())
+            .map(Identifier::getValue)
             .collect(Collectors.toList());
     }
 }

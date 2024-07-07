@@ -21,6 +21,7 @@ import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.expr.literal.BaseLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
@@ -73,6 +74,7 @@ import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.BackQuote
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.BaseTypeContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.BooleanLiteralContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.ColumnDescContext;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.ColumnRefContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.CommentContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.CreateTableStatementContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.DecimalTypeContext;
@@ -97,6 +99,7 @@ import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.NullLiter
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.NumericLiteralContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.OrderByDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionDescContext;
+import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionExpressionContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionKeyDescContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionListIdentifierContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksParser.PartitionRangeIdentifierContext;
@@ -288,46 +291,52 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitPartitionExpression(PartitionExpressionContext ctx) {
+        List<Identifier> visit = ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class);
+        List<ColumnDefinition> columnDefines = visit.stream().map(
+            i -> ColumnDefinition.builder()
+                .colName(i)
+                .build()
+        ).collect(Collectors.toList());
+        return new ExpressionPartitionBy(columnDefines, null, null);
+    }
+
+    @Override
     public Node visitPartitionFunctionCall(StarRocksParser.PartitionFunctionCallContext ctx) {
-        return visit(ctx.functionCall());
+        FunctionCall functionCall = (FunctionCall)visit(ctx.functionCall());
+        String first = functionCall.getFuncName().toString();
+        if (TimeFunctionType.getByValue(first) == null) {
+            return null;
+        }
+        List<PartitionDesc> partitionDescList = null;
+        if (ctx.rangePartitionDesc() != null) {
+            partitionDescList = ParserHelper.visit(this, ctx.rangePartitionDesc(), PartitionDesc.class);
+        }
+        TimeFunctionType timeFunctionType = TimeFunctionType.getByValue(first);
+        List<ColumnDefinition> columnDefinitions = Lists.newArrayList();
+        if (timeFunctionType == TimeFunctionType.DATE_TRUNC) {
+            TableOrColumn tableOrColumn = (TableOrColumn)functionCall.getArguments().get(1);
+            ColumnDefinition build = ColumnDefinition.builder().colName(new Identifier(tableOrColumn.getQualifiedName().getSuffix())).build();
+            columnDefinitions.add(build);
+        } else if (timeFunctionType == TimeFunctionType.TIME_SLICE) {
+            TableOrColumn tableOrColumn = (TableOrColumn)functionCall.getArguments().get(0);
+            ColumnDefinition build = ColumnDefinition.builder().colName(new Identifier(tableOrColumn.getQualifiedName().getSuffix())).build();
+            columnDefinitions.add(build);
+        }
+        return new ExpressionPartitionBy(columnDefinitions, functionCall, partitionDescList);
     }
 
     @Override
     public Node visitSimpleFunctionCall(StarRocksParser.SimpleFunctionCallContext ctx) {
         QualifiedName funcName = (QualifiedName)visit(ctx.qualifiedName());
-
-        Identifier columnName = null;
-        FunctionCall functionCall = null;
-        if (TimeFunctionType.DATE_TRUNC.getValue().equalsIgnoreCase(funcName.getFirst())) {
-            StringLiteral timeUnit = (StringLiteral)visit(ctx.expression(0));
-            List<BaseExpression> arguments = Lists.newArrayList(timeUnit);
-            functionCall = new FunctionCall(funcName, false, arguments);
-            columnName = (Identifier)visit(ctx.expression(1));
-        } else if (TimeFunctionType.TIME_SLICE.getValue().equalsIgnoreCase(funcName.getFirst())) {
-            columnName = (Identifier)visit(ctx.expression(0));
-            IntervalLiteral interval = (IntervalLiteral)visit(ctx.expression(1));
-            List<BaseExpression> arguments = Lists.newArrayList(interval);
-            functionCall = new FunctionCall(funcName, false, arguments);
-        } else {
-            // 目前仅支持这两种函数
-            return null;
-        }
-
-        ColumnDefinition columnDefinition = ColumnDefinition.builder()
-            .colName(columnName)
-            .build();
-
-        return new ExpressionPartitionBy(Lists.newArrayList(columnDefinition), functionCall, null);
+        List<BaseExpression> arguments = ParserHelper.visit(this, ctx.expression(), BaseExpression.class);
+        return new FunctionCall(funcName, false, arguments);
     }
 
     @Override
-    public Node visitPartitionListIdentiifer(StarRocksParser.PartitionListIdentiiferContext ctx) {
-        IdentifierListContext identifierListContext = ctx.identifierList();
-        List<Identifier> list = ParserHelper.visit(this, identifierListContext.identifier(), Identifier.class);
-        List<ColumnDefinition> columnDefinitions = list.stream().map(identifier -> ColumnDefinition.builder()
-            .colName(identifier)
-            .build()).collect(Collectors.toList());
-        return new ExpressionPartitionBy(columnDefinitions, null, null);
+    public Node visitColumnRef(ColumnRefContext ctx) {
+        Identifier name = (Identifier)visit(ctx.columnReference().identifier());
+        return new TableOrColumn(QualifiedName.of(Lists.newArrayList(name)));
     }
 
     @Override

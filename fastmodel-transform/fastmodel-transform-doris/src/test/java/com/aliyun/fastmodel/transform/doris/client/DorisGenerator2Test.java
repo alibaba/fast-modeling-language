@@ -18,8 +18,8 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
-import com.aliyun.fastmodel.transform.api.extension.client.constraint.ClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.property.column.AggrColumnProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.MultiRangePartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.ReplicationNum;
@@ -715,7 +715,7 @@ public class DorisGenerator2Test {
         ArrayList<String> es = Lists.newArrayList("c1");
         Constraint constraint = Constraint.builder().name(null)
             .columns(es)
-            .type(ClientConstraintType.DUPLICATE_KEY)
+            .type(ExtensionClientConstraintType.DUPLICATE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -758,7 +758,7 @@ public class DorisGenerator2Test {
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().
             columns(strings)
-            .type(ClientConstraintType.AGGREGATE_KEY)
+            .type(ExtensionClientConstraintType.AGGREGATE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -800,7 +800,7 @@ public class DorisGenerator2Test {
         List<Constraint> constraints = Lists.newArrayList();
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().columns(strings)
-            .type(ClientConstraintType.UNIQUE_KEY)
+            .type(ExtensionClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()
@@ -889,7 +889,7 @@ public class DorisGenerator2Test {
         List<Constraint> constraints = Lists.newArrayList();
         Constraint constraint = Constraint.builder()
             .columns(Lists.newArrayList("c1", "c2"))
-            .type(ClientConstraintType.UNIQUE_KEY)
+            .type(ExtensionClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()

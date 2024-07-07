@@ -13,17 +13,17 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * CALL SET_TABLE_PROPERTY('molin_db.test_create_table', 'binlog.ttl', '86400');
- * https://help.aliyun.com/document_detail/201024.htm?spm=a2c4g.11186623.0.0.4e054ad5aLMB8E#concept-2037122
+ * <a href="https://help.aliyun.com/document_detail/201024.htm?spm=a2c4g.11186623.0.0.4e054ad5aLMB8E#concept-2037122">...</a>
  *
  * @author panguanjing
  * @date 2022/6/20
  */
 public class BinLogTTL extends BaseClientProperty<Long> {
 
-    public static final String BINLOG_TTL = "binlog.ttl";
+    public static final String BINLOG_TTL = HoloPropertyKey.BINLOG_TTL.getValue();
 
     public BinLogTTL() {
-        this.setKey(BINLOG_TTL);
+        this.setKey(HoloPropertyKey.BINLOG_TTL.getValue());
     }
 
     @Override

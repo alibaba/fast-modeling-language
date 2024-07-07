@@ -19,7 +19,6 @@ package com.aliyun.fastmodel.common.utils;
 import com.aliyun.fastmodel.core.tree.util.StringLiteralUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.DOUBLE_QUOTE;
 import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.PREFIX;
 import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.SINGLE;
 
@@ -32,6 +31,7 @@ import static com.aliyun.fastmodel.core.tree.util.StringLiteralUtil.SINGLE;
 public class StripUtils {
 
     public static final String SUFFIX = ";";
+    public static final String DOUBLE_QUOTE = "\"";
 
     /**
      * 将字符串坐下strip
@@ -50,7 +50,7 @@ public class StripUtils {
      * @return 去除之后的双引号
      */
     public static String removeDoubleStrip(String src) {
-        return StringUtils.remove(src, DOUBLE_QUOTE);
+        return StringUtils.remove(src, StringLiteralUtil.DOUBLE_QUOTE);
     }
 
     /**
@@ -77,7 +77,7 @@ public class StripUtils {
      * 增加双引号
      */
     public static String addDoubleStrip(String src) {
-        return "\"" + src + "\"";
+        return DOUBLE_QUOTE + src + DOUBLE_QUOTE;
     }
 
     /**

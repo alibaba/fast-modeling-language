@@ -19,12 +19,10 @@ import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.ColumnExpressionPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.ListPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TimeExpressionPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ColumnExpressionClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ListClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.TimeExpressionClientPartition;
@@ -736,12 +734,7 @@ public class StarRocksTransformerTest {
             assertEquals(true, table.getColumns().get(4).isPartitionKey());
 
             assertNotNull(table.getProperties());
-            assertEquals(1, table.getProperties().size());
-
-            assertTrue(table.getProperties().get(0) instanceof ColumnExpressionPartitionProperty);
-            ColumnExpressionPartitionProperty property = (ColumnExpressionPartitionProperty)table.getProperties().get(0);
-            ColumnExpressionClientPartition listClientPartition = property.getValue();
-            assertEquals("[dt, city]", listClientPartition.getColumnNameList().toString());
+            assertEquals(0, table.getProperties().size());
         }
     }
 
@@ -770,15 +763,15 @@ public class StarRocksTransformerTest {
             CodeGenerator codeGenerator = new DefaultCodeGenerator();
             DdlGeneratorResult generate = codeGenerator.generate(request);
             List<DialectNode> dialectNodes = generate.getDialectNodes();
-            assertEquals("CREATE TABLE site_access1\n" +
-                "(\n" +
-                "   event_day DATETIME NOT NULL,\n" +
-                "   site_id   INT NULL DEFAULT \"10\",\n" +
-                "   city_code VARCHAR(100) NULL,\n" +
-                "   user_name VARCHAR(32) NULL DEFAULT \"\",\n" +
-                "   pv        BIGINT NULL DEFAULT \"0\"\n" +
-                ")\n" +
-                "PARTITION BY date_trunc('day', event_day);", dialectNodes.get(0).getNode());
+            assertEquals("CREATE TABLE site_access1\n"
+                + "(\n"
+                + "   event_day DATETIME NOT NULL,\n"
+                + "   site_id   INT NULL DEFAULT \"10\",\n"
+                + "   city_code VARCHAR(100) NULL,\n"
+                + "   user_name VARCHAR(32) NULL DEFAULT \"\",\n"
+                + "   pv        BIGINT NULL DEFAULT \"0\"\n"
+                + ")\n"
+                + "PARTITION BY date_trunc(\"day\", event_day);", dialectNodes.get(0).getNode());
         }
 
         {

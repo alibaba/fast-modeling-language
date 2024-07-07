@@ -107,7 +107,7 @@ public class HologresClientConverterTest {
             .properties(properties)
             .constraints(constraints)
             .build();
-        CreateTable node = (CreateTable)hologresClientConverter.covertToNode(table, TableConfig.builder().build());
+        CreateTable node = (CreateTable)hologresClientConverter.convertToNode(table, TableConfig.builder().build());
         assertEquals(node.isNotExists(), true);
         assertEquals(node.getQualifiedName().toString(), "database.name");
         assertEquals(node.getColumnDefines().size(), 3);
@@ -137,7 +137,7 @@ public class HologresClientConverterTest {
             .columns(columns)
             .name("name")
             .build();
-        Node node = hologresClientConverter.covertToNode(table, TableConfig.builder().build());
+        Node node = hologresClientConverter.convertToNode(table, TableConfig.builder().build());
         CreateTable createTable = (CreateTable)node;
         List<ColumnDefinition> columnDefines = createTable.getColumnDefines();
         assertEquals(columnDefines.get(0).getDataType(),

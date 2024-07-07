@@ -10,6 +10,7 @@ package com.aliyun.fastmodel.transform.hologres.client.property;
 
 import java.util.List;
 
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -40,6 +41,7 @@ public class EventTimeColumn extends BaseClientProperty<List<String>> {
         if (StringUtils.isBlank(value)) {
             this.setValue(Lists.newArrayList());
         }
-        this.setValue(Splitter.on(",").splitToList(value));
+        String val = StripUtils.removeDoubleStrip(value);
+        this.setValue(Splitter.on(",").splitToList(val));
     }
 }

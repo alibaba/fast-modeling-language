@@ -19,6 +19,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
+import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
@@ -228,5 +229,13 @@ public class HologresAstVisitorTest {
         assertEquals("BEGIN;\n"
             + "ALTER TABLE t1 ALTER COLUMN c1 SET DEFAULT 'st';\n"
             + "COMMIT;", hologresAstVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testRenameTable() {
+        RenameTable renameTable = new RenameTable(QualifiedName.of("s1.t1"), QualifiedName.of("s1.t2"));
+        HologresAstVisitor hologresAstVisitor = new HologresAstVisitor(HologresTransformContext.builder().schema("s1").build(), HologresVersion.V2);
+        hologresAstVisitor.visitRenameTable(renameTable, 0);
+        assertEquals("ALTER TABLE s1.t1 RENAME TO t2", hologresAstVisitor.getBuilder().toString());
     }
 }

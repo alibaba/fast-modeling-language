@@ -108,4 +108,10 @@ public class BitmapsColumnTest extends BaseGeneratorTest {
             + "COMMIT;");
     }
 
+    @Test
+    public void setColumnList() {
+        BitMapColumn bitMapColumn = new BitMapColumn();
+        bitMapColumn.setColumnList(Lists.newArrayList("a", "b"));
+        assertEquals("a,b", bitMapColumn.valueString());
+    }
 }

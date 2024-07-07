@@ -54,7 +54,7 @@ public class StarRocksTransformer implements Transformer<BaseStatement> {
 
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
-        return starRocksClientConverter.covertToNode(table, TableConfig.builder().build());
+        return starRocksClientConverter.convertToNode(table, TableConfig.builder().build());
     }
 
     @Override

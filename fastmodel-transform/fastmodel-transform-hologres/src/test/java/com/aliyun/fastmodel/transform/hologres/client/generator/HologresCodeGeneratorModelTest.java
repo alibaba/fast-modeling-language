@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -313,6 +314,41 @@ public class HologresCodeGeneratorModelTest {
             + ");\n"
             + "COMMENT ON TABLE \"schema\".abc IS '''abc';\n"
             + "COMMENT ON COLUMN \"schema\".abc.d_v IS 'comment';\n"
+            + "COMMIT;", generate.getDialectNodes().get(0).getNode());
+    }
+
+    @Test
+    public void testGeneratorWithRoaringbitmap() {
+        DefaultCodeGenerator defaultCodeGenerator = new DefaultCodeGenerator();
+        DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(DialectMeta.DEFAULT_HOLO)
+            .caseSensitive(false)
+            .build();
+        request.setConfig(config);
+        List<Column> a = Lists.newArrayList(
+            Column.builder()
+                .id("c1")
+                .name("c1")
+                .dataType(HologresDataTypeName.ROARING_BITMAP.getValue())
+                .comment("comment")
+                .nullable(true)
+                .build()
+        );
+        request.setAfter(Table.builder()
+            .name("abc")
+            .schema("schema")
+            .columns(a)
+            .comment("'abc")
+            .build());
+        DdlGeneratorResult generate = defaultCodeGenerator.generate(request);
+        assertEquals("BEGIN;\n"
+            + "CREATE EXTENSION IF NOT EXISTS ROARINGBITMAP;\n"
+            + "CREATE TABLE IF NOT EXISTS \"schema\".abc (\n"
+            + "   c1 ROARINGBITMAP\n"
+            + ");\n"
+            + "COMMENT ON TABLE \"schema\".abc IS '''abc';\n"
+            + "COMMENT ON COLUMN \"schema\".abc.c1 IS 'comment';\n"
             + "COMMIT;", generate.getDialectNodes().get(0).getNode());
     }
 }

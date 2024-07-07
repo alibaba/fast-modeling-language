@@ -16,7 +16,6 @@ import com.aliyun.fastmodel.compare.CompareNodeExecute;
 import com.aliyun.fastmodel.compare.CompareStrategy;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
-import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.TransformerFactory;
 import com.aliyun.fastmodel.transform.api.client.CodeGenerator;
@@ -82,7 +81,9 @@ public class DefaultCodeGenerator implements CodeGenerator {
         Preconditions.checkNotNull(transformer, "can't find the transformer with dialectMeta:" + dialectMeta);
         //将传入的request转为node
         Node reverse = function.apply(transformer, request);
-        Node node = transformer.reverseTable(tableClientDTO, ReverseContext.builder().build());
+        Node node = transformer.reverseTable(tableClientDTO, ReverseContext.builder()
+            .version(request.getConfig().getDialectMeta().getVersion())
+            .build());
         //比较node
         List<BaseStatement> compare = CompareNodeExecute.getInstance().compare((BaseStatement)reverse, (BaseStatement)node,
             request.getConfig().isDropIfExist() ? CompareStrategy.FULL : CompareStrategy.INCREMENTAL);
@@ -107,7 +108,9 @@ public class DefaultCodeGenerator implements CodeGenerator {
         Preconditions.checkNotNull(transformer, "can't find the transformer with dialectMeta:" + dialectMeta);
         String code = request.getCode();
         Node reverse = null;
-        reverse = transformer.reverse(new DialectNode(code), ReverseContext.builder().merge(true).build());
+        reverse = transformer.reverse(new DialectNode(code), ReverseContext.builder().merge(true)
+            .version(dialectMeta.getVersion())
+            .build());
         Preconditions.checkNotNull(reverse, "reverse is null with the code");
         Table table = transformer.transformTable(reverse,
             TransformContext.builder()

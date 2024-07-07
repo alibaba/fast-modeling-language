@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKey
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksDataTypeName;
@@ -30,6 +31,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -515,5 +517,28 @@ public class StarRocksLanguageParserTest {
             + "    \"replication_num\" = \"3\" \n"
             + ");");
         assertNotNull(o);
+    }
+
+    @Test
+    public void testParseExpressionPartition() {
+        CreateTable o = starRocksLanguageParser.parseNode("CREATE TABLE site_access (\n"
+            + "    datekey DATE,\n"
+            + "    site_id INT,\n"
+            + "    city_code SMALLINT,\n"
+            + "    user_name VARCHAR(32),\n"
+            + "    pv BIGINT DEFAULT '0'\n"
+            + ")\n"
+            + "ENGINE=olap\n"
+            + "DUPLICATE KEY(datekey, site_id, city_code, user_name)\n"
+            + "PARTITION BY (datekey, site_id)"
+            + "DISTRIBUTED BY RANDOM BUCKETS 5\n"
+            + "PROPERTIES (\n"
+            + "    \"replication_num\" = \"3\" \n"
+            + ");");
+        assertNotNull(o);
+        PartitionedBy partitionedBy = o.getPartitionedBy();
+        ExpressionPartitionBy expressionPartitionBy = (ExpressionPartitionBy)partitionedBy;
+        assertNull(expressionPartitionBy.getFunctionCall());
+        assertEquals(2, expressionPartitionBy.getColumnDefinitions().size());
     }
 }

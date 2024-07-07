@@ -42,8 +42,7 @@ public enum HoloPropertyKey implements PropertyKey {
     /**
      * 连接外部数据源的服务器
      */
-    SERVER_NAME("server_name", false)
-    ;
+    SERVER_NAME("server_name", false);
 
     private String value;
 

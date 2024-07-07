@@ -145,6 +145,7 @@ LOCK:                                'LOCK';
 LOCKED:                              'LOCKED';
 LOOP:                                'LOOP';
 LOW_PRIORITY:                        'LOW_PRIORITY';
+MAP:                                 'MAP';
 MASTER_BIND:                         'MASTER_BIND';
 MASTER_SSL_VERIFY_SERVER_CERT:       'MASTER_SSL_VERIFY_SERVER_CERT';
 MATCH:                               'MATCH';
@@ -1202,9 +1203,10 @@ STORAGE_POLICY:                      'STORAGE_POLICY';
 BLOCK_SIZE:                          'BLOCK_SIZE';
 LIFECYCLE:                           'LIFECYCLE';
 HOT_PARTITION_COUNT:                 'HOT_PARTITION_COUNT';
-DISTRIBUTED:                         'DISTRIBUTED';
+DISTRIBUTE:                          'DISTRIBUTE';
 BROADCAST:                           'BROADCAST';
-
+INDEX_ALL :                          'INDEX_ALL';
+TABLE_PROPERTIES:                    'TABLE_PROPERTIES';
 
 
 // Operators

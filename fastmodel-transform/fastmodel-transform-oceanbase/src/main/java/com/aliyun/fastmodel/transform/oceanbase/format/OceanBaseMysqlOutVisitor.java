@@ -207,6 +207,9 @@ public class OceanBaseMysqlOutVisitor extends FastModelVisitor implements OceanB
                 stringBuilder.append(StringUtils.LF);
                 continue;
             }
+            if (!oceanBasePropertyKey.isSupportPrint()) {
+                continue;
+            }
             if (StringUtils.equalsIgnoreCase(name, OceanBasePropertyKey.CHARSET_KEY.getValue())) {
                 stringBuilder.append("DEFAULT");
                 stringBuilder.append(" CHARSET ").append(property.getValue());
@@ -220,19 +223,18 @@ public class OceanBaseMysqlOutVisitor extends FastModelVisitor implements OceanB
                 continue;
             }
             PropertyValueType valueType = oceanBasePropertyKey.getValueType();
-            if (valueType == PropertyValueType.IDENTIFIER || valueType == PropertyValueType.NUMBER_LITERAL) {
-                stringBuilder.append(name);
-                stringBuilder.append(" ");
-                stringBuilder.append(property.getValue());
-                stringBuilder.append(StringUtils.LF);
-                continue;
-            }
             if (valueType == PropertyValueType.STRING_LITERAL) {
                 stringBuilder.append(name);
-                stringBuilder.append(" ");
+                stringBuilder.append("=");
                 stringBuilder.append(formatStringLiteral(property.getValue()));
                 stringBuilder.append(StringUtils.LF);
+            } else {
+                stringBuilder.append(name);
+                stringBuilder.append("=");
+                stringBuilder.append(property.getValue());
+                stringBuilder.append(StringUtils.LF);
             }
+
         }
         return stringBuilder.toString();
     }

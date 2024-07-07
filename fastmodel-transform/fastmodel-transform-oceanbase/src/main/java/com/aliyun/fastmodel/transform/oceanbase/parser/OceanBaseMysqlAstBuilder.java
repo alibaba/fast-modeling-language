@@ -349,8 +349,7 @@ public class OceanBaseMysqlAstBuilder extends OBParserBaseVisitor<Node> {
     }
 
     private List<Property> toColumnProperty(ListNode ctx) {
-        List<Property> listNode = ParserHelper.getListNode(ctx, Property.class);
-        return listNode;
+        return ParserHelper.getListNode(ctx, Property.class);
     }
 
     private Comment toComment(ListNode optColumnAttributeListContext) {
@@ -827,6 +826,10 @@ public class OceanBaseMysqlAstBuilder extends OBParserBaseVisitor<Node> {
         if (ctx.AUTO_INCREMENT() != null) {
             return new Property(ExtensionPropertyKey.COLUMN_AUTO_INCREMENT.getValue(), String.valueOf(Boolean.TRUE));
         }
+        //return null
+        if (ctx.NULLX() != null) {
+            return new NotNullConstraint(IdentifierUtil.sysIdentifier(), false);
+        }
         return super.visitColumn_attribute(ctx);
     }
 
@@ -943,7 +946,7 @@ public class OceanBaseMysqlAstBuilder extends OBParserBaseVisitor<Node> {
         if (primaryConstraint == null) {
             return null;
         }
-        return primaryConstraint != null;
+        return primaryConstraint.getEnable();
     }
 
     private Boolean toNotNull(ListNode optColumnAttributeListContext) {
@@ -954,7 +957,7 @@ public class OceanBaseMysqlAstBuilder extends OBParserBaseVisitor<Node> {
         if (visit == null) {
             return null;
         }
-        return visit != null;
+        return visit.getEnable();
     }
 
     private PartitionedBy toPartitionBy(Create_table_stmtContext ctx) {
@@ -1644,6 +1647,27 @@ public class OceanBaseMysqlAstBuilder extends OBParserBaseVisitor<Node> {
         }
         if (ctx.PCTFREE() != null) {
             return new Property(OceanBasePropertyKey.PCTFREE.getValue(), ctx.INTNUM().getText());
+        }
+        if (ctx.USE_BLOOM_FILTER() != null) {
+            return new Property(OceanBasePropertyKey.USE_BLOOM_FILTER.getValue(), ctx.BOOL_VALUE().getText());
+        }
+        if (ctx.REPLICA_NUM() != null) {
+            return new Property(OceanBasePropertyKey.REPLICA_NUM.getValue(), ctx.INTNUM().getText());
+        }
+        if (ctx.TABLET_SIZE() != null) {
+            return new Property(OceanBasePropertyKey.TABLET_SIZE.getValue(), ctx.INTNUM().getText());
+        }
+        if (ctx.BLOCK_SIZE() != null) {
+            return new Property(OceanBasePropertyKey.BLOCK_SIZE.getValue(), ctx.INTNUM().getText());
+        }
+        if (ctx.STORAGE_FORMAT_VERSION() != null) {
+            return new Property(OceanBasePropertyKey.STORAGE_FORMAT_VERSION.getValue(), ctx.INTNUM().getText());
+        }
+        if (ctx.PROGRESSIVE_MERGE_NUM() != null) {
+            return new Property(OceanBasePropertyKey.PROGRESSIVE_MERGE_NUM.getValue(), ctx.INTNUM().getText());
+        }
+        if (ctx.MAX_USED_PART_ID() != null) {
+            return new Property(OceanBasePropertyKey.MAX_USED_PART_ID.getValue(), ctx.INTNUM().getText());
         }
         if (ctx.ENGINE_() != null) {
             Node node = visit(ctx.relation_name_or_string());

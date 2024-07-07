@@ -70,7 +70,7 @@ public class HiveTransformer implements Transformer<BaseStatement> {
 
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
-        return hiveClientConverter.covertToNode(table, TableConfig.builder().build());
+        return hiveClientConverter.convertToNode(table, TableConfig.builder().build());
     }
 
     @Override

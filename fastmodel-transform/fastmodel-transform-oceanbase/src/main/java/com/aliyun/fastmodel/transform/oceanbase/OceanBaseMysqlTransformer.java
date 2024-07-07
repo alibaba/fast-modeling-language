@@ -53,7 +53,7 @@ public class OceanBaseMysqlTransformer implements Transformer<BaseStatement> {
 
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
-        return oceanBaseMysqlClientConverter.covertToNode(table, TableConfig.builder().build());
+        return oceanBaseMysqlClientConverter.convertToNode(table, TableConfig.builder().build());
     }
 
     @Override

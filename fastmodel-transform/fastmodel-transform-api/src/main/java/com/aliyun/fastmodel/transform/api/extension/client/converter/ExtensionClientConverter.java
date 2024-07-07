@@ -16,6 +16,7 @@ import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.expr.literal.IntervalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.ListStringLiteral;
@@ -38,9 +39,8 @@ import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
-import com.aliyun.fastmodel.transform.api.extension.client.constraint.ClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.ColumnExpressionPartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.ListPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.MultiRangePartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.SingleRangePartitionProperty;
@@ -48,7 +48,6 @@ import com.aliyun.fastmodel.transform.api.extension.client.property.table.TableP
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TimeExpressionPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.BaseClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ColumnExpressionClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.LessThanClientPartitionKey;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ListClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.MultiRangeClientPartition;
@@ -190,32 +189,37 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         List<BaseClientProperty> propertyList) {
         FunctionCall functionCall = expressionPartitionBy.getFunctionCall();
         if (functionCall == null) {
-            // 列表达式
-            ColumnExpressionClientPartition partition = new ColumnExpressionClientPartition();
-            List<String> columnNameList = expressionPartitionBy.getColumnDefinitions().stream()
-                .map(columnDefinition -> columnDefinition.getColName().getValue())
-                .collect(Collectors.toList());
-            partition.setColumnNameList(columnNameList);
-
-            ColumnExpressionPartitionProperty columnExpressionPartitionProperty = new ColumnExpressionPartitionProperty();
-            columnExpressionPartitionProperty.setValue(partition);
-            propertyList.add(columnExpressionPartitionProperty);
-        } else {
+            return;
             // 时间函数表达式
-            TimeExpressionClientPartition timeExpressionClientPartition = new TimeExpressionClientPartition();
-            timeExpressionClientPartition.setFuncName(functionCall.getFuncName().getFirst());
-            if (expressionPartitionBy.getTimeUnitArg() != null) {
-                timeExpressionClientPartition.setTimeUnit(StringLiteralUtil.strip(expressionPartitionBy.getTimeUnitArg().getOrigin()));
-            }
-            if (expressionPartitionBy.getIntervalLiteralArg() != null) {
-                timeExpressionClientPartition.setInterval(expressionPartitionBy.getIntervalLiteralArg());
-            }
-
-            //property
-            TimeExpressionPartitionProperty timeExpressionPartitionProperty = new TimeExpressionPartitionProperty();
-            timeExpressionPartitionProperty.setValue(timeExpressionClientPartition);
-            propertyList.add(timeExpressionPartitionProperty);
         }
+        //默认是先是格式，再是列
+        TimeExpressionPartitionProperty timeExpressionPartitionProperty = getTimeExpressionPartitionProperty(expressionPartitionBy);
+        propertyList.add(timeExpressionPartitionProperty);
+    }
+
+    protected TimeExpressionPartitionProperty getTimeExpressionPartitionProperty(ExpressionPartitionBy expressionPartitionBy) {
+        TimeExpressionClientPartition timeExpressionClientPartition = new TimeExpressionClientPartition();
+        FunctionCall functionCall = expressionPartitionBy.getFunctionCall();
+        timeExpressionClientPartition.setFuncName(functionCall.getFuncName().getFirst());
+        if (expressionPartitionBy.getTimeUnitArg(0) != null) {
+            timeExpressionClientPartition.setTimeUnit(expressionPartitionBy.getTimeUnitArg(0).getValue());
+        }
+        if (expressionPartitionBy.getIntervalLiteralArg(1) != null) {
+            timeExpressionClientPartition.setInterval(expressionPartitionBy.getIntervalLiteralArg(1));
+        }
+        TableOrColumn tableOrColumn = expressionPartitionBy.getColumn(0);
+        if (tableOrColumn != null) {
+            timeExpressionClientPartition.setColumn(tableOrColumn.getQualifiedName().toString());
+        } else {
+            tableOrColumn = expressionPartitionBy.getColumn(1);
+            if (tableOrColumn != null) {
+                timeExpressionClientPartition.setColumn(tableOrColumn.getQualifiedName().toString());
+            }
+        }
+        //property
+        TimeExpressionPartitionProperty timeExpressionPartitionProperty = new TimeExpressionPartitionProperty();
+        timeExpressionPartitionProperty.setValue(timeExpressionClientPartition);
+        return timeExpressionPartitionProperty;
     }
 
     /**
@@ -376,14 +380,13 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
                     .build();
             })
             .collect(Collectors.toList());
+        if (properties == null || properties.isEmpty()) {
+            return super.toPartitionedBy(table, columns);
+        }
         return toPartition(list, properties);
     }
 
     private PartitionedBy toPartition(List<ColumnDefinition> columnDefinitionList, List<BaseClientProperty> properties) {
-        if (properties == null || properties.isEmpty()) {
-            return null;
-        }
-
         // range partition
         List<BaseClientProperty> rangePartitionProperties = properties.stream().filter(property ->
                 StringUtils.equalsIgnoreCase(property.getKey(), TABLE_RANGE_PARTITION.getValue()))
@@ -478,8 +481,7 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         if (partitionClientValue.getValue() != null) {
             stringLiteral = new StringLiteral(partitionClientValue.getValue());
         }
-        PartitionValue partitionValue = new PartitionValue(partitionClientValue.isMaxValue(), stringLiteral);
-        return partitionValue;
+        return new PartitionValue(partitionClientValue.isMaxValue(), stringLiteral);
     }
 
     private void toListPartition(List<PartitionDesc> list, List<ColumnDefinition> columnDefinitionList,
@@ -534,18 +536,27 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         if (!(baseClientProperty instanceof TimeExpressionPartitionProperty)) {
             return null;
         }
-        TimeExpressionPartitionProperty timeExpressionPartitionProperty = (TimeExpressionPartitionProperty)baseClientProperty;
-        TimeExpressionClientPartition timeExpressionClientPartition = timeExpressionPartitionProperty.getValue();
+        return getFunctionCall((TimeExpressionPartitionProperty)baseClientProperty);
+
+    }
+
+    protected FunctionCall getFunctionCall(TimeExpressionPartitionProperty baseClientProperty) {
+        TimeExpressionClientPartition timeExpressionClientPartition = baseClientProperty.getValue();
         List<BaseExpression> arguments = new ArrayList<>();
         if (StringUtils.isNotBlank(timeExpressionClientPartition.getTimeUnit())) {
             arguments.add(new StringLiteral(timeExpressionClientPartition.getTimeUnit()));
+            if (StringUtils.isNotBlank(timeExpressionClientPartition.getColumn())) {
+                arguments.add(new TableOrColumn(QualifiedName.of(timeExpressionClientPartition.getColumn())));
+            }
         }
         if (timeExpressionClientPartition.getInterval() != null) {
+            if (StringUtils.isNotBlank(timeExpressionClientPartition.getColumn())) {
+                arguments.add(new TableOrColumn(QualifiedName.of(timeExpressionClientPartition.getColumn())));
+            }
             arguments.add(timeExpressionClientPartition.getInterval());
         }
         return new FunctionCall(QualifiedName.of(timeExpressionClientPartition.getFuncName()),
             false, arguments);
-
     }
 
     @Override
@@ -587,24 +598,24 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         }
         for (Constraint constraint : constraints) {
             ConstraintType type = constraint.getType();
-            if (type == ClientConstraintType.DISTRIBUTE) {
+            if (type == ExtensionClientConstraintType.DISTRIBUTE) {
                 DistributeConstraint distributeConstraint = toDistributeConstraint(constraint);
                 if (distributeConstraint == null) {
                     continue;
                 }
                 baseConstraints.add(distributeConstraint);
             }
-            if (type == ClientConstraintType.ORDER_BY) {
+            if (type == ExtensionClientConstraintType.ORDER_BY) {
                 OrderByConstraint orderByConstraint = toOrderByConstraint(constraint);
                 baseConstraints.add(orderByConstraint);
             }
 
-            if (type == ClientConstraintType.DUPLICATE_KEY) {
+            if (type == ExtensionClientConstraintType.DUPLICATE_KEY) {
                 DuplicateKeyConstraint duplicateKeyConstraint = toDuplicateKeyConstraint(constraint);
                 baseConstraints.add(duplicateKeyConstraint);
             }
 
-            if (type == ClientConstraintType.AGGREGATE_KEY) {
+            if (type == ExtensionClientConstraintType.AGGREGATE_KEY) {
                 AggregateKeyConstraint aggregateKeyConstraint = toAggregateKeyConstraint(constraint);
                 baseConstraints.add(aggregateKeyConstraint);
             }

@@ -6,7 +6,10 @@ import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
+import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.expr.literal.IntervalLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.ListStringLiteral;
@@ -28,6 +31,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.column.AggregateDesc;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiItemListPartition;
@@ -40,6 +44,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.List
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
 import com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype.StarRocksGenericDataType;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -256,6 +261,26 @@ public class StarRocksOutVisitorTest {
             + "PARTITION IF NOT EXISTS p1 VALUES IN (\"2021-01-01\") (\"test\"=\"test_value\"),\n"
             + "PARTITION p2 VALUES IN ((\"2021-01-01\"),(\"2021-01-01\",\"2023-01-01\"))\n"
             + ")", starRocksVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testExpressionPartition() {
+        List<BaseExpression> arguments = Lists.newArrayList(
+            new TableOrColumn(QualifiedName.of("c1")),
+            new StringLiteral("yyyy-mm-dd")
+        );
+        FunctionCall functionCall = new FunctionCall(
+            QualifiedName.of("data_truc"),
+            false,
+            arguments
+        );
+        ExpressionPartitionBy expressionPartitionBy = new ExpressionPartitionBy(
+            ImmutableList.of(),
+            functionCall,
+            null
+        );
+        starRocksVisitor.visitExpressionPartitionedBy(expressionPartitionBy, 0);
+        assertEquals("PARTITION BY data_truc(c1, \"yyyy-mm-dd\")", starRocksVisitor.getBuilder().toString());
     }
 
     private List<Property> toColumnProperties() {

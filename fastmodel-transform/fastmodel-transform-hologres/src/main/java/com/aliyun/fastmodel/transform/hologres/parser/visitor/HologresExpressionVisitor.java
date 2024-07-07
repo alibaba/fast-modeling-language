@@ -10,8 +10,11 @@ package com.aliyun.fastmodel.transform.hologres.parser.visitor;
 
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.CurrentTimestamp;
 import com.aliyun.fastmodel.core.tree.expr.literal.DateLiteral;
@@ -20,6 +23,7 @@ import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.ArrayBounds;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresArrayDataType;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
 import com.aliyun.fastmodel.transform.hologres.parser.util.HologresReservedWordUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,8 +38,14 @@ public class HologresExpressionVisitor extends DefaultExpressionVisitor implemen
 
     private final HologresTransformContext hologresTransformContext;
 
+    private final static Pattern pattern = Pattern.compile("^\\d\\w*");
+
     public HologresExpressionVisitor(HologresTransformContext hologresTransformContext) {
         this.hologresTransformContext = hologresTransformContext;
+    }
+
+    public static boolean startsWithNumber(String word) {
+        return pattern.matcher(word).matches();
     }
 
     @Override
@@ -61,8 +71,9 @@ public class HologresExpressionVisitor extends DefaultExpressionVisitor implemen
             StripUtils.strip(node.getOrigin()) : node.getValue();
         if (!node.isDelimited()) {
             boolean reservedKeyWord = HologresReservedWordUtil.isReservedKeyWord(value);
+            boolean startWithNumber = startsWithNumber(value);
             //如果node是关键字，那么进行转义处理
-            if (reservedKeyWord) {
+            if (reservedKeyWord || startWithNumber) {
                 return StripUtils.addDoubleStrip(value);
             } else if (hologresTransformContext.isCaseSensitive()) {
                 //如果开启了不忽略大小写，那么统一加上双引号
@@ -73,6 +84,14 @@ public class HologresExpressionVisitor extends DefaultExpressionVisitor implemen
             String strip = StripUtils.strip(value);
             return StripUtils.addDoubleStrip(strip);
         }
+    }
+
+    @Override
+    public String visitWithDataTypeNameExpression(WithDataTypeNameExpression withDataTypeNameExpression, Void context) {
+        BaseExpression baseExpression = withDataTypeNameExpression.getBaseExpression();
+        BaseDataType dataTypeName = withDataTypeNameExpression.getBaseDataType();
+        String accept = dataTypeName.accept(this, context);
+        return baseExpression.accept(this, context) + "::" + accept;
     }
 
     @Override

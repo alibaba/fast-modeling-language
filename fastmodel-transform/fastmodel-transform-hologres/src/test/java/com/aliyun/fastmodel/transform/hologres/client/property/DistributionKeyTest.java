@@ -8,6 +8,7 @@
 
 package com.aliyun.fastmodel.transform.hologres.client.property;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -38,5 +39,13 @@ public class DistributionKeyTest {
         DistributionKey distributionKey = new DistributionKey();
         distributionKey.setValueString("c1,c2");
         assertEquals(2, distributionKey.toColumnList().size());
+    }
+
+    @Test
+    public void testSetColumnList() {
+        DistributionKey distributionKey = new DistributionKey();
+        distributionKey.setValueString("c1,c2");
+        distributionKey.setColumnList(Lists.newArrayList("\"c1\"", "c2"));
+        assertEquals("\"c1\",c2", distributionKey.valueString());
     }
 }

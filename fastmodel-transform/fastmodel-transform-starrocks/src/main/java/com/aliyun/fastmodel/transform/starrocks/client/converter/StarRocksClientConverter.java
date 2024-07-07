@@ -19,8 +19,8 @@ import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
-import com.aliyun.fastmodel.transform.api.extension.client.constraint.ClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionClientConstraintType;
 import com.aliyun.fastmodel.transform.api.extension.client.converter.ExtensionClientConverter;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
@@ -100,14 +100,14 @@ public class StarRocksClientConverter extends ExtensionClientConverter<StarRocks
         List<String> collect = aggregateKeyConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList());
         return Constraint.builder().name(aggregateKeyConstraint.getName().getValue())
             .columns(collect)
-            .type(ClientConstraintType.DUPLICATE_KEY)
+            .type(ExtensionClientConstraintType.DUPLICATE_KEY)
             .build();
     }
 
     private Constraint toAggregateClientConstraint(AggregateKeyConstraint aggregateKeyConstraint) {
         List<String> collect = aggregateKeyConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList());
         return Constraint.builder().name(aggregateKeyConstraint.getName().getValue())
-            .columns(collect).type(ClientConstraintType.AGGREGATE_KEY)
+            .columns(collect).type(ExtensionClientConstraintType.AGGREGATE_KEY)
             .build();
     }
 
@@ -115,7 +115,7 @@ public class StarRocksClientConverter extends ExtensionClientConverter<StarRocks
         List<String> collect = orderByConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList());
         return Constraint.builder().name(orderByConstraint.getName().getValue())
             .columns(collect)
-            .type(ClientConstraintType.ORDER_BY)
+            .type(ExtensionClientConstraintType.ORDER_BY)
             .build();
     }
 

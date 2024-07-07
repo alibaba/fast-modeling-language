@@ -10,7 +10,7 @@ package com.aliyun.fastmodel.transform.adbmysql.builder;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
-import com.aliyun.fastmodel.transform.adbmysql.format.AdbMysqlVisitor;
+import com.aliyun.fastmodel.transform.adbmysql.format.AdbMysqlOutVisitor;
 import com.aliyun.fastmodel.transform.api.builder.BuilderAnnotation;
 import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName.Constants;
@@ -29,7 +29,7 @@ public class DefaultBuilder implements StatementBuilder<AdbMysqlTransformContext
 
     @Override
     public DialectNode build(BaseStatement source, AdbMysqlTransformContext context) {
-        AdbMysqlVisitor mysqlVisitor = new AdbMysqlVisitor(context);
+        AdbMysqlOutVisitor mysqlVisitor = new AdbMysqlOutVisitor(context);
         Boolean process = mysqlVisitor.process(source, 0);
         String result = mysqlVisitor.getBuilder().toString();
         return new DialectNode(result, process);

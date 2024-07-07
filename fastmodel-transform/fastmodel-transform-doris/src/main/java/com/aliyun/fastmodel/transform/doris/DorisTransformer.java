@@ -54,7 +54,7 @@ public class DorisTransformer implements Transformer<BaseStatement> {
 
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
-        return dorisClientConverter.covertToNode(table, TableConfig.builder().build());
+        return dorisClientConverter.convertToNode(table, TableConfig.builder().build());
     }
 
     @Override

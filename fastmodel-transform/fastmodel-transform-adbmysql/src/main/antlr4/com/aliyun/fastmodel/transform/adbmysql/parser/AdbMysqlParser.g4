@@ -204,8 +204,6 @@ createTable
        tableName createDefinitions?
        tableAttribute?
        partitionDefinitions?
-       storagePolicy?
-       blockSize?
       ( tableOption (','? tableOption)* )?                          #columnCreateTable
     ;
 
@@ -487,6 +485,11 @@ tableOption
     | tablespaceStorage                                                             #tableOptionTablespace
     | TRANSACTIONAL '='? ('0' | '1')                                                #tableOptionTransactional
     | UNION '='? '(' tables ')'                                                     #tableOptionUnion
+    | BLOCK_SIZE '=' decimalLiteral                                                 #tableOptionBlockSize
+    | STORAGE_POLICY '=' STRING_LITERAL                                             #tableOpitonStoragePolicy
+    | INDEX_ALL '=' STRING_LITERAL                                                  #tableOptionIndexAll
+    | HOT_PARTITION_COUNT '=' decimalLiteral                                        #tableOptionHotPartitionCount
+    | TABLE_PROPERTIES '=' STRING_LITERAL                                           #tableOptionTableProperties
     ;
 
 tableType
@@ -498,7 +501,7 @@ tablespaceStorage
     ;
 
 tableAttribute
-    : DISTRIBUTED BY (HASH colNames) | BROADCAST
+    : DISTRIBUTE BY (HASH colNames) | BROADCAST
     ;
 
 colNames
@@ -520,16 +523,6 @@ lifeCycle
     : LIFECYCLE decimalLiteral
     ;
 
-storagePolicy
-    : STORAGE_POLICY '=' storagePolicyValue
-    ;
-
-storagePolicyValue
-    : STRING_LITERAL (HOT_PARTITION_COUNT '=' decimalLiteral)?
-    ;
-blockSize
-    : BLOCK_SIZE '=' decimalLiteral
-    ;
 partitionFunctionDefinition
     : LINEAR? HASH '(' expression ')'                               #partitionFunctionHash
     | LINEAR? KEY (ALGORITHM '=' algType=('1' | '2'))?
@@ -2296,6 +2289,8 @@ dataType
       (charSet charsetName)?
       (COLLATE collationName)?                                      #longVarcharDataType    // LONG VARCHAR is the same as LONG
     | LONG VARBINARY                                                #longVarbinaryDataType
+    | typeName=ARRAY LESS_SYMBOL elemType=dataType GREATER_SYMBOL                  #listDataType
+    | typeName=MAP LESS_SYMBOL left=dataType COMMA right=dataType GREATER_SYMBOL   #mapDataType
     ;
 
 collectionOptions
@@ -2610,10 +2605,10 @@ passwordFunctionClause
     ;
 
 functionArgs
-    : (constant | fullColumnName | functionCall | expression)
+    :functionArg
     (
       ','
-      (constant | fullColumnName | functionCall | expression)
+     functionArg
     )*
     ;
 
@@ -2787,7 +2782,7 @@ keywordsCanBeId
     | TRANSACTION | TRANSACTIONAL | TRIGGERS | TRUNCATE | UNBOUNDED | UNDEFINED | UNDOFILE
     | UNDO_BUFFER_SIZE | UNINSTALL | UNKNOWN | UNTIL | UPGRADE | USA | USER | USE_FRM | USER_RESOURCES
     | VALIDATION | VALUE | VAR_POP | VAR_SAMP | VARIABLES | VARIANCE | VERSION_TOKEN_ADMIN | VIEW | VIRTUAL
-    | WAIT | WARNINGS | WITHOUT | WORK | WRAPPER | X509 | XA | XA_RECOVER_ADMIN | XML
+    | WAIT | WARNINGS | WITHOUT | WORK | WRAPPER | X509 | XA | XA_RECOVER_ADMIN | XML | MAP
     ;
 
 functionNameBase

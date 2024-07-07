@@ -23,16 +23,17 @@ public interface ClientConverter<T extends TransformContext> {
     /**
      * convert to node
      *
-     * @param table
+     * @param table       table信息
+     * @param tableConfig table配置信息
      * @return {@link  Node}
      */
-    Node covertToNode(Table table, TableConfig tableConfig);
+    Node convertToNode(Table table, TableConfig tableConfig);
 
     /**
      * convert to table
      *
-     * @param table
-     * @param context
+     * @param table   table信息
+     * @param context 上下文context信息
      * @return {@link Table}
      */
     Table convertToTable(Node table, T context);

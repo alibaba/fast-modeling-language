@@ -14,6 +14,7 @@ import com.aliyun.fastmodel.transform.hologres.parser.tree.CommitWork;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.ArrayBounds;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresArrayDataType;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresGenericDataType;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
 
 /**
  * visit begin work
@@ -76,5 +77,16 @@ public interface HologresVisitor<R, C> extends IAstVisitor<R, C> {
      */
     default R visitHologresArrayDataType(HologresArrayDataType hologresArrayDataType, C context) {
         return visitDataType(hologresArrayDataType, context);
+    }
+
+    /**
+     * visit with dataTypeName expression
+     *
+     * @param withDataTypeNameExpression
+     * @param context
+     * @return
+     */
+    default R visitWithDataTypeNameExpression(WithDataTypeNameExpression withDataTypeNameExpression, C context) {
+        return visitNode(withDataTypeNameExpression, context);
     }
 }

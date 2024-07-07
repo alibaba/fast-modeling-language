@@ -30,7 +30,7 @@ import static com.aliyun.fastmodel.transform.api.extension.client.property.Exten
  */
 public class StarRocksPropertyConverter extends BasePropertyConverter {
 
-    private static Map<String, Function<String, BaseClientProperty>> functionMap = Maps.newHashMap();
+    private static final Map<String, Function<String, BaseClientProperty>> functionMap = Maps.newHashMap();
 
     public StarRocksPropertyConverter() {
         init();

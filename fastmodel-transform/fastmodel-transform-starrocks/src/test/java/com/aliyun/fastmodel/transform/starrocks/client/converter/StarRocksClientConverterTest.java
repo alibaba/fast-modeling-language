@@ -286,7 +286,7 @@ public class StarRocksClientConverterTest {
         properties.add(e);
         columns.add(Column.builder().name("c1").dataType("bigint").properties(properties).build());
         Table table = Table.builder().name("t1").columns(columns).build();
-        BaseStatement node = (BaseStatement)starRocksClientConverter.covertToNode(table,
+        BaseStatement node = (BaseStatement)starRocksClientConverter.convertToNode(table,
             TableConfig.builder().dialectMeta(DialectMeta.DEFAULT_STARROCKS).build());
         StarRocksTransformer starRocksTransformer = new StarRocksTransformer();
         DialectNode transform = starRocksTransformer.transform(node);
@@ -305,7 +305,7 @@ public class StarRocksClientConverterTest {
         properties.add(e);
         columns.add(Column.builder().name("c1").dataType("MAP<STRING, STRING>").properties(properties).build());
         Table table = Table.builder().name("t1").columns(columns).build();
-        BaseStatement node = (BaseStatement)starRocksClientConverter.covertToNode(table,
+        BaseStatement node = (BaseStatement)starRocksClientConverter.convertToNode(table,
             TableConfig.builder().dialectMeta(DialectMeta.DEFAULT_STARROCKS).build());
         StarRocksTransformer starRocksTransformer = new StarRocksTransformer();
         DialectNode transform = starRocksTransformer.transform(node);

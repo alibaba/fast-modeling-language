@@ -24,6 +24,11 @@ public class TimeExpressionClientPartition {
     private String funcName;
 
     /**
+     * column
+     */
+    private String column;
+
+    /**
      * time unit
      */
     private String timeUnit;

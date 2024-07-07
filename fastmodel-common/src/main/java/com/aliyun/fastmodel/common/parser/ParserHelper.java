@@ -219,7 +219,7 @@ public class ParserHelper {
         List<T> list = Lists.newArrayList();
         List<? extends Node> children = node.getChildren();
         for (Node node1 : children) {
-            if (node1.getClass().getName() == clazz.getName()) {
+            if (node1.getClass().getName().equals(clazz.getName())) {
                 list.add((T)node1);
             }
             if (node1 instanceof ListNode) {

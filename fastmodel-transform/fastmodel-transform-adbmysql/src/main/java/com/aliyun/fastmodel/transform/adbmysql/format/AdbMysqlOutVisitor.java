@@ -13,7 +13,6 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
-import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -29,20 +28,27 @@ import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.DropPartitionCol;
+import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
-import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
+import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.NonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
+import com.aliyun.fastmodel.transform.api.extension.visitor.ExtensionAstVisitor;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
+import com.aliyun.fastmodel.transform.api.format.PropertyValueType;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_PARTITION_RAW;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -51,11 +57,11 @@ import static java.util.stream.Collectors.joining;
  * @author panguanjing
  * @date 2023/2/11
  */
-public class AdbMysqlVisitor extends FastModelVisitor {
+public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAstVisitor<Boolean, Integer> {
 
     private final AdbMysqlTransformContext mysqlTransformContext;
 
-    public AdbMysqlVisitor(AdbMysqlTransformContext context) {
+    public AdbMysqlOutVisitor(AdbMysqlTransformContext context) {
         this.mysqlTransformContext = context;
     }
 
@@ -71,7 +77,7 @@ public class AdbMysqlVisitor extends FastModelVisitor {
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
-        String tableName = node.getIdentifier();
+        String tableName = getCode(node.getQualifiedName());
         builder.append(tableName);
         if (!columnEmpty) {
             builder.append("\n(\n");
@@ -97,48 +103,100 @@ public class AdbMysqlVisitor extends FastModelVisitor {
                 builder.append(newLine(")*/"));
             }
         }
-        //distribute by
-        appendDistributeBy(node);
+        if (!node.isConstraintEmpty()) {
+            List<BaseConstraint> nonKeyConstraint = node.getConstraintStatements().stream().filter(
+                c -> c instanceof NonKeyConstraint).collect(Collectors.toList());
+            appendConstraint(nonKeyConstraint, indent);
+        }
         //分区信息内容
         if (!node.isPartitionEmpty()) {
-            String list = formatPartitions(node, node.getPartitionedBy().getColumnDefinitions());
+            if (node.getPartitionedBy() instanceof ExpressionPartitionBy) {
+                ExpressionPartitionBy expressionPartitionBy = (ExpressionPartitionBy)node.getPartitionedBy();
+                process(expressionPartitionBy);
+            } else {
+                String list = formatPartitions(node.getPartitionedBy().getColumnDefinitions());
+                if (!isEndNewLine(builder.toString())) {
+                    builder.append(StringUtils.LF);
+                }
+                builder.append(list);
+            }
+        } else {
+            String propertyValue = PropertyUtil.getPropertyValue(node.getProperties(), TABLE_PARTITION_RAW.getValue());
+            if (StringUtils.isNotBlank(propertyValue)) {
+                if (!isEndNewLine(builder.toString())) {
+                    builder.append("\n");
+                }
+                builder.append(propertyValue);
+            }
+        }
+
+        appendLifecycle(node);
+        //storage policy
+        appendProperty(node);
+        //append comment
+        if (node.getComment() != null) {
             if (!isEndNewLine(builder.toString())) {
                 builder.append(StringUtils.LF);
             }
-            builder.append(list);
+            builder.append(formatComment(node.getComment(), true));
         }
-        appendLifecycle(node);
-        //storage policy
-        appendStoragePolicy(node);
-        //block size
-        appendBlockSize(node);
-
-        //append comment
-        builder.append(formatComment(node.getComment()));
         return executable;
     }
 
-    private void appendBlockSize(CreateTable node) {
-        String value = getPropertyValue(node, AdbMysqlPropertyKey.BLOCK_SIZE);
-        if (value == null) {
+    private void appendProperty(CreateTable node) {
+        if (node.isPropertyEmpty()) {
             return;
         }
+        List<Property> properties = node.getProperties();
+        List<Property> collect = properties.stream().filter(
+            p -> {
+                AdbMysqlPropertyKey propertyKey = AdbMysqlPropertyKey.getByValue(p.getName());
+                return propertyKey != null && propertyKey.isSupportPrint();
+            }
+        ).collect(Collectors.toList());
+        if (collect.isEmpty()) {
+            return;
+        }
+        builder.append(StringUtils.LF);
+        String val = collect.stream().map(p -> {
+            AdbMysqlPropertyKey propertyKey = AdbMysqlPropertyKey.getByValue(p.getName());
+            if (propertyKey.getValueType() == PropertyValueType.NUMBER_LITERAL) {
+                return p.getName() + "=" + p.getValue();
+            } else {
+                return p.getName() + "=" + formatStringLiteral(p.getValue());
+            }
+        }).collect(joining(StringUtils.LF));
+        builder.append(val);
+    }
+
+    @Override
+    public Boolean visitExpressionPartitionedBy(ExpressionPartitionBy expressionPartitionedBy, Integer context) {
         if (!isEndNewLine(builder.toString())) {
             builder.append(StringUtils.LF);
         }
-        builder.append("BLOCK_SIZE=").append(value);
+        builder.append("PARTITION BY VALUE(");
+        String expression = formatExpression(expressionPartitionedBy.getFunctionCall());
+        builder.append(expression);
+        builder.append(")");
+        return true;
     }
 
-    private void appendStoragePolicy(CreateTable node) {
-        String value = getPropertyValue(node, AdbMysqlPropertyKey.STORAGE_POLICY);
-        if (value == null) {return;}
-        builder.append(StringUtils.LF).append("STORAGE_POLICY=").append(formatStringLiteral(value));
-        if (StringUtils.equalsIgnoreCase(value, "MIXED")) {
-            String mix = getPropertyValue(node, AdbMysqlPropertyKey.HOT_PARTITION_COUNT);
-            if (mix == null) {
-                return;
-            }
-            builder.append(" ").append(mix);
+    @Override
+    public Boolean visitPartitionedBy(PartitionedBy partitionedBy, Integer context) {
+        if (!isEndNewLine(builder.toString())) {
+            builder.append(StringUtils.LF);
+        }
+        builder.append("PARTITION BY HASH(");
+        String columnList = partitionedBy.getColumnDefinitions().stream().map(c -> c.getColName().getValue()).collect(joining(","));
+        builder.append(columnList);
+        builder.append(")");
+        return true;
+    }
+
+    private void appendConstraint(List<BaseConstraint> constraints, Integer indent) {
+        for (BaseConstraint baseConstraint : constraints) {
+            builder.append("\n");
+            process(baseConstraint, indent);
         }
     }
 
@@ -149,22 +207,8 @@ public class AdbMysqlVisitor extends FastModelVisitor {
         List<Property> properties = node.getProperties();
         Optional<Property> first = properties.stream().filter(p -> StringUtils.equalsIgnoreCase(p.getName(), adbMysqlPropertyKey.getValue()))
             .findFirst();
-        if (!first.isPresent()) {
-            return null;
-        }
+        return first.map(Property::getValue).orElse(null);
 
-        return first.get().getValue();
-    }
-
-    private void appendDistributeBy(CreateTable node) {
-        String value = getPropertyValue(node, AdbMysqlPropertyKey.DISTRIBUTED_BY);
-        if (value == null) {
-            return;
-        }
-        if (!isEndNewLine(builder.toString())) {
-            builder.append(StringUtils.LF);
-        }
-        builder.append("DISTRIBUTED BY HASH(").append(value).append(")");
     }
 
     private void appendLifecycle(CreateTable node) {
@@ -172,21 +216,13 @@ public class AdbMysqlVisitor extends FastModelVisitor {
         if (propertyValue == null) {
             return;
         }
-        builder.append(" LIFECYCLE " + propertyValue);
+        builder.append(" LIFECYCLE ").append(propertyValue);
     }
 
-    protected String formatPartitions(CreateTable node, List<ColumnDefinition> partitionCol) {
+    protected String formatPartitions(List<ColumnDefinition> partitionCol) {
         StringBuilder stringBuilder = new StringBuilder("PARTITION BY VALUE(");
-        String propertyValue = getPropertyValue(node, AdbMysqlPropertyKey.PARTITION_DATE_FORMAT);
-        if (propertyValue == null) {
-            String collect = partitionCol.stream().map(c -> formatExpression(c.getColName())).collect(joining(","));
-            stringBuilder.append(collect);
-        } else {
-            ColumnDefinition columnDefinition = partitionCol.get(0);
-            stringBuilder.append("DATE_FORMAT(").append(formatExpression(columnDefinition.getColName())).append(",").append(formatStringLiteral(
-                propertyValue
-            )).append(")");
-        }
+        String collect = partitionCol.stream().map(c -> formatExpression(c.getColName())).collect(joining(","));
+        stringBuilder.append(collect);
         stringBuilder.append(")");
         return stringBuilder.toString();
     }
@@ -195,7 +231,7 @@ public class AdbMysqlVisitor extends FastModelVisitor {
     protected String formatCommentElement(List<MultiComment> commentElements, String elementIndent) {
         return commentElements.stream().map(
             element -> {
-                AdbMysqlVisitor visitor = new AdbMysqlVisitor(this.mysqlTransformContext);
+                AdbMysqlOutVisitor visitor = new AdbMysqlOutVisitor(this.mysqlTransformContext);
                 visitor.process(element.getNode(), 0);
                 String result = visitor.getBuilder().toString();
                 return elementIndent + result;
@@ -203,10 +239,8 @@ public class AdbMysqlVisitor extends FastModelVisitor {
     }
 
     private void appendConstraint(CreateTable node, Integer indent) {
-        Iterator<BaseConstraint> iterator = node.getConstraintStatements().iterator();
-        while (iterator.hasNext()) {
-            BaseConstraint next = iterator.next();
-            if (next instanceof PrimaryConstraint || next instanceof UniqueConstraint) {
+        for (BaseConstraint next : node.getConstraintStatements()) {
+            if (!(next instanceof NonKeyConstraint)) {
                 builder.append(",\n");
                 process(next, indent + 1);
             }
@@ -340,11 +374,6 @@ public class AdbMysqlVisitor extends FastModelVisitor {
         if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.STRING.getValue())) {
             return new GenericDataType(new Identifier(DataTypeEnums.VARCHAR.name()),
                 ImmutableList.of(new NumericParameter("128")));
-        } else if (typeName.getDimension() == Dimension.MULTIPLE) {
-            return new GenericDataType(new Identifier(DataTypeEnums.JSON.name()));
-        } else if (StringUtils.equalsIgnoreCase(typeName.getValue(), DataTypeEnums.BOOLEAN.getValue())) {
-            return new GenericDataType(new Identifier(DataTypeEnums.CHAR.name()),
-                ImmutableList.of(new NumericParameter("1")));
         }
         return dataType;
     }
@@ -362,11 +391,27 @@ public class AdbMysqlVisitor extends FastModelVisitor {
         //ALTER TABLE `a` ADD CONSTRAINT `name` FOREIGN KEY (`a`) REFERENCES `b` (`a`);
         builder.append("ALTER TABLE ").append(getCode(left.getMainName()));
         builder.append(" ADD CONSTRAINT ").append(formatName(refEntityStatement.getQualifiedName()));
-        String collect = columnList.stream().map(identifier -> formatExpression(identifier)).collect(joining(","));
+        String collect = columnList.stream().map(this::formatExpression).collect(joining(","));
         builder.append(" FOREIGN KEY (").append(collect).append(")");
         builder.append(" REFERENCES ").append(formatName(right.getMainName()));
-        String rightReference = rightColumnList.stream().map(identifier -> formatExpression(identifier)).collect(joining(","));
+        String rightReference = rightColumnList.stream().map(this::formatExpression).collect(joining(","));
         builder.append(" (").append(rightReference).append(")");
+        return true;
+    }
+
+    @Override
+    public Boolean visitDistributeKeyConstraint(DistributeConstraint distributeKeyConstraint, Integer context) {
+        if (!isEndNewLine(builder.toString())) {
+            builder.append(StringUtils.LF);
+        }
+        if (BooleanUtils.isTrue(distributeKeyConstraint.getRandom())) {
+            builder.append("DISTRIBUTE BY BROADCAST");
+        } else {
+            String value = distributeKeyConstraint.getColumns().stream()
+                .map(this::formatExpression)
+                .collect(joining(","));
+            builder.append("DISTRIBUTE BY HASH(").append(value).append(")");
+        }
         return true;
     }
 

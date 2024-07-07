@@ -1,0 +1,23 @@
+CREATE TABLE testdb_t_parameter_bak_1123
+(
+   id          BIGINT NOT NULL COMMENT '主键',
+   name        VARCHAR(128) NULL COMMENT '',
+   value       VARCHAR NULL COMMENT '',
+   status      VARCHAR(16) NULL COMMENT '有效标志,on/off',
+   description VARCHAR(256) NULL COMMENT '描述',
+   create_time DATETIME NOT NULL COMMENT '创建时间',
+   create_user VARCHAR(128) NULL COMMENT '创建者',
+   modify_time DATETIME NULL COMMENT '修改时间',
+   modify_user VARCHAR(128) NULL COMMENT '修改人',
+   col1        VARCHAR(100) NULL COMMENT '',
+   col2        VARCHAR(100) NULL COMMENT '',
+   PRIMARY KEY(id,create_time)
+)
+DISTRIBUTE BY HASH(id)
+PARTITION BY VALUE(date_format(create_time, '%Y%M%d')) LIFECYCLE 10
+INDEX_ALL='Y'
+STORAGE_POLICY='HOT'
+ENGINE='XUANWU'
+BLOCK_SIZE=8192
+TABLE_PROPERTIES='{"format":"columnstore"}'
+COMMENT '配置表'

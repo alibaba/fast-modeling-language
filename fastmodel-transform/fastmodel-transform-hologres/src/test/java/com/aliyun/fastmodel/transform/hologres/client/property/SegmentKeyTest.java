@@ -8,9 +8,10 @@
 
 package com.aliyun.fastmodel.transform.hologres.client.property;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Desc:
@@ -28,4 +29,12 @@ public class SegmentKeyTest {
         assertEquals("keys,key2", list);
     }
 
+    @Test
+    public void testColumnList() {
+        SegmentKey segmentKeys = new SegmentKey();
+        segmentKeys.setValueString("keys,key2");
+        assertEquals(2, segmentKeys.toColumnList().size());
+        segmentKeys.setColumnList(Lists.newArrayList("key1"));
+        assertEquals("key1", segmentKeys.valueString());
+    }
 }

@@ -39,8 +39,9 @@ public class OceanBaseGeneratorTest extends BaseOceanbaseTest {
     public void testGeneratorSimple1() {
         assertGenerator("simple1.txt", "CREATE TABLE tbl1 \n"
             + "(\n"
-            + "   c1 INT PRIMARY KEY,\n"
-            + "   c2 VARCHAR(50)\n"
+            + "   c1 BIGINT NOT NULL,\n"
+            + "   c2 VARCHAR(50),\n"
+            + "   PRIMARY KEY(c1)\n"
             + ")");
     }
 
@@ -119,9 +120,9 @@ public class OceanBaseGeneratorTest extends BaseOceanbaseTest {
             + "   c2 INT,\n"
             + "   c3 VARCHAR(64)\n"
             + ")\n"
-            + "compression 'zstd_1.0'\n"
-            + "row_format DYNAMIC\n"
-            + "pctfree 5");
+            + "COMPRESSION='zstd_1.0'\n"
+            + "ROW_FORMAT=DYNAMIC\n"
+            + "PCTFREE=5");
     }
 
     @Test
@@ -131,7 +132,7 @@ public class OceanBaseGeneratorTest extends BaseOceanbaseTest {
             + "   c1 INT PRIMARY KEY,\n"
             + "   c2 INT\n"
             + ")\n"
-            + "parallel 3");
+            + "PARALLEL=3");
     }
 
     //@Test
@@ -301,6 +302,24 @@ public class OceanBaseGeneratorTest extends BaseOceanbaseTest {
             + "PARTITION p5 VALUES LESS THAN (2016),\n"
             + "PARTITION p6 VALUES LESS THAN (2021),\n"
             + "PARTITION p7 VALUES LESS THAN MAXVALUE)");
+    }
+
+    @Test
+    public void testTimestamp() {
+        assertGenerator("simple10_timestamp.txt", "CREATE TABLE autotest_db_mysqlreader_1062102 \n"
+            + "(\n"
+            + "   field_timestamp TIMESTAMP DEFAULT NULL\n"
+            + ")\n"
+            + "DEFAULT CHARSET utf8mb4\n"
+            + "ROW_FORMAT=DYNAMIC\n"
+            + "COMPRESSION='zstd_1.3.8'\n"
+            + "REPLICA_NUM=3\n"
+            + "BLOCK_SIZE=16384\n"
+            + "USE_BLOOM_FILTER=FALSE\n"
+            + "TABLET_SIZE=134217728\n"
+            + "PCTFREE=0\n"
+            + "PROGRESSIVE_MERGE_NUM=10\n"
+            + "MAX_USED_PART_ID=1");
     }
 
     private void assertGenerator(String file, String expect) {

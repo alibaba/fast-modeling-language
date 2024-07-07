@@ -17,7 +17,7 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
-import com.aliyun.fastmodel.transform.api.extension.client.constraint.ClientConstraintType;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionClientConstraintType;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
@@ -113,7 +113,7 @@ public class DorisGeneratorTest {
         List<Constraint> constraints = Lists.newArrayList();
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
         Constraint constraint = Constraint.builder().columns(strings)
-            .type(ClientConstraintType.UNIQUE_KEY)
+            .type(ExtensionClientConstraintType.UNIQUE_KEY)
             .build();
         constraints.add(constraint);
         Table after = Table.builder()

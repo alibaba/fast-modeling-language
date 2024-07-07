@@ -1,1 +1,1 @@
-CREATE TABLE tbl1 (c1 INT PRIMARY KEY, c2 VARCHAR(50));
+CREATE TABLE tbl1 (c1 bigint unsigned not null, c2 VARCHAR(50), primary key (c1));

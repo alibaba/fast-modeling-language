@@ -415,7 +415,10 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         if (partitionedBy instanceof ExpressionPartitionBy) {
             return visitExpressionPartitionedBy((ExpressionPartitionBy)partitionedBy, context);
         }
-        return super.visitPartitionedBy(partitionedBy, context);
+        ExpressionPartitionBy expressionPartitionBy = new ExpressionPartitionBy(
+            partitionedBy.getColumnDefinitions(), null, null
+        );
+        return visitExpressionPartitionedBy(expressionPartitionBy, context);
     }
 
     @Override
@@ -455,8 +458,18 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             x -> formatExpression(x.getColName())
         ).collect(Collectors.joining(","));
         builder.append(collect).append(")");
-        builder.append("\n");
-        List<PartitionDesc> rangePartitions = listPartitionedBy.getListPartitions();
+        if (listPartitionedBy.getListPartitions() != null) {
+            builder.append("\n");
+            List<PartitionDesc> rangePartitions = listPartitionedBy.getListPartitions();
+            appendPartitionDesc(indent, rangePartitions);
+        }
+        return true;
+    }
+
+    private void appendPartitionDesc(Integer indent, List<PartitionDesc> rangePartitions) {
+        if (rangePartitions == null) {
+            return;
+        }
         Iterator<PartitionDesc> iterator = rangePartitions.iterator();
         if (iterator.hasNext()) {
             builder.append("(\n");
@@ -467,33 +480,25 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
             }
             builder.append("\n)");
         }
-        return true;
     }
 
     @Override
     public Boolean visitExpressionPartitionedBy(ExpressionPartitionBy expressionPartitionedBy, Integer indent) {
         builder.append("PARTITION BY ");
-        List<ColumnDefinition> partitioned = expressionPartitionedBy.getColumnDefinitions();
-        String col = partitioned.stream().map(
-            x -> formatExpression(x.getColName())
-        ).collect(Collectors.joining(","));
         if (expressionPartitionedBy.getFunctionCall() == null) {
-            // 列表达式
-            builder.append("(").append(col).append(")");
+            builder.append("(");
+            List<ColumnDefinition> partitioned = expressionPartitionedBy.getColumnDefinitions();
+            String collect = partitioned.stream().map(
+                x -> formatExpression(x.getColName())
+            ).collect(Collectors.joining(","));
+            builder.append(collect).append(")");
         } else {
-            // 时间函数表达式
-            FunctionCall functionCall = expressionPartitionedBy.getFunctionCall();
-            String functionName = functionCall.getFuncName().getFirst();
-            builder.append(functionName).append("(");
-            if (TimeFunctionType.DATE_TRUNC.getValue().equalsIgnoreCase(functionName)) {
-                builder.append(expressionPartitionedBy.getTimeUnitArg().getOrigin()).append(", ");
-                builder.append(col).append(")");
-            } else if (TimeFunctionType.TIME_SLICE.getValue().equalsIgnoreCase(functionName)) {
-                builder.append(col).append(", ");
-                builder.append(formatExpression(expressionPartitionedBy.getIntervalLiteralArg())).append(")");
-            }
+            String function = formatExpression(expressionPartitionedBy.getFunctionCall());
+            builder.append(function);
         }
-
+        if (expressionPartitionedBy.getRangePartitions() != null) {
+            appendPartitionDesc(indent, expressionPartitionedBy.getRangePartitions());
+        }
         return true;
     }
 

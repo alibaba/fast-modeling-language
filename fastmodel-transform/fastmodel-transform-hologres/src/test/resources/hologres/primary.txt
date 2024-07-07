@@ -1,0 +1,5 @@
+create table holo_test (
+ id  int,
+ name text,
+ primary key (id)
+);

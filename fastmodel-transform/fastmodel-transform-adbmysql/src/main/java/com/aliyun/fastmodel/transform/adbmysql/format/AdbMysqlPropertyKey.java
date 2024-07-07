@@ -1,7 +1,7 @@
 package com.aliyun.fastmodel.transform.adbmysql.format;
 
-import com.aliyun.fastmodel.transform.api.dialect.DialectName.Constants;
 import com.aliyun.fastmodel.transform.api.format.PropertyKey;
+import com.aliyun.fastmodel.transform.api.format.PropertyValueType;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -11,57 +11,68 @@ import org.apache.commons.lang3.StringUtils;
  * @author panguanjing
  * @date 2023/2/11
  */
+@Getter
 public enum AdbMysqlPropertyKey implements PropertyKey {
 
     /**
-     * partition_date_format
-     */
-    PARTITION_DATE_FORMAT("adb_mysql.partition_date_format"),
-    /**
      * 生命周期
      */
-    LIFE_CYCLE("adb_mysql.life_cycle"),
+    LIFE_CYCLE("LIFE_CYCLE"),
 
     /**
      * distribute by
      */
-    DISTRIBUTED_BY("adb_mysql.distributed_by"),
+    DISTRIBUTE_BY("DISTRIBUTE_BY"),
 
     /**
      * storage policy
      */
-    STORAGE_POLICY("adb_mysql.storage_policy"),
+    STORAGE_POLICY("STORAGE_POLICY", true),
 
     /**
      * hot partition count
      */
-    HOT_PARTITION_COUNT("adb_mysql.hot_partition_count"),
+    HOT_PARTITION_COUNT("HOT_PARTITION_COUNT", true, PropertyValueType.NUMBER_LITERAL),
 
     /**
      * block_size
      */
-    BLOCK_SIZE("adb_mysql.block_size");
+    BLOCK_SIZE("BLOCK_SIZE", true, PropertyValueType.NUMBER_LITERAL),
+    /**
+     * index all
+     */
+    INDEX_ALL("INDEX_ALL", true),
+    /**
+     * engine
+     */
+    ENGINE("ENGINE", true),
+    /**
+     * table properties
+     */
+    TABLE_PROPERTIES("TABLE_PROPERTIES", true),
+    ;
 
-    @Getter
     private final String value;
 
-    @Getter
     private final boolean supportPrint;
+
+    private final PropertyValueType valueType;
 
     AdbMysqlPropertyKey(String value) {
         this(value, false);
     }
 
-    AdbMysqlPropertyKey(String value, boolean supportPrint) {
+    AdbMysqlPropertyKey(String value, boolean supportPrint, PropertyValueType valueType) {
         this.value = value;
         this.supportPrint = supportPrint;
+        this.valueType = valueType;
     }
 
+    AdbMysqlPropertyKey(String value, boolean supportPrint) {
+        this(value, supportPrint, PropertyValueType.STRING_LITERAL);
+    }
 
     public static AdbMysqlPropertyKey getByValue(String value) {
-        if (!StringUtils.startsWithIgnoreCase(value, Constants.ADB_MYSQL)) {
-            return null;
-        }
         AdbMysqlPropertyKey[] values = AdbMysqlPropertyKey.values();
         for (AdbMysqlPropertyKey adbMysqlPropertyKey : values) {
             if (StringUtils.equalsIgnoreCase(adbMysqlPropertyKey.getValue(), value)) {

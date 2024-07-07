@@ -52,8 +52,9 @@ public class OceanBaseMysqlTransformerTest extends BaseOceanbaseTest {
         DialectNode transform = getDialectNode(text);
         assertEquals("CREATE TABLE tbl1 \n"
             + "(\n"
-            + "   c1 INT PRIMARY KEY,\n"
-            + "   c2 VARCHAR(50)\n"
+            + "   c1 BIGINT UNSIGNED NOT NULL,\n"
+            + "   c2 VARCHAR(50),\n"
+            + "   PRIMARY KEY(c1)\n"
             + ")", transform.getNode());
     }
 
@@ -133,9 +134,9 @@ public class OceanBaseMysqlTransformerTest extends BaseOceanbaseTest {
             + "   c2 INT,\n"
             + "   c3 VARCHAR(64)\n"
             + ")\n"
-            + "compression 'zstd_1.0'\n"
-            + "row_format DYNAMIC\n"
-            + "pctfree 5", transform.getNode());
+            + "COMPRESSION='zstd_1.0'\n"
+            + "ROW_FORMAT=DYNAMIC\n"
+            + "PCTFREE=5", transform.getNode());
     }
 
     @Test
@@ -147,7 +148,7 @@ public class OceanBaseMysqlTransformerTest extends BaseOceanbaseTest {
             + "   c1 INT PRIMARY KEY,\n"
             + "   c2 INT\n"
             + ")\n"
-            + "parallel 3", node.getNode());
+            + "PARALLEL=3", node.getNode());
     }
 
     @Test

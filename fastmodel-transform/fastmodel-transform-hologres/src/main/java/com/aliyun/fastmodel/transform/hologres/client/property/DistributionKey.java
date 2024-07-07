@@ -14,7 +14,6 @@ import java.util.List;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -49,5 +48,10 @@ public class DistributionKey extends BaseClientProperty<List<String>> {
     @Override
     public List<String> toColumnList() {
         return getValue();
+    }
+
+    @Override
+    public void setColumnList(List<String> columnList) {
+        setValue(columnList);
     }
 }

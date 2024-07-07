@@ -47,4 +47,9 @@ public class ClusterKey extends BaseClientProperty<List<String>> {
     public List<String> toColumnList() {
         return getValue();
     }
+
+    @Override
+    public void setColumnList(List<String> columnList) {
+        setValue(columnList);
+    }
 }

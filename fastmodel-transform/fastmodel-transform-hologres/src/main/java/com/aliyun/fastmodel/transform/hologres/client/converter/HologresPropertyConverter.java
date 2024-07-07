@@ -20,6 +20,7 @@ import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColum
 import com.aliyun.fastmodel.transform.hologres.client.property.DistributionKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.client.property.EventTimeColumn;
+import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.SegmentKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.TableGroup;
 import com.aliyun.fastmodel.transform.hologres.client.property.TableOrientation;
@@ -95,7 +96,7 @@ public class HologresPropertyConverter extends BasePropertyConverter {
             return enableBingLogLevel;
         });
 
-        PROPERTY_FUNCTION_MAP.put(BinLogTTL.BINLOG_TTL, value -> {
+        PROPERTY_FUNCTION_MAP.put(HoloPropertyKey.BINLOG_TTL.getValue(), value -> {
             BinLogTTL ttl = new BinLogTTL();
             ttl.setValueString(value);
             return ttl;

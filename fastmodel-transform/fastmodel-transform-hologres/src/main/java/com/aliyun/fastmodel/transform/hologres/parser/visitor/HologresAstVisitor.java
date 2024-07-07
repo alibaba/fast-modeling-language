@@ -39,13 +39,13 @@ import com.aliyun.fastmodel.core.tree.statement.table.DropCol;
 import com.aliyun.fastmodel.core.tree.statement.table.DropPartitionCol;
 import com.aliyun.fastmodel.core.tree.statement.table.DropTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
+import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
-import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
 import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
@@ -53,7 +53,9 @@ import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.BeginWork;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.CommitWork;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.parser.util.BuilderUtil;
+import com.aliyun.fastmodel.transform.hologres.parser.util.HologresPropertyUtil;
 import com.aliyun.fastmodel.transform.hologres.parser.util.HologresReservedWordUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -103,6 +105,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         boolean columnEmpty = node.isColumnEmpty();
         boolean executable = !columnEmpty;
         builder.append("BEGIN;\n");
+        printExtensionIfNeed(node);
         builder.append("CREATE TABLE ");
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
@@ -146,6 +149,19 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         builder.append("\n");
         builder.append("COMMIT;");
         return executable;
+    }
+
+    private void printExtensionIfNeed(CreateTable node) {
+        if (node.isColumnEmpty()) {
+            return;
+        }
+        Optional<ColumnDefinition> first = node.getColumnDefines().stream().filter(c -> {
+            return StringUtils.equalsIgnoreCase(c.getDataType().getTypeName().getValue(), HologresDataTypeName.ROARING_BITMAP.getValue());
+        }).findFirst();
+        if (!first.isPresent()) {
+            return;
+        }
+        builder.append("CREATE EXTENSION IF NOT EXISTS ROARINGBITMAP;\n");
     }
 
     private Boolean visitCreateForeignTable(CreateTable node, Integer indent) {
@@ -218,26 +234,12 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     }
 
     private String callSetProperty(String code, String key, String value) {
-        HologresPropertyConverter instance = HologresPropertyConverter.getInstance();
-        BaseClientProperty baseClientProperty = instance.create(key, value);
-        //https://help.aliyun.com/document_detail/160754.html?spm=a2c4g.467951.0.0.12c01598oEHfQG
-        List<String> list = baseClientProperty.toColumnList();
-        if (!list.isEmpty()) {
-            if (hologresVersion == HologresVersion.V2) {
-                //按照2.0的方式
-                String[] strings = list.stream().map(c -> StripUtils.addDoubleStrip(c)).collect(Collectors.toList()).toArray(new String[0]);
-                String[] searchList = list.toArray(new String[0]);
-                value = StringUtils.replaceEach(value, searchList, strings);
-            } else {
-                //默认按照1.0的方式
-                value = StripUtils.addDoubleStrip(value);
-            }
-        }
+        String result = HologresPropertyUtil.getPropertyValue(hologresVersion, key, value);
         //将code中的双引号去除
         String strip = StripUtils.removeDoubleStrip(code);
         //如果是列属性，那么
         String format = "CALL SET_TABLE_PROPERTY('%s', '%s', '%s');";
-        return String.format(format, strip, key, value);
+        return String.format(format, strip, key, result);
     }
 
     private String commentTable(String code, String comment) {
@@ -413,6 +415,14 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     public Boolean visitAddConstraint(AddConstraint addConstraint, Integer context) {
         super.visitAddConstraint(addConstraint, context);
         return false;
+    }
+
+    @Override
+    public Boolean visitRenameTable(RenameTable renameTable, Integer context) {
+        builder.append("ALTER TABLE ");
+        builder.append(getCode(renameTable.getQualifiedName()));
+        builder.append(" RENAME TO ").append(renameTable.getTarget().getSuffix());
+        return true;
     }
 
     @Override

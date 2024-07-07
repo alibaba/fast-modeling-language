@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * DictEncodingColumns
@@ -53,5 +54,27 @@ public class DictEncodingColumn extends BaseClientProperty<List<ColumnStatus>> {
             return super.toColumnList();
         }
         return value.stream().map(ColumnStatus::getColumnName).collect(Collectors.toList());
+    }
+
+    @Override
+    public void setColumnList(List<String> columnList) {
+        if (columnList == null || columnList.isEmpty()) {
+            return;
+        }
+        List<ColumnStatus> statusList = this.getValue();
+        if (statusList == null) {
+            statusList = Lists.newArrayList();
+            for (String c : columnList) {
+                ColumnStatus columnStatus = ColumnStatus.builder().columnName(c).status(Status.AUTO).build();
+                statusList.add(columnStatus);
+            }
+            this.setValue(statusList);
+            return;
+        }
+        for (int i = 0; i < columnList.size(); i++) {
+            ColumnStatus columnStatus = statusList.get(i);
+            String newColumn = columnList.get(i);
+            columnStatus.setColumnName(newColumn);
+        }
     }
 }

@@ -10,6 +10,7 @@ package com.aliyun.fastmodel.transform.hologres.client.property;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,5 +42,21 @@ public class DictEncodingColumnTest {
         assertEquals(value.size(), 2);
         ColumnStatus columnStatus = value.get(0);
         assertEquals(columnStatus.getStatus(), Status.AUTO);
+    }
+
+    @Test
+    public void testSetColumnList() {
+        DictEncodingColumn dictEncodingColumns = new DictEncodingColumn();
+        dictEncodingColumns.setValueString("c1,c2");
+        assertEquals("c1:auto,c2:auto", dictEncodingColumns.valueString());
+        dictEncodingColumns.setColumnList(Lists.newArrayList("\"c1\"", "\"c2\""));
+        assertEquals("\"c1\":auto,\"c2\":auto", dictEncodingColumns.valueString());
+    }
+
+    @Test
+    public void testSetColumnList2() {
+        DictEncodingColumn dictEncodingColumns = new DictEncodingColumn();
+        dictEncodingColumns.setColumnList(Lists.newArrayList("c1", "c2"));
+        assertEquals("c1:auto,c2:auto", dictEncodingColumns.valueString());
     }
 }

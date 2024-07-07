@@ -1,0 +1,23 @@
+BEGIN;
+CREATE TABLE public.order_details (
+ "user_id" int8,
+ "user_name" text,
+ "item_id" int8,
+ "item_name" text,
+ "price" numeric(38,2),
+ "province" text,
+ "city" text,
+ "ip" text,
+ "longitude" text,
+ "latitude" text,
+ "sale_timestamp" timestamptz NOT NULL
+);
+CALL SET_TABLE_PROPERTY('public.order_details','orientation', 'column');
+CALL SET_TABLE_PROPERTY('public.order_details','clustering_key', 'sale_timestamp:asc');
+CALL SET_TABLE_PROPERTY('public.order_details','segment_key', 'sale_timestamp');
+CALL SET_TABLE_PROPERTY('public.order_details','bitmap_columns', 'user_name,item_name,province,city,ip,longitude,latitude');
+CALL SET_TABLE_PROPERTY('public.order_details','dictionary_encoding_columns','user_name:auto,item_name:auto,province:auto,city:auto,ip:auto,longitude:auto,latitude:auto');
+CALL SET_TABLE_PROPERTY('public.order_details','time_to_live_in_seconds', '3153600000');
+CALL SET_TABLE_PROPERTY('public.order_details','distribution_key', 'user_id');
+CALL SET_TABLE_PROPERTY('public.order_details','storage_format', 'orc');
+COMMIT;

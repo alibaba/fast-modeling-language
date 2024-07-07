@@ -54,4 +54,12 @@ public abstract class BaseClientProperty<T> {
     public List<String> toColumnList() {
         return ImmutableList.of();
     }
+
+    /**
+     * 设置column
+     *
+     * @param columnList
+     */
+    public void setColumnList(List<String> columnList) {
+    }
 }

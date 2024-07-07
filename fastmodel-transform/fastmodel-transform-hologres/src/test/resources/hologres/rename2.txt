@@ -1,0 +1,10 @@
+BEGIN;
+CREATE TABLE public.test_2 (
+   c1 TEXT NOT NULL,
+   c2 TEXT,
+   c3 TEXT,
+   c4 TEXT,
+   PRIMARY KEY(c1)
+);
+CALL SET_TABLE_PROPERTY('public.test_2', 'dictionary_encoding_columns', '"c1":auto,"c3":auto,"c2":auto');
+COMMIT;

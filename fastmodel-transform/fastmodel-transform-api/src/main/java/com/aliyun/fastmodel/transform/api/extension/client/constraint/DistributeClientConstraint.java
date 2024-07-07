@@ -24,6 +24,6 @@ public class DistributeClientConstraint extends Constraint {
     private Integer bucket;
 
     public DistributeClientConstraint() {
-        this.setType(ClientConstraintType.DISTRIBUTE);
+        this.setType(ExtensionClientConstraintType.DISTRIBUTE);
     }
 }

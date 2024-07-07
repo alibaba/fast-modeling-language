@@ -8,6 +8,7 @@
 
 package com.aliyun.fastmodel.transform.hologres.parser;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
@@ -25,7 +26,10 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresArrayDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
+import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
 import com.google.common.base.Preconditions;
+import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -179,5 +183,22 @@ public class HologresParserTest {
         ColumnDefinition columnDefinition = columnDefines.get(0);
         BaseExpression defaultValue = columnDefinition.getDefaultValue();
         assertEquals(defaultValue.getOrigin(), "0");
+    }
+
+    @Test
+    @SneakyThrows
+    public void testParseDefaultValueType() {
+        String value = IOUtils.resourceToString("/hologres/default_text.txt", Charset.defaultCharset());
+        CreateTable createTable = (CreateTable)hologresParser2.parseNode(value, ReverseContext.builder().merge(true).build());
+        List<ColumnDefinition> columnDefines = createTable.getColumnDefines();
+        BaseExpression defaultValue = columnDefines.get(0).getDefaultValue();
+        WithDataTypeNameExpression with = (WithDataTypeNameExpression)defaultValue;
+        assertEquals("TEXT", with.getBaseDataType().getTypeName().getValue());
+    }
+
+    @Test
+    public void testParseExpr() {
+        WithDataTypeNameExpression o = hologresParser2.parseExpression("'1'::text");
+        assertEquals("TEXT", o.getBaseDataType().getTypeName().getValue());
     }
 }

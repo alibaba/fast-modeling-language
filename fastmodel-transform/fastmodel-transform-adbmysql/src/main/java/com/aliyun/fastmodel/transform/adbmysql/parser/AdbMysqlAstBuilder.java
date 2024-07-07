@@ -12,7 +12,10 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
+import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
@@ -31,6 +34,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstrain
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.adbmysql.format.AdbMysqlPropertyKey;
+import com.aliyun.fastmodel.transform.adbmysql.format.AdbMysqlTimeFunctionType;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.ColumnConstraintContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.ColumnCreateTableContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.ColumnDeclarationContext;
@@ -39,30 +43,48 @@ import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.CommentColu
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.ConstantContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.CreateDefinitionsContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.DecimalLiteralContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.DimensionDataTypeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.FullColumnNameContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.FunctionNameBaseContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.IndexColumnNameContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.LengthOneDimensionContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.LifeCycleContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.ListDataTypeContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.LongVarcharDataTypeContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.MapDataTypeContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.NationalStringDataTypeContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.NationalVaryingStringDataTypeContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.NullColumnConstraintContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.PartitionFunctionDefinitionContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.PartitionValueContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.PrimaryKeyColumnConstraintContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.PrimaryKeyTableConstraintContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.RootContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.ScalarFunctionCallContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.SimpleDataTypeContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.SpatialDataTypeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.SqlStatementsContext;
-import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.StoragePolicyContext;
-import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.StoragePolicyValueContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.StringDataTypeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.StringLiteralContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableAttributeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableNameContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOpitonStoragePolicyContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionBlockSizeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionCommentContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionEngineContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionHotPartitionCountContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionIndexAllContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionTablePropertiesContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.UidContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.UniqueKeyColumnConstraintContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.UniqueKeyTableConstraintContext;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.Token;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,13 +100,15 @@ import static com.aliyun.fastmodel.common.parser.ParserHelper.visitIfPresent;
  */
 public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
 
-    public static final String COMMENT = "comment";
-    public static final String DATE_FORMAT = "DATE_FORMAT";
+    public static final String COMMENT = "COMMENT";
 
     private final ReverseContext reverseContext;
 
+    private final AdbMysqlLanguageParser adbMysqlLanguageParser;
+
     public AdbMysqlAstBuilder(ReverseContext context) {
         this.reverseContext = context == null ? ReverseContext.builder().build() : context;
+        this.adbMysqlLanguageParser = new AdbMysqlLanguageParser();
     }
 
     @Override
@@ -99,7 +123,7 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
     @Override
     public Node visitSqlStatements(SqlStatementsContext ctx) {
         List<BaseStatement> visit = ParserHelper.visit(this, ctx.sqlStatement(), BaseStatement.class);
-        if (visit.size() == 0) {
+        if (visit.isEmpty()) {
             throw new ParseException("parse error with text:" + ParserHelper.getOrigin(ctx));
         }
         if (visit.size() > 1) {
@@ -118,7 +142,7 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
         }
         List<ColumnDefinition> columnDefinitions = ImmutableList.of();
         List<TableIndex> tableIndexList = ImmutableList.of();
-        List<BaseConstraint> constraints = ImmutableList.of();
+        List<BaseConstraint> constraints = Lists.newArrayList();
         CreateDefinitionsContext definitions = ctx.createDefinitions();
         if (definitions != null) {
             List<Node> nodes = ParserHelper.visit(this, definitions.createDefinition(), Node.class);
@@ -145,18 +169,8 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
         }
 
         if (ctx.tableAttribute() != null) {
-            Property property = (Property)visit(ctx.tableAttribute());
-            otherProperty.add(property);
-        }
-
-        if (ctx.blockSize() != null) {
-            Property property = (Property)visit(ctx.blockSize());
-            otherProperty.add(property);
-        }
-
-        if (ctx.storagePolicy() != null) {
-            List<Property> storagePolicy = process(ctx.storagePolicy());
-            otherProperty.addAll(storagePolicy);
+            BaseConstraint constraint = (BaseConstraint)visit(ctx.tableAttribute());
+            constraints.add(constraint);
         }
 
         Comment comment = commentProperties != null ? new Comment(commentProperties.getValue())
@@ -174,44 +188,78 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
             .build();
     }
 
-    private List<Property> process(StoragePolicyContext storagePolicy) {
-        StoragePolicyValueContext storagePolicyValueContext = storagePolicy.storagePolicyValue();
-        TerminalNode terminalNode = storagePolicyValueContext.STRING_LITERAL();
-        Property property = new Property(AdbMysqlPropertyKey.STORAGE_POLICY.getValue(), StripUtils.strip(terminalNode.getText()));
-        if (storagePolicyValueContext.HOT_PARTITION_COUNT() != null) {
-            Property p2 = new Property(AdbMysqlPropertyKey.HOT_PARTITION_COUNT.getValue(),
-                storagePolicyValueContext.decimalLiteral().getText());
-            return Lists.newArrayList(property, p2);
-        }
-        return Lists.newArrayList(property);
+    @Override
+    public Node visitTableOpitonStoragePolicy(TableOpitonStoragePolicyContext ctx) {
+        return new Property(AdbMysqlPropertyKey.STORAGE_POLICY.getValue(), StripUtils.strip(ctx.STRING_LITERAL().getText()));
+    }
+
+    @Override
+    public Node visitTableOptionIndexAll(TableOptionIndexAllContext ctx) {
+        return new Property(AdbMysqlPropertyKey.INDEX_ALL.getValue(), StripUtils.strip(ctx.STRING_LITERAL().getText()));
+    }
+
+    @Override
+    public Node visitTableOptionEngine(TableOptionEngineContext ctx) {
+        return new Property(AdbMysqlPropertyKey.ENGINE.getValue(), StripUtils.strip(ctx.engineName().getText()));
+    }
+
+    @Override
+    public Node visitTableOptionTableProperties(TableOptionTablePropertiesContext ctx) {
+        return new Property(AdbMysqlPropertyKey.TABLE_PROPERTIES.getValue(), StripUtils.strip(ctx.STRING_LITERAL().getText()));
+    }
+
+    @Override
+    public Node visitTableOptionBlockSize(TableOptionBlockSizeContext ctx) {
+        return new Property(AdbMysqlPropertyKey.BLOCK_SIZE.getValue(), ctx.decimalLiteral().getText());
+    }
+
+    @Override
+    public Node visitTableOptionHotPartitionCount(TableOptionHotPartitionCountContext ctx) {
+        return new Property(AdbMysqlPropertyKey.HOT_PARTITION_COUNT.getValue(), ctx.decimalLiteral().getText());
     }
 
     @Override
     public Node visitPartitionValue(PartitionValueContext ctx) {
         if (ctx.uid() != null) {
             Identifier identifier = (Identifier)visit(ctx.uid());
-            return new PartitionedBy(Lists.newArrayList(ColumnDefinition.builder().colName(identifier).build()));
+            //因为adb mysql会在data_format函数外增加``, 导致语法解析为了uid，这里需要兼容下，如果identifier中包含函数
+            String value = identifier.getValue();
+            BaseExpression baseExpression = adbMysqlLanguageParser.parseExpression(value);
+            if (baseExpression instanceof FunctionCall) {
+                return getExpressionPartitionBy((FunctionCall)baseExpression);
+            } else {
+                return new PartitionedBy(Lists.newArrayList(ColumnDefinition.builder().colName(identifier).build()));
+            }
         } else if (ctx.expression() != null) {
             FunctionCall functionCall = (FunctionCall)visit(ctx.expression());
-            if (functionCall != null && StringUtils.equalsIgnoreCase(functionCall.getFuncName().toString(), DATE_FORMAT)) {
-                List<BaseExpression> arguments = functionCall.getArguments();
-                TableOrColumn baseExpression = (TableOrColumn)arguments.get(0);
-                return new PartitionedBy(
-                    Lists.newArrayList(ColumnDefinition.builder().colName(new Identifier(baseExpression.getQualifiedName().getSuffix())).build()));
-            }
+            return getExpressionPartitionBy(functionCall);
         }
         return null;
+    }
+
+    private static ExpressionPartitionBy getExpressionPartitionBy(FunctionCall functionCall) {
+        AdbMysqlTimeFunctionType adbMysqlTimeFunctionType = AdbMysqlTimeFunctionType.getByValue(
+            functionCall.getFuncName().getSuffix()
+        );
+        List<ColumnDefinition> list = Lists.newArrayList();
+        if (adbMysqlTimeFunctionType != null) {
+            TableOrColumn tableOrColumn = (TableOrColumn)functionCall.getArguments().get(0);
+            Identifier identifier = new Identifier(tableOrColumn.getQualifiedName().getSuffix());
+            list.add(ColumnDefinition.builder().colName(identifier).build());
+        }
+        return new ExpressionPartitionBy(
+            list,
+            functionCall,
+            null
+        );
     }
 
     @Override
     public Node visitScalarFunctionCall(ScalarFunctionCallContext ctx) {
         Identifier visit = (Identifier)visit(ctx.scalarFunctionName().functionNameBase());
-        int childCount = ctx.functionArgs().getChildCount();
         List<BaseExpression> list = Lists.newArrayList();
-        for (int i = 0; i < childCount; i++) {
-            ParseTree child = ctx.functionArgs().getChild(i);
-            BaseExpression visit1 = (BaseExpression)visit(child);
-            list.add(visit1);
+        if (ctx.functionArgs() != null) {
+            list = ParserHelper.visit(this, ctx.functionArgs().functionArg(), BaseExpression.class);
         }
         return new FunctionCall(QualifiedName.of(Lists.newArrayList(visit)), false, list);
     }
@@ -219,6 +267,11 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
     @Override
     public Node visitFullColumnName(FullColumnNameContext ctx) {
         return new TableOrColumn(QualifiedName.of(ctx.getText()));
+    }
+
+    @Override
+    public Node visitIndexColumnName(IndexColumnNameContext ctx) {
+        return visit(ctx.uid());
     }
 
     @Override
@@ -285,12 +338,10 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
     @Override
     public Node visitTableAttribute(TableAttributeContext ctx) {
         if (ctx.BROADCAST() != null) {
-            return new Property(AdbMysqlPropertyKey.DISTRIBUTED_BY.getValue(), "BROADCAST");
+            return new DistributeConstraint(null, true, null);
         } else {
             List<Identifier> visit = ParserHelper.visit(this, ctx.colNames().uid(), Identifier.class);
-            return new Property(AdbMysqlPropertyKey.DISTRIBUTED_BY.getValue(),
-                visit.stream().map(Identifier::getValue).collect(Collectors.joining(","))
-            );
+            return new DistributeConstraint(visit, null);
         }
     }
 
@@ -305,6 +356,73 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
     }
 
     @Override
+    public Node visitStringDataType(StringDataTypeContext ctx) {
+        Token typeName = ctx.typeName;
+        List<DataTypeParameter> dataTypeParameterList = null;
+        if (ctx.lengthOneDimension() != null) {
+            dataTypeParameterList = Lists.newArrayList((DataTypeParameter)visit(ctx.lengthOneDimension()));
+        }
+        return new GenericDataType(new Identifier(typeName.getText()), dataTypeParameterList);
+    }
+
+    @Override
+    public Node visitLengthOneDimension(LengthOneDimensionContext ctx) {
+        DecimalLiteral visit = (DecimalLiteral)visit(ctx.decimalLiteral());
+        return new NumericParameter(visit.getNumber());
+    }
+
+    @Override
+    public Node visitNationalVaryingStringDataType(NationalVaryingStringDataTypeContext ctx) {
+        return super.visitNationalVaryingStringDataType(ctx);
+    }
+
+    @Override
+    public Node visitNationalStringDataType(NationalStringDataTypeContext ctx) {
+        return super.visitNationalStringDataType(ctx);
+    }
+
+    @Override
+    public Node visitDimensionDataType(DimensionDataTypeContext ctx) {
+        Token typeName = ctx.typeName;
+        List<DataTypeParameter> dataTypeParameterList = null;
+        if (ctx.lengthOneDimension() != null) {
+            dataTypeParameterList = Lists.newArrayList((DataTypeParameter)visit(ctx.lengthOneDimension()));
+        } else if (ctx.lengthTwoDimension() != null) {
+            dataTypeParameterList = ParserHelper.visit(this, ctx.lengthTwoDimension().decimalLiteral(), DecimalLiteral.class).stream()
+                .map(d -> new NumericParameter(d.getNumber())).collect(Collectors.toList());
+        }
+        return new GenericDataType(new Identifier(typeName.getText()), dataTypeParameterList);
+    }
+
+    @Override
+    public Node visitSpatialDataType(SpatialDataTypeContext ctx) {
+        return new GenericDataType(new Identifier(ctx.typeName.getText()));
+    }
+
+    @Override
+    public Node visitListDataType(ListDataTypeContext ctx) {
+        BaseDataType type = (BaseDataType)visit(ctx.dataType());
+        TypeParameter typeParameter = new TypeParameter(type);
+        List<DataTypeParameter> dataTypeList = Lists.newArrayList(typeParameter);
+        return new GenericDataType(ctx.typeName.getText(), dataTypeList);
+    }
+
+    @Override
+    public Node visitMapDataType(MapDataTypeContext ctx) {
+        List<DataTypeParameter> dataTypeList =
+            ParserHelper.visit(this, ctx.dataType(), BaseDataType.class)
+                .stream().map(
+                    TypeParameter::new
+                ).collect(Collectors.toList());
+        return new GenericDataType(ctx.typeName.getText(), dataTypeList);
+    }
+
+    @Override
+    public Node visitLongVarcharDataType(LongVarcharDataTypeContext ctx) {
+        return new GenericDataType(ctx.typeName.getText());
+    }
+
+    @Override
     public Node visitPrimaryKeyColumnConstraint(PrimaryKeyColumnConstraintContext ctx) {
         return new PrimaryConstraint(IdentifierUtil.sysIdentifier(), ImmutableList.of(), true);
     }
@@ -312,6 +430,38 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
     @Override
     public Node visitUniqueKeyColumnConstraint(UniqueKeyColumnConstraintContext ctx) {
         return new UniqueConstraint(IdentifierUtil.sysIdentifier(), ImmutableList.of(), true);
+    }
+
+    @Override
+    public Node visitNullColumnConstraint(NullColumnConstraintContext ctx) {
+        if (ctx.nullNotnull().NOT() != null && ctx.nullNotnull().NULL_LITERAL() != null) {
+            return new NotNullConstraint(IdentifierUtil.sysIdentifier(), true);
+        }
+        return new NotNullConstraint(IdentifierUtil.sysIdentifier(), false);
+    }
+
+    @Override
+    public Node visitPrimaryKeyTableConstraint(PrimaryKeyTableConstraintContext ctx) {
+        Identifier constraintName = null;
+        if (ctx.name != null) {
+            constraintName = (Identifier)visit(ctx.name);
+        } else {
+            constraintName = IdentifierUtil.sysIdentifier();
+        }
+        List<Identifier> colNames = ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(), Identifier.class);
+        return new PrimaryConstraint(constraintName, colNames);
+    }
+
+    @Override
+    public Node visitUniqueKeyTableConstraint(UniqueKeyTableConstraintContext ctx) {
+        Identifier constraintName = null;
+        if (ctx.name != null) {
+            constraintName = (Identifier)visit(ctx.name);
+        } else {
+            constraintName = IdentifierUtil.sysIdentifier();
+        }
+        List<Identifier> colNames = ParserHelper.visit(this, ctx.indexColumnNames().indexColumnName(), Identifier.class);
+        return new UniqueConstraint(constraintName, colNames);
     }
 
     @Override

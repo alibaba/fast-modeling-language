@@ -9,10 +9,12 @@ import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
-import com.aliyun.fastmodel.transform.adbmysql.format.AdbMysqlPropertyKey;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
+import com.aliyun.fastmodel.transform.adbmysql.format.AdbMysqlPropertyKey;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -42,9 +44,9 @@ public class AdbMysqlTransformerTest {
             + "    OFFICE_ADDRESS VARCHAR NOT NULL COMMENT '办公地址',\n"
             + "    AGE INT NOT NULL COMMENT '年龄',\n"
             + "    LOGIN_TIME TIMESTAMP NOT NULL COMMENT '登录时间',\n"
-            + "    PRIMARY KEY (LOGIN_TIME,CUSTOMER_ID，PHONE_NUM)\n"
+            + "    PRIMARY KEY (LOGIN_TIME,CUSTOMER_ID,PHONE_NUM)\n"
             + " )\n"
-            + "     DISTRIBUTED BY HASH(CUSTOMER_ID)\n"
+            + "     DISTRIBUTE BY HASH(CUSTOMER_ID)\n"
             + "     PARTITION BY VALUE(DATE_FORMAT(LOGIN_TIME, '%Y%M%D')) LIFECYCLE 30\n"
             + "     COMMENT '客户信息表'; "));
         assertNotNull(reverse);
@@ -72,7 +74,6 @@ public class AdbMysqlTransformerTest {
     public void testTransformDistribute() {
         AdbMysqlTransformContext adbMysqlTransformContext = AdbMysqlTransformContext.builder().build();
         List<Property> properties = Lists.newArrayList();
-        properties.add(new Property(AdbMysqlPropertyKey.DISTRIBUTED_BY.getValue(), "id"));
         properties.add(new Property(AdbMysqlPropertyKey.STORAGE_POLICY.getValue(), "HOT"));
         properties.add(new Property(AdbMysqlPropertyKey.LIFE_CYCLE.getValue(), "10"));
         properties.add(new Property(AdbMysqlPropertyKey.BLOCK_SIZE.getValue(), "10"));
@@ -82,9 +83,13 @@ public class AdbMysqlTransformerTest {
             .dataType(DataTypeUtil.simpleType("bigint", null))
             .build();
         columns.add(column);
+        List<BaseConstraint> constraints = Lists.newArrayList();
+        DistributeConstraint id = new DistributeConstraint(Lists.newArrayList(new Identifier("id")), null);
+        constraints.add(id);
         BaseStatement source = CreateTable.builder()
             .tableName(QualifiedName.of("abc"))
             .columns(columns)
+            .constraints(constraints)
             .partition(new PartitionedBy(columns))
             .properties(properties)
             .build();
@@ -93,7 +98,7 @@ public class AdbMysqlTransformerTest {
             + "(\n"
             + "   c1 BIGINT\n"
             + ")\n"
-            + "DISTRIBUTED BY HASH(id)\n"
+            + "DISTRIBUTE BY HASH(id)\n"
             + "PARTITION BY VALUE(c1) LIFECYCLE 10\n"
             + "STORAGE_POLICY='HOT'\n"
             + "BLOCK_SIZE=10");

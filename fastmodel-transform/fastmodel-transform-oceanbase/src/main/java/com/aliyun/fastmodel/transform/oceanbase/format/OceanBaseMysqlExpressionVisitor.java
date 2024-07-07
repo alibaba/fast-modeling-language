@@ -2,12 +2,16 @@ package com.aliyun.fastmodel.transform.oceanbase.format;
 
 import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.expr.atom.TableOrColumn;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.oceanbase.context.OceanBaseContext;
 import com.aliyun.fastmodel.transform.oceanbase.parser.tree.OceanBaseMysqlCharDataType;
+import com.aliyun.fastmodel.transform.oceanbase.parser.tree.OceanBaseMysqlGenericDataType;
 import com.aliyun.fastmodel.transform.oceanbase.parser.visitor.OceanBaseMysqlAstVisitor;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -45,5 +49,33 @@ public class OceanBaseMysqlExpressionVisitor extends DefaultExpressionVisitor im
             stringBuilder.append(oceanBaseMysqlCharDataType.getCollation());
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public String visitOceanBaseMysqlGenericDataType(OceanBaseMysqlGenericDataType node, Void context) {
+        StringBuilder result = new StringBuilder();
+        IDataTypeName typeName = node.getTypeName();
+        result.append(typeName.getValue());
+        boolean argNotEmpty = node.getArguments() != null && !node.getArguments().isEmpty();
+        if (typeName.getDimension() == Dimension.MULTIPLE) {
+            if (argNotEmpty) {
+                result.append(node.getArguments().stream()
+                    .map(this::process)
+                    .collect(Collectors.joining(",", "<", ">")));
+            }
+        } else {
+            if (argNotEmpty) {
+                result.append(node.getArguments().stream()
+                    .map(this::process)
+                    .collect(Collectors.joining(",", "(", ")")));
+            }
+        }
+        if (node.getSignEnum() != null) {
+            result.append(" ").append(node.getSignEnum().name());
+        }
+        if (BooleanUtils.isTrue(node.getZeroFill())) {
+            result.append(" ZEROFILL");
+        }
+        return result.toString();
     }
 }

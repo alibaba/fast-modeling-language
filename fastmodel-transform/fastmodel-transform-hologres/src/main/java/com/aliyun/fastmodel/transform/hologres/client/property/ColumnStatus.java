@@ -3,6 +3,7 @@ package com.aliyun.fastmodel.transform.hologres.client.property;
 import java.util.Collections;
 import java.util.List;
 
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -35,7 +36,8 @@ public class ColumnStatus {
         if (StringUtils.isBlank(value)) {
             return Collections.emptyList();
         }
-        List<String> list = Splitter.on(",").splitToList(value);
+        String val = StripUtils.removeDoubleStrip(value);
+        List<String> list = Splitter.on(",").splitToList(val);
         List<ColumnStatus> columnStatuses = Lists.newArrayList();
         for (String s : list) {
             List<String> splitToList = Splitter.on(":").splitToList(s);

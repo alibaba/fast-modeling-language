@@ -81,7 +81,7 @@ public class HologresTransformer implements Transformer<BaseStatement> {
 
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
-        return hologresClientConverter.covertToNode(table, TableConfig.builder().build());
+        return hologresClientConverter.convertToNode(table, TableConfig.builder().build());
     }
 
     @Override

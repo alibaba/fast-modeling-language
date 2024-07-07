@@ -1,11 +1,16 @@
 package com.aliyun.fastmodel.transform.adbmysql.parser;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -35,7 +40,7 @@ public class AdbMysqlLanguageParserTest {
             + "       value int,\n"
             + "       ts timestamp\n"
             + ")\n"
-            + "DISTRIBUTED BY HASH(id);");
+            + "DISTRIBUTE BY HASH(id);");
         List<ColumnDefinition> columnDefines = node.getColumnDefines();
         assertEquals(4, columnDefines.size());
     }
@@ -53,14 +58,25 @@ public class AdbMysqlLanguageParserTest {
             + "office_address varchar NOT NULL COMMENT '办公地址',\n"
             + "age int NOT NULL COMMENT '年龄',\n"
             + "login_time timestamp NOT NULL COMMENT '登录时间',\n"
-            + "PRIMARY KEY (login_time,customer_id，phone_num)\n"
+            + "PRIMARY KEY (login_time,customer_id,phone_num)\n"
             + " )\n"
-            + "DISTRIBUTED BY HASH(customer_id)\n"
+            + "DISTRIBUTE BY HASH(customer_id)\n"
             + "PARTITION BY VALUE(DATE_FORMAT(login_time, '%Y%m%d')) LIFECYCLE 30\n"
             + "COMMENT '客户信息表';  ");
         assertEquals(node.getCommentValue(), "客户信息表");
         List<Property> properties = node.getProperties();
-        assertEquals(2, properties.size());
+        assertEquals(1, properties.size());
+        ColumnDefinition customerId = node.getColumn(new Identifier("customer_id"));
+        assertEquals("BIGINT", customerId.getDataType().getTypeName().getValue());
+        assertEquals(2, node.getConstraintStatements().size());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testParseIssue() {
+        String code = IOUtils.resourceToString("/adbmysql/issue.txt", Charset.defaultCharset());
+        CreateTable o = adbMysqlLanguageParser.parseNode(code);
+        assertEquals(o.getCommentValue(), "配置表");
     }
 
     @Test(expected = ClassCastException.class)
@@ -68,5 +84,11 @@ public class AdbMysqlLanguageParserTest {
         Node o = adbMysqlLanguageParser.parseNode("SELECT * from abc;\n"
             + " --abc");
         assertNotNull(o);
+    }
+
+    @Test
+    public void testParseExpression() {
+        FunctionCall o = adbMysqlLanguageParser.parseExpression("date_format(create_time, '%Y%M%d')");
+        assertEquals("date_format", o.getFuncName().toString());
     }
 }

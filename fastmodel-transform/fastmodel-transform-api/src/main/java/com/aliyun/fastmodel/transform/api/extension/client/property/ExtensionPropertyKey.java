@@ -55,7 +55,7 @@ public enum ExtensionPropertyKey implements PropertyKey {
     /**
      * table range partition raw
      */
-    TABLE_PARTITION_RAW("range_partition_raw"),
+    TABLE_PARTITION_RAW("partition_raw"),
 
     /**
      * list partition

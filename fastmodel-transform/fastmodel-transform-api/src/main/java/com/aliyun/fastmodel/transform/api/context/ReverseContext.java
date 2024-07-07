@@ -23,6 +23,7 @@ import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.TableDetailType;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
+import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -77,6 +78,11 @@ public class ReverseContext {
     private final boolean merge;
 
     /**
+     * version
+     */
+    private final IVersion version;
+
+    /**
      * 使用Builder进行传递
      *
      * @param tBuilder
@@ -89,6 +95,7 @@ public class ReverseContext {
         columnProperties = tBuilder.columnProperties;
         merge = tBuilder.merge;
         this.reverseRelationStrategy = tBuilder.reverseTargetStrategy;
+        this.version = tBuilder.version;
     }
 
     /**
@@ -123,6 +130,8 @@ public class ReverseContext {
         private ReverseTargetStrategy reverseTargetStrategy = ReverseTargetStrategy.DDL;
 
         private boolean merge;
+
+        private IVersion version;
 
         /**
          * 是否需要合并
@@ -162,6 +171,11 @@ public class ReverseContext {
 
         public T reverseTargetStrategy(ReverseTargetStrategy reverseTargetStrategy) {
             this.reverseTargetStrategy = reverseTargetStrategy;
+            return (T)this;
+        }
+
+        public T version(IVersion version) {
+            this.version = version;
             return (T)this;
         }
 

@@ -1,0 +1,13 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS public.hologres_parent (
+   a TEXT,
+   b INTEGER,
+   c TIMESTAMP,
+   d TEXT
+) PARTITION BY LIST(a);
+CALL SET_TABLE_PROPERTY('public.hologres_parent', 'time_to_live_in_seconds', '3153600000');
+CALL SET_TABLE_PROPERTY('public.hologres_parent', 'orientation', 'column');
+CALL SET_TABLE_PROPERTY('public.hologres_parent', 'binlog.level', 'none');
+CALL SET_TABLE_PROPERTY('public.hologres_parent', 'bitmap_columns', 'a,d');
+CALL SET_TABLE_PROPERTY('public.hologres_parent', 'dictionary_encoding_columns', 'a:auto,d:auto');
+COMMIT;

@@ -17,6 +17,6 @@ public class UniqueKeyExprClientConstraint extends Constraint {
     private List<String> expression;
 
     public UniqueKeyExprClientConstraint() {
-        this.setType(ClientConstraintType.UNIQUE_KEY);
+        this.setType(ExtensionClientConstraintType.UNIQUE_KEY);
     }
 }

@@ -47,4 +47,9 @@ public class SegmentKey extends BaseClientProperty<List<String>> {
     public List<String> toColumnList() {
         return this.getValue();
     }
+
+    @Override
+    public void setColumnList(List<String> columnList) {
+        this.setValue(columnList);
+    }
 }

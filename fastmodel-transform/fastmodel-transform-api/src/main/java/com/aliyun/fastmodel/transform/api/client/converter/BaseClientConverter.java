@@ -148,7 +148,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      * @return {@link Node}
      */
     @Override
-    public Node covertToNode(Table table, TableConfig tableConfig) {
+    public Node convertToNode(Table table, TableConfig tableConfig) {
         QualifiedName of = StringJoinUtil.join(table.getDatabase(), table.getSchema(), table.getName());
         Comment comment = null;
         if (table.getComment() != null) {
@@ -481,10 +481,28 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .comment(new Comment(c.getComment()))
             .dataType(dataType)
             .notNull(BooleanUtils.isFalse(c.isNullable()))
-            .primary(c.isPrimaryKey())
+            .primary(isPrimaryKey(table, c))
             .properties(all)
             .defaultValue(toDefaultValueExpression(dataType, c.getDefaultValue()))
             .build();
+    }
+
+    private boolean isPrimaryKey(Table table, Column c) {
+        List<Constraint> constraints = table.getConstraints();
+        if (CollectionUtils.isEmpty(constraints)) {
+            return c.isPrimaryKey();
+        }
+        Constraint primary = constraints.stream().filter(constraint -> StringUtils.equalsIgnoreCase(constraint.getType().getCode(),
+            com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType.PRIMARY_KEY.getCode())).findFirst().orElse(null);
+        if (primary == null) {
+            return c.isPrimaryKey();
+        }
+        //如果传入的constraint已经含有主键的定义，那么就不用再
+        List<String> columns = primary.getColumns();
+        if (columns.contains(c.getName())) {
+            return false;
+        }
+        return c.isPrimaryKey();
     }
 
     /**
@@ -497,6 +515,16 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         if (defaultValue == null) {
             return null;
         }
+        BaseExpression baseExpression = getBaseExpression(baseDataType, defaultValue);
+        if (baseExpression != null) {
+            return baseExpression;
+        }
+        String strip = StringLiteralUtil.strip(defaultValue);
+        return new StringLiteral(strip);
+    }
+
+    protected BaseExpression getBaseExpression(BaseDataType baseDataType, String defaultValue) {
+
         IDataTypeName typeName = baseDataType.getTypeName();
         String type = typeName.getValue();
         String value = defaultValue;
@@ -527,8 +555,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
                 return new DecimalLiteral(value);
             }
         }
-        String strip = StringLiteralUtil.strip(defaultValue);
-        return new StringLiteral(strip);
+        return null;
     }
 
     /**
@@ -559,11 +586,15 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         List<ColumnDefinition> collect = columns.stream().filter(Column::isPartitionKey).sorted(Comparator.comparing(Column::getPartitionKeyIndex))
             .map(c -> ColumnDefinition.builder().colName(new Identifier(c.getName())).comment(new Comment(c.getComment())).dataType(getDataType(c))
                 .notNull(BooleanUtils.isFalse(c.isNullable())).primary(c.isPrimaryKey()).build()).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(collect)) {
+            return null;
+        }
         return new PartitionedBy(collect);
     }
 
     /**
      * to constraint
+     * 需要优先以constraint为准，再以columns的primary为准
      *
      * @param columns
      * @param constraints
@@ -571,42 +602,51 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      */
     protected List<BaseConstraint> toConstraint(List<Column> columns, List<Constraint> constraints) {
         List<BaseConstraint> constraintList = Lists.newArrayList();
-        BaseConstraint primaryConstraintByColumns = setPrimaryConstraintColumns(columns);
-        if (primaryConstraintByColumns != null) {
+        boolean hasPrimaryOutConstraint = false;
+        if (CollectionUtils.isNotEmpty(constraints)) {
+            for (Constraint c : constraints) {
+                setOutlineConstraint(c, constraintList);
+            }
+            hasPrimaryOutConstraint = constraintList.stream().anyMatch(
+                c -> StringUtils.equalsIgnoreCase(c.getConstraintType().getCode(),
+                    OutlineConstraintType.PRIMARY_KEY.getCode()));
+        }
+        if (!hasPrimaryOutConstraint) {
+            BaseConstraint primaryConstraintByColumns = setPrimaryConstraintColumns(columns);
+            if (primaryConstraintByColumns == null) {
+                return constraintList;
+            }
             constraintList.add(primaryConstraintByColumns);
-            return constraintList;
-        }
-        if (CollectionUtils.isEmpty(constraints)) {
-            return constraintList;
-        }
-        for (Constraint c : constraints) {
-            Identifier constraintName;
-            if (StringUtils.isBlank(c.getName())) {
-                constraintName = IdentifierUtil.sysIdentifier();
-            } else {
-                constraintName = new Identifier(c.getName());
-            }
-            ConstraintType constraintType = c.getType();
-            if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.PRIMARY_KEY.getCode())) {
-                PrimaryConstraint primaryConstraint = new PrimaryConstraint(constraintName,
-                    c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
-                constraintList.add(primaryConstraint);
-            } else if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.UNIQUE.getCode())) {
-                if (c instanceof UniqueKeyExprClientConstraint) {
-                    UniqueKeyExprClientConstraint u = (UniqueKeyExprClientConstraint)c;
-                    List<IndexSortKey> indexSortKeys = toIndexSortKey(u);
-                    UniqueKeyExprConstraint keyExprConstraint = new UniqueKeyExprConstraint(
-                        constraintName, null, indexSortKeys, null
-                    );
-                    constraintList.add(keyExprConstraint);
-                } else {
-                    UniqueConstraint primaryConstraint = new UniqueConstraint(constraintName,
-                        c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
-                    constraintList.add(primaryConstraint);
-                }
-            }
         }
         return constraintList;
+    }
+
+    private void setOutlineConstraint(Constraint c, List<BaseConstraint> constraintList) {
+        Identifier constraintName;
+        if (StringUtils.isBlank(c.getName())) {
+            constraintName = IdentifierUtil.sysIdentifier();
+        } else {
+            constraintName = new Identifier(c.getName());
+        }
+        ConstraintType constraintType = c.getType();
+        if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.PRIMARY_KEY.getCode())) {
+            PrimaryConstraint primaryConstraint = new PrimaryConstraint(constraintName,
+                c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
+            constraintList.add(primaryConstraint);
+        } else if (StringUtils.equalsIgnoreCase(constraintType.getCode(), OutlineConstraintType.UNIQUE.getCode())) {
+            if (c instanceof UniqueKeyExprClientConstraint) {
+                UniqueKeyExprClientConstraint u = (UniqueKeyExprClientConstraint)c;
+                List<IndexSortKey> indexSortKeys = toIndexSortKey(u);
+                UniqueKeyExprConstraint keyExprConstraint = new UniqueKeyExprConstraint(
+                    constraintName, null, indexSortKeys, null
+                );
+                constraintList.add(keyExprConstraint);
+            } else {
+                UniqueConstraint primaryConstraint = new UniqueConstraint(constraintName,
+                    c.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
+                constraintList.add(primaryConstraint);
+            }
+        }
     }
 
     private List<IndexSortKey> toIndexSortKey(UniqueKeyExprClientConstraint u) {
@@ -675,6 +715,9 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         if (!(dataType instanceof GenericDataType)) {return column;}
         GenericDataType genericDataType = (GenericDataType)dataType;
         List<DataTypeParameter> arguments = genericDataType.getArguments();
+        if (CollectionUtils.isEmpty(arguments)) {
+            return column;
+        }
         //if only one
         if (dimension == Dimension.TWO) {
             //because is decimal, so must type parameter is numeric
@@ -709,8 +752,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             return "NULL";
         }
         if (aClass == StringLiteral.class) {
-            String value = ((StringLiteral)defaultValue).getValue();
-            return value;
+            return ((StringLiteral)defaultValue).getValue();
         }
         if (aClass == LongLiteral.class) {
             LongLiteral literal = (LongLiteral)defaultValue;
@@ -722,8 +764,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         }
         if (aClass == TimestampLiteral.class) {
             TimestampLiteral timestampLiteral = (TimestampLiteral)defaultValue;
-            String timestampFormat = timestampLiteral.getTimestampFormat();
-            return timestampFormat;
+            return timestampLiteral.getTimestampFormat();
         }
         if (aClass == BooleanLiteral.class) {
             BooleanLiteral booleanLiteral = (BooleanLiteral)defaultValue;

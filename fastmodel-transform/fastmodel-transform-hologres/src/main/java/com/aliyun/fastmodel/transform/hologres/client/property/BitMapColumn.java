@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * bit map column
@@ -57,5 +58,27 @@ public class BitMapColumn extends BaseClientProperty<List<ColumnStatus>> {
             return super.toColumnList();
         }
         return value.stream().map(ColumnStatus::getColumnName).collect(Collectors.toList());
+    }
+
+    @Override
+    public void setColumnList(List<String> columnList) {
+        if (columnList == null || columnList.isEmpty()) {
+            return;
+        }
+        List<ColumnStatus> list = this.getValue();
+        if (list == null) {
+            list = Lists.newArrayList();
+            for (String c : columnList) {
+                ColumnStatus columnStatus = ColumnStatus.builder().columnName(c).build();
+                list.add(columnStatus);
+            }
+            this.setValue(list);
+            return;
+        }
+        for (int i = 0; i < columnList.size(); i++) {
+            ColumnStatus columnStatus = list.get(i);
+            String newColumn = columnList.get(i);
+            columnStatus.setColumnName(newColumn);
+        }
     }
 }

@@ -13,7 +13,6 @@ import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
 import com.aliyun.fastmodel.transform.oceanbase.BaseOceanbaseTest;
-import com.aliyun.fastmodel.transform.oceanbase.OceanBaseMysqlTransformer;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -28,8 +27,6 @@ import static org.junit.Assert.assertEquals;
 public class OceanBaseGeneratorWithModelTest extends BaseOceanbaseTest {
 
     private CodeGenerator codeGenerator = new DefaultCodeGenerator();
-
-    private OceanBaseMysqlTransformer oceanBaseMysqlTransformer = new OceanBaseMysqlTransformer();
 
     @Test
     public void testGenerator() {

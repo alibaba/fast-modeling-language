@@ -2,6 +2,7 @@ package com.aliyun.fastmodel.transform.api.util;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
@@ -18,6 +19,7 @@ public class PropertyKeyUtil {
 
     /**
      * 从node中获取指定key的信息
+     *
      * @param node
      * @param propertyKey
      * @return
@@ -34,6 +36,15 @@ public class PropertyKeyUtil {
             return StringUtils.EMPTY;
         }
         return first.get().getValue();
+    }
+
+    public static Long toLifeCycle(Long seconds) {
+        long convert = TimeUnit.DAYS.convert(seconds, TimeUnit.SECONDS);
+        return convert == 0 ? 1L : convert;
+    }
+
+    public static Long toSeconds(Long lifecycle) {
+        return TimeUnit.DAYS.toSeconds(lifecycle);
     }
 
 }
