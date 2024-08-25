@@ -52,7 +52,7 @@ public class OceanBaseMysqlTransformerTest extends BaseOceanbaseTest {
         DialectNode transform = getDialectNode(text);
         assertEquals("CREATE TABLE tbl1 \n"
             + "(\n"
-            + "   c1 BIGINT UNSIGNED NOT NULL,\n"
+            + "   c1 BIGINT UNSIGNED ZEROFILL NOT NULL,\n"
             + "   c2 VARCHAR(50),\n"
             + "   PRIMARY KEY(c1)\n"
             + ")", transform.getNode());

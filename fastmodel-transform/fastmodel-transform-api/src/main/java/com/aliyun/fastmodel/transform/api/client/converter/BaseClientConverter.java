@@ -139,6 +139,12 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return false;
     }
 
+    /**
+     * fromat expression
+     *
+     * @param baseExpression
+     * @return
+     */
     protected String formatExpression(BaseExpression baseExpression) {
         return baseExpression.toString();
     }
@@ -712,8 +718,14 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             column.setDataType(dataType.getOrigin());
             return column;
         }
-        if (!(dataType instanceof GenericDataType)) {return column;}
+        if (!(dataType instanceof GenericDataType)) {
+            return column;
+        }
         GenericDataType genericDataType = (GenericDataType)dataType;
+        return getColumn(genericDataType, column, dimension);
+    }
+
+    private Column getColumn(GenericDataType genericDataType, Column column, Dimension dimension) {
         List<DataTypeParameter> arguments = genericDataType.getArguments();
         if (CollectionUtils.isEmpty(arguments)) {
             return column;

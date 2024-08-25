@@ -136,3 +136,23 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.13
+新功能（new features）
+Core
+• 无
+
+
+Transformer
+• 支持Oceanbase Mysql ZeroFill转换
+• 支持Hologres的Cluster Key解析
+• 修复列类型解析的bug
+
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无

@@ -10,6 +10,7 @@ package com.aliyun.fastmodel.transform.api.builder.merge.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
@@ -25,10 +26,12 @@ import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.api.builder.merge.MergeBuilder;
 import com.aliyun.fastmodel.transform.api.builder.merge.MergeResult;
+import com.aliyun.fastmodel.transform.api.builder.merge.exception.MergeErrorCode;
+import com.aliyun.fastmodel.transform.api.builder.merge.exception.MergeException;
 import com.google.common.collect.Lists;
 
 /**
- * Desc:
+ * CreateTableMergeBuilder
  *
  * @author panguanjing
  * @date 2022/6/29
@@ -37,9 +40,16 @@ public class CreateTableMergeBuilder implements MergeBuilder {
 
     @Override
     public BaseStatement getMainStatement(List<BaseStatement> baseStatements) {
-        return baseStatements.stream().filter(
+        List<BaseStatement> baseStatementStream = baseStatements.stream().filter(
             x -> x instanceof CreateTable
-        ).findFirst().orElse(null);
+        ).collect(Collectors.toList());
+        if (baseStatementStream.isEmpty()) {
+            throw new MergeException(MergeErrorCode.ERR_CREATE_TABLE_NOT_EXISTS);
+        }
+        if (baseStatementStream.size() > 1) {
+            throw new MergeException(MergeErrorCode.ERR_TOO_MANY_CREATE_TABLES);
+        }
+        return baseStatementStream.get(0);
     }
 
     @Override
@@ -187,7 +197,7 @@ public class CreateTableMergeBuilder implements MergeBuilder {
     }
 
     private List<ColumnDefinition> mergeColumn(List<ColumnDefinition> sourceColumnDefinition, Identifier changeColumn,
-                                               Comment comment) {
+        Comment comment) {
         List<ColumnDefinition> list = Lists.newArrayListWithCapacity(sourceColumnDefinition.size());
         for (ColumnDefinition columnDefinition : sourceColumnDefinition) {
             if (!columnDefinition.getColName().equals(changeColumn)) {

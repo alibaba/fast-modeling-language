@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
+import com.aliyun.fastmodel.transform.api.builder.merge.exception.MergeException;
 
 /**
  * merge builder
@@ -27,8 +28,9 @@ public interface MergeBuilder {
      *
      * @param baseStatements
      * @return
+     * @throws {@see MergeException}
      */
-    BaseStatement getMainStatement(List<BaseStatement> baseStatements);
+    BaseStatement getMainStatement(List<BaseStatement> baseStatements) throws MergeException;
 
     /**
      * merge statement

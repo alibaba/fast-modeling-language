@@ -1,0 +1,15 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS public.cx_1220_tbl1_1 (
+   id       BIGINT,
+   "name"   TEXT,
+   birthday TIMESTAMP WITH TIME ZONE,
+   salary   DECIMAL(38,10),
+   pt int,
+PRIMARY KEY (id,pt)
+)
+PARTITION BY LIST (pt) ;
+CALL set_table_property('public.cx_1220_tbl1_1', 'orientation', 'column');
+CREATE TABLE public.cx_1220_tbl1_11 PARTITION OF public.cx_1220_tbl1_1 FOR VALUES IN (2021);
+CREATE TABLE public.cx_1220_tbl1_12 PARTITION OF public.cx_1220_tbl1_1 FOR VALUES IN (2022);
+CREATE TABLE public.cx_1220_tbl1_13 PARTITION OF public.cx_1220_tbl1_1 FOR VALUES IN (2023);
+COMMIT;

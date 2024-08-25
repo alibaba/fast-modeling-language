@@ -26,7 +26,7 @@
     <version>${revision}</version>
 
     <properties>
-        <revision>0.5.12</revision>
+        <revision>0.5.13</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <dep.jline.version>3.17.1</dep.jline.version>
         <dep.antlr.version>4.13.1</dep.antlr.version>
@@ -44,7 +44,7 @@
         <profile>
             <id>jdk11</id>
             <properties>
-                <revision>0.5.12</revision>
+                <revision>0.5.13</revision>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -62,7 +62,7 @@
         <profile>
             <id>jdk8</id>
             <properties>
-                <revision>0.5.12-jdk8</revision>
+                <revision>0.5.13-jdk8</revision>
             </properties>
             <dependencyManagement>
                 <dependencies>
@@ -288,6 +288,13 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
                 <version>4.13.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.2</version>
+                <scope>test</scope>
             </dependency>
 
 

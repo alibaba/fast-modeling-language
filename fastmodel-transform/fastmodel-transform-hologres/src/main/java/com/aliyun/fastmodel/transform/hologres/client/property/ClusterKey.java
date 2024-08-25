@@ -8,12 +8,13 @@
 
 package com.aliyun.fastmodel.transform.hologres.client.property;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -22,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author panguanjing
  * @date 2022/6/13
  */
-public class ClusterKey extends BaseClientProperty<List<String>> {
+public class ClusterKey extends BaseClientProperty<List<ColumnOrder>> {
 
     public static final String CLUSTERING_KEY = HoloPropertyKey.CLUSTERING_KEY.getValue();
 
@@ -32,7 +33,15 @@ public class ClusterKey extends BaseClientProperty<List<String>> {
 
     @Override
     public String valueString() {
-        return Joiner.on(",").join(this.getValue());
+        return this.getValue().stream().map(
+            c -> {
+                if (c.getOrder() != null) {
+                    return c.getColumnName() + ":" + c.getOrder().getCode();
+                } else {
+                    return c.getColumnName();
+                }
+            }
+        ).collect(Collectors.joining(","));
     }
 
     @Override
@@ -40,16 +49,38 @@ public class ClusterKey extends BaseClientProperty<List<String>> {
         if (StringUtils.isBlank(value)) {
             this.setValue(Lists.newArrayList());
         }
-        this.setValue(Splitter.on(",").splitToList(value));
+        List<ColumnOrder> columnOrders = ColumnOrder.of(value);
+        this.setValue(columnOrders);
     }
 
     @Override
     public List<String> toColumnList() {
-        return getValue();
+        List<ColumnOrder> value1 = getValue();
+        if (CollectionUtils.isEmpty(value1)) {
+            return Collections.emptyList();
+        }
+        return value1.stream().map(ColumnOrder::getColumnName).collect(Collectors.toList());
     }
 
     @Override
     public void setColumnList(List<String> columnList) {
-        setValue(columnList);
+        if (columnList == null || columnList.isEmpty()) {
+            return;
+        }
+        List<ColumnOrder> columnOrders = this.getValue();
+        if (columnOrders == null) {
+            columnOrders = Lists.newArrayList();
+            for (String c : columnList) {
+                ColumnOrder columnStatus = ColumnOrder.builder().columnName(c).build();
+                columnOrders.add(columnStatus);
+            }
+            this.setValue(columnOrders);
+            return;
+        }
+        for (int i = 0; i < columnList.size(); i++) {
+            ColumnOrder columnOrder = columnOrders.get(i);
+            String newColumn = columnList.get(i);
+            columnOrder.setColumnName(newColumn);
+        }
     }
 }

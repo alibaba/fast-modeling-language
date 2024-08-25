@@ -561,13 +561,16 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
 
     @Override
     public BaseDataType getDataType(Column column) {
+        ReverseContext context = ReverseContext.builder().build();
         String dataTypeName = column.getDataType();
         if (StringUtils.isBlank(dataTypeName)) {
             throw new IllegalArgumentException("dataType name can't be null:" + column.getName());
         }
         IDataTypeName byValue = getDataTypeName(dataTypeName);
+        if (byValue == null) {
+            return getLanguageParser().parseDataType(dataTypeName, context);
+        }
         Dimension dimension = byValue.getDimension();
-        ReverseContext context = ReverseContext.builder().build();
         if (dimension == null || dimension == Dimension.ZERO) {
             return getLanguageParser().parseDataType(dataTypeName, context);
         }

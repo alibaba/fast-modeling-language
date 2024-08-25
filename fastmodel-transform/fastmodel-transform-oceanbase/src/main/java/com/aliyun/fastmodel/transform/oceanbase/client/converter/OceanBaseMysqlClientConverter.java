@@ -10,6 +10,7 @@ import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -58,6 +59,7 @@ import com.aliyun.fastmodel.transform.oceanbase.format.OceanBaseMysqlOutVisitor;
 import com.aliyun.fastmodel.transform.oceanbase.format.OceanBasePropertyKey;
 import com.aliyun.fastmodel.transform.oceanbase.parser.OceanBaseMysqlLanguageParser;
 import com.aliyun.fastmodel.transform.oceanbase.parser.tree.OceanBaseMysqlDataTypeName;
+import com.aliyun.fastmodel.transform.oceanbase.parser.tree.OceanBaseMysqlGenericDataType;
 import com.aliyun.fastmodel.transform.oceanbase.parser.tree.partition.OceanBaseHashPartitionBy;
 import com.aliyun.fastmodel.transform.oceanbase.parser.tree.partition.OceanBaseKeyPartitionBy;
 import com.aliyun.fastmodel.transform.oceanbase.parser.tree.partition.OceanBaseListPartitionBy;
@@ -72,6 +74,7 @@ import com.aliyun.fastmodel.transform.oceanbase.parser.tree.partition.desc.eleme
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -107,6 +110,22 @@ public class OceanBaseMysqlClientConverter extends ExtensionClientConverter<Ocea
     @Override
     public LanguageParser getLanguageParser() {
         return oceanBaseMysqlLanguageParser;
+    }
+
+    protected Column getColumn(ColumnDefinition c, boolean partitionKey, Integer partitionKeyIndex) {
+        Column column = super.getColumn(c, partitionKey, partitionKeyIndex);
+        BaseDataType dataType = c.getDataType();
+        if (dataType instanceof OceanBaseMysqlGenericDataType) {
+            OceanBaseMysqlGenericDataType oceanBaseMysqlGenericDataType = (OceanBaseMysqlGenericDataType)dataType;
+            if (oceanBaseMysqlGenericDataType.getSignEnum() != null) {
+                column.setDataType(dataType.getTypeName().getValue() + " " + oceanBaseMysqlGenericDataType.getSignEnum().name());
+            }
+            if (BooleanUtils.isTrue(oceanBaseMysqlGenericDataType.getZeroFill())) {
+                String srcDataType = column.getDataType();
+                column.setDataType(srcDataType + " ZEROFILL");
+            }
+        }
+        return column;
     }
 
     @Override

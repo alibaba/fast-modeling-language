@@ -25,6 +25,7 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
 import com.aliyun.fastmodel.transform.hologres.client.property.BinLogTTL;
 import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
+import com.aliyun.fastmodel.transform.hologres.client.property.ColumnOrder;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel.BinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
@@ -79,7 +80,8 @@ public class HologresCodeGeneratorSetPropertyTest {
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         List<BaseClientProperty> properties = Lists.newArrayList();
         ClusterKey clusterKey = new ClusterKey();
-        clusterKey.setValue(Lists.newArrayList("int", "double"));
+        List<ColumnOrder> orderList = ColumnOrder.of("int,double");
+        clusterKey.setValue(orderList);
         properties.add(clusterKey);
         List<Column> columns = Lists.newArrayList();
         columns.add(Column.builder().name("int").dataType("int4").build());
@@ -109,7 +111,8 @@ public class HologresCodeGeneratorSetPropertyTest {
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         List<BaseClientProperty> properties = Lists.newArrayList();
         ClusterKey clusterKey = new ClusterKey();
-        clusterKey.setValue(Lists.newArrayList("int", "double"));
+        List<ColumnOrder> orderList = ColumnOrder.of("int,double");
+        clusterKey.setValue(orderList);
         properties.add(clusterKey);
         List<Column> columns = Lists.newArrayList();
         columns.add(Column.builder().name("int").dataType("int4").build());

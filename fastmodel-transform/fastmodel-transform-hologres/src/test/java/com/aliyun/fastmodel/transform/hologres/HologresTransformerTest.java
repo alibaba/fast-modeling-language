@@ -16,6 +16,7 @@
 
 package com.aliyun.fastmodel.transform.hologres;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
@@ -37,6 +39,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
+import com.aliyun.fastmodel.transform.api.builder.merge.exception.MergeException;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
 import com.aliyun.fastmodel.transform.api.client.dto.constraint.OutlineConstraintType;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
@@ -50,7 +53,10 @@ import com.aliyun.fastmodel.transform.hologres.client.property.SegmentKey;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -178,7 +184,7 @@ public class HologresTransformerTest {
         HologresTransformer hologresTransformer = new HologresTransformer();
         BaseStatement reverse = hologresTransformer.reverse(new DialectNode("COMMENT ON TABLE molin_db.aa_exist_1 IS NULL;"));
         assertNotNull(reverse);
-        SetTableComment setTableComment = (SetTableComment) reverse;
+        SetTableComment setTableComment = (SetTableComment)reverse;
         assertEquals(setTableComment.getComment(), new Comment(null));
 
     }
@@ -200,7 +206,7 @@ public class HologresTransformerTest {
             .build();
         primaryColumns.add(Column.builder().name("c3").dataType("text").nullable(true).build());
         Node node = hologresTransformer.reverseTable(table, ReverseContext.builder().build());
-        CreateTable createTable = (CreateTable) node;
+        CreateTable createTable = (CreateTable)node;
         assertEquals(createTable.getConstraintStatements().size(), 1);
         DialectNode transform = hologresTransformer.transform(createTable);
         assertEquals(transform.getNode(), "BEGIN;\n"
@@ -263,7 +269,7 @@ public class HologresTransformerTest {
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) node).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
         assertEquals(node1, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS t_name (\n"
             + "   n VARCHAR(1) NOT NULL\n"
@@ -285,7 +291,7 @@ public class HologresTransformerTest {
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) node).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
         assertEquals(node1, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS t_name (\n"
             + "   n VARCHAR NOT NULL\n"
@@ -324,7 +330,7 @@ public class HologresTransformerTest {
             .columns(columns)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) node).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)node).getNode();
         assertEquals(node1, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS key_name (\n"
             + "   id     VARCHAR NOT NULL,\n"
@@ -364,11 +370,11 @@ public class HologresTransformerTest {
             .properties(properties)
             .build();
         Node node = hologresTransformer.reverseTable(table);
-        CreateTable createTable = (CreateTable) node;
+        CreateTable createTable = (CreateTable)node;
         int size = createTable.getConstraintStatements().size();
         assertEquals(1, size);
         BaseConstraint baseConstraint = createTable.getConstraintStatements().get(0);
-        PrimaryConstraint primaryConstraint = (PrimaryConstraint) baseConstraint;
+        PrimaryConstraint primaryConstraint = (PrimaryConstraint)baseConstraint;
         assertEquals(primaryConstraint.getColNames().get(0), new Identifier("c1"));
         List<Property> properties1 = createTable.getProperties();
         assertEquals(2, properties1.size());
@@ -425,7 +431,7 @@ public class HologresTransformerTest {
             .build();
         Node node = hologresTransformer.reverseTable(t);
         assertNotNull(node);
-        CreateTable c = (CreateTable) node;
+        CreateTable c = (CreateTable)node;
         assertEquals(c.getColumnDefines().size(), 1);
     }
 
@@ -563,7 +569,8 @@ public class HologresTransformerTest {
         Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
 
         Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().schema(((CreateTable) reverseNode).getQualifiedName().getFirst()).build()).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)reverseNode,
+            TransformContext.builder().schema(((CreateTable)reverseNode).getQualifiedName().getFirst()).build()).getNode();
         assertEquals("BEGIN;\n" +
             "CREATE TABLE public.tbl_default (\n" +
             "   smallint_col    SMALLINT DEFAULT 0,\n" +
@@ -615,7 +622,7 @@ public class HologresTransformerTest {
         Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
 
         Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().build()).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
         assertEquals("BEGIN;\n" +
             "CREATE TABLE tbl (\n" +
             "   id            BIGINT NOT NULL,\n" +
@@ -662,7 +669,7 @@ public class HologresTransformerTest {
         Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
 
         Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().build()).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
         assertEquals("BEGIN;\n" +
             "CREATE TABLE tbl1 (\n" +
             "   c1 TEXT NOT NULL,\n" +
@@ -690,7 +697,7 @@ public class HologresTransformerTest {
         Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
 
         Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement) reverseNode, TransformContext.builder().build()).getNode();
+        String node1 = hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
         assertEquals("BEGIN;\n" +
             "CREATE FOREIGN TABLE src_pt (\n" +
             "   id TEXT,\n" +
@@ -700,4 +707,14 @@ public class HologresTransformerTest {
             "OPTIONS(project_name '<odps_project>', table_name '<odps_table>');\n" +
             "COMMIT;", node1);
     }
+
+    @Test(expected = MergeException.class)
+    @SneakyThrows
+    public void testParseReverse() {
+        String value = IOUtils.resourceToString("/hologres/npe.txt", Charset.defaultCharset());
+        CompositeStatement createTable = (CompositeStatement)hologresTransformer.reverse(new DialectNode(value),
+            ReverseContext.builder().merge(true).build());
+        assertEquals(7, createTable.getChildren().size());
+    }
 }
+

@@ -17,9 +17,11 @@ import com.aliyun.fastmodel.transform.api.client.dto.result.DdlGeneratorResult;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
+import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
-import com.google.common.collect.Lists;
+import com.aliyun.fastmodel.transform.hologres.client.property.ColumnOrder;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -36,7 +38,8 @@ public class ClusterKeyTest extends BaseGeneratorTest {
     public void testClusterKey() {
         List<BaseClientProperty> properties = new ArrayList<>();
         ClusterKey e = new ClusterKey();
-        e.setValue(Lists.newArrayList("c1", "c2"));
+        List<ColumnOrder> orderList = ColumnOrder.of("c1, c2");
+        e.setValue(orderList);
         properties.add(
             e
         );
@@ -55,6 +58,60 @@ public class ClusterKeyTest extends BaseGeneratorTest {
         assertEquals(node, "BEGIN;\n"
             + "CREATE TABLE IF NOT EXISTS abc;\n"
             + "CALL SET_TABLE_PROPERTY('abc', 'clustering_key', '\"c1,c2\"');\n"
+            + "COMMIT;");
+    }
+
+    @Test
+    public void testClusterKeyAsc() {
+        List<BaseClientProperty> properties = new ArrayList<>();
+        ClusterKey e = new ClusterKey();
+        List<ColumnOrder> orderList = ColumnOrder.of("c1:asc, c2:desc");
+        e.setValue(orderList);
+        properties.add(
+            e
+        );
+        Table table = Table.builder()
+            .name("abc")
+            .properties(properties)
+            .build();
+        DdlGeneratorResult generate = codeGenerator.generate(DdlGeneratorModelRequest.builder().after(table).config(TableConfig.builder()
+                .dialectMeta(DialectMeta.getHologres())
+                .build())
+            .build());
+        int size = generate.getDialectNodes().size();
+        assertEquals(1, size);
+        DialectNode dialectNode = generate.getDialectNodes().get(0);
+        String node = dialectNode.getNode();
+        assertEquals(node, "BEGIN;\n"
+            + "CREATE TABLE IF NOT EXISTS abc;\n"
+            + "CALL SET_TABLE_PROPERTY('abc', 'clustering_key', '\"c1:ASC,c2:DESC\"');\n"
+            + "COMMIT;");
+    }
+
+    @Test
+    public void testClusterKeyAsc2() {
+        List<BaseClientProperty> properties = new ArrayList<>();
+        ClusterKey e = new ClusterKey();
+        List<ColumnOrder> orderList = ColumnOrder.of("c1:asc, c2");
+        e.setValue(orderList);
+        properties.add(
+            e
+        );
+        Table table = Table.builder()
+            .name("abc")
+            .properties(properties)
+            .build();
+        DdlGeneratorResult generate = codeGenerator.generate(DdlGeneratorModelRequest.builder().after(table).config(TableConfig.builder()
+                .dialectMeta(DialectMeta.getByNameAndVersion(DialectName.HOLOGRES.getValue(), HologresVersion.V2))
+                .build())
+            .build());
+        int size = generate.getDialectNodes().size();
+        assertEquals(1, size);
+        DialectNode dialectNode = generate.getDialectNodes().get(0);
+        String node = dialectNode.getNode();
+        assertEquals(node, "BEGIN;\n"
+            + "CREATE TABLE IF NOT EXISTS abc;\n"
+            + "CALL SET_TABLE_PROPERTY('abc', 'clustering_key', '\"c1\":ASC,\"c2\"');\n"
             + "COMMIT;");
     }
 }

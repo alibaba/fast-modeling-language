@@ -98,6 +98,7 @@ import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_array
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_sort_clauseContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Opt_type_modifiersContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.OptpartitionspecContext;
+import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.OpttableelementlistContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Part_elemContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.PartitionspecContext;
 import com.aliyun.fastmodel.transform.hologres.parser.PostgreSQLParser.Qualified_nameContext;
@@ -242,21 +243,24 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
     public Node visitCreatestmt(CreatestmtContext ctx) {
         QualifiedName qualifiedName = (QualifiedName)visit(ctx.qualified_name(0));
         boolean isNotExist = ctx.EXISTS() != null && ctx.NOT() != null;
-        List<TableElement> visit = ParserHelper.visit(this, ctx.opttableelementlist().tableelementlist().tableelement(), TableElement.class);
-        List<ColumnDefinition> columnDefinitions = visit.stream().filter(
-            t -> t instanceof ColumnDefinition
-        ).map(t -> {
-            return (ColumnDefinition)t;
-        }).collect(Collectors.toList());
+        List<BaseConstraint> constraints = null;
+        List<ColumnDefinition> columnDefinitions = null;
+        if (ctx.opttableelementlist() != null) {
+            List<TableElement> visit = ParserHelper.visit(this, ctx.opttableelementlist().tableelementlist().tableelement(), TableElement.class);
+            columnDefinitions = visit.stream().filter(
+                t -> t instanceof ColumnDefinition
+            ).map(t -> {
+                return (ColumnDefinition)t;
+            }).collect(Collectors.toList());
 
-        List<BaseConstraint> constraints = visit.stream().filter(
-            t -> t instanceof BaseConstraint
-        ).map(t -> {
-            return (BaseConstraint)t;
-        }).collect(Collectors.toList());
-
+            constraints = visit.stream().filter(
+                t -> t instanceof BaseConstraint
+            ).map(t -> {
+                return (BaseConstraint)t;
+            }).collect(Collectors.toList());
+        }
         PartitionedBy partitionedBy = null;
-        if (ctx.optpartitionspec() != null && ctx.optpartitionspec().getChildCount() > 0) {
+        if (ctx.optpartitionspec() != null && ctx.optpartitionspec().getChildCount() > 0 && columnDefinitions != null) {
             partitionedBy = (PartitionedBy)visit(ctx.optpartitionspec());
             partitionedBy = mapColumn(partitionedBy, columnDefinitions);
         }
@@ -275,14 +279,19 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
     public Node visitCreateforeigntablestmt(PostgreSQLParser.CreateforeigntablestmtContext ctx) {
         QualifiedName qualifiedName = (QualifiedName)visit(ctx.qualified_name(0));
         boolean isNotExist = ctx.EXISTS() != null && ctx.NOT() != null;
-        List<TableElement> visit = ParserHelper.visit(this, ctx.opttableelementlist().tableelementlist().tableelement(), TableElement.class);
-        List<ColumnDefinition> columnDefinitions = visit.stream().filter(
-            t -> t instanceof ColumnDefinition
-        ).map(t -> (ColumnDefinition)t).collect(Collectors.toList());
+        OpttableelementlistContext opttableelementlist = ctx.opttableelementlist();
+        List<ColumnDefinition> columnDefinitions = null;
+        List<BaseConstraint> constraints = null;
+        if (opttableelementlist != null) {
+            List<TableElement> visit = ParserHelper.visit(this, opttableelementlist.tableelementlist().tableelement(), TableElement.class);
+            columnDefinitions = visit.stream().filter(
+                t -> t instanceof ColumnDefinition
+            ).map(t -> (ColumnDefinition)t).collect(Collectors.toList());
 
-        List<BaseConstraint> constraints = visit.stream().filter(
-            t -> t instanceof BaseConstraint
-        ).map(t -> (BaseConstraint)t).collect(Collectors.toList());
+            constraints = visit.stream().filter(
+                t -> t instanceof BaseConstraint
+            ).map(t -> (BaseConstraint)t).collect(Collectors.toList());
+        }
 
         List<Property> properties = new ArrayList<>();
         if (ctx.FOREIGN() != null) {

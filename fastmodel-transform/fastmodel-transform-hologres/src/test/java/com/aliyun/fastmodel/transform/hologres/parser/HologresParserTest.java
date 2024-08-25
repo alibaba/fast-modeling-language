@@ -201,4 +201,12 @@ public class HologresParserTest {
         WithDataTypeNameExpression o = hologresParser2.parseExpression("'1'::text");
         assertEquals("TEXT", o.getBaseDataType().getTypeName().getValue());
     }
+
+    @Test
+    @SneakyThrows
+    public void testParseNpe() {
+        String value = IOUtils.resourceToString("/hologres/npe.txt", Charset.defaultCharset());
+        CompositeStatement createTable = (CompositeStatement)hologresParser2.parseNode(value, ReverseContext.builder().merge(true).build());
+        assertEquals(7, createTable.getChildren().size());
+    }
 }

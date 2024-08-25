@@ -39,7 +39,7 @@ public class OceanBaseGeneratorTest extends BaseOceanbaseTest {
     public void testGeneratorSimple1() {
         assertGenerator("simple1.txt", "CREATE TABLE tbl1 \n"
             + "(\n"
-            + "   c1 BIGINT NOT NULL,\n"
+            + "   c1 BIGINT UNSIGNED ZEROFILL NOT NULL,\n"
             + "   c2 VARCHAR(50),\n"
             + "   PRIMARY KEY(c1)\n"
             + ")");
