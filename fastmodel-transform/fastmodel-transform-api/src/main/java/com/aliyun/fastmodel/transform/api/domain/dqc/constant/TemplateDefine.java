@@ -125,12 +125,6 @@ public enum TemplateDefine {
     DUPLICATE_COUNT_FIELDS("SYSTEM:fields:duplicated_count:fixed", "字段组合重复值个数", new TableFunction(BaseFunctionName.UNIQUE, null),
         CheckerType.FIX_STRATEGY_CHECK);
 
-    // /**
-    //  * 状态值
-    //  */
-    // STATE_COUNT(308, "离散值，状态格式", new ColumnFunction(BaseFunctionName.STATE_COUNT, null, null),
-    //
-    //     CheckerType.DYNAMIC_STRATEGY_CHECK);
 
     @Getter
     private String templateCode;
