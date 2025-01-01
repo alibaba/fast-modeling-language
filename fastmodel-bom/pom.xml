@@ -189,7 +189,11 @@
                 <artifactId>fastmodel-transform-plantuml</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-flink</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

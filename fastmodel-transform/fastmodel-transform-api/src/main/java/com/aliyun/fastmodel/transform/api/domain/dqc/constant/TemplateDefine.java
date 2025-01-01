@@ -40,21 +40,22 @@ public enum TemplateDefine {
     /**
      * 唯一值数量
      */
-    UNIQUE_COUNT(5, "字段唯一值个数期望值校验", new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, null, null),
+    UNIQUE_COUNT("SYSTEM:field:count_distinct:fixed", "字段唯一值个数期望值校验", new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, null, null),
         CheckerType.FIX_STRATEGY_CHECK),
+
     /**
      * 空值
      */
-    NULL_COUNT(11, "字段空值个数", new ColumnFunction(BaseFunctionName.NULL_COUNT, null, null),
+    NULL_COUNT("SYSTEM:field:null_value:fixed", "字段空值个数", new ColumnFunction(BaseFunctionName.NULL_COUNT, null, null),
         CheckerType.FIX_STRATEGY_CHECK),
 
     /**
      * 重复值
      */
-    DUPLICATE_COUNT(14, "字段重复值个数", new ColumnFunction(BaseFunctionName.DUPLICATE_COUNT, null, null),
+    DUPLICATE_COUNT("SYSTEM:field:duplicated_count:fixed", "字段重复值个数", new ColumnFunction(BaseFunctionName.DUPLICATE_COUNT, null, null),
         CheckerType.FIX_STRATEGY_CHECK),
 
-    TABLE_SIZE_VOL_ONE_DAY(32, "ODPS表大小，1天波动检测", new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
+    TABLE_SIZE_VOL_ONE_DAY("SYSTEM:table:table_size:flux:1_bizdate", "ODPS表大小，1天波动检测", new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
         ImmutableList.of()),
         ImmutableList.of(new
 
@@ -63,81 +64,86 @@ public enum TemplateDefine {
     /**
      * 表达式小，7天
      */
-    TABLE_SIZE_VOL_SEVEN_DAY(33, "ODPS表大小，7天波动检测", new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
+    TABLE_SIZE_VOL_SEVEN_DAY("SYSTEM:table:table_size:flux:7_bizdate", "ODPS表大小，7天波动检测", new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
         ImmutableList.of()),
         ImmutableList.of(new
 
             LongLiteral("7"))), CheckerType.VOL_STRATEGY_CHECK),
 
-    /**
-     * 表大小1，7，30天波动检测
-     */
-    TABLE_SIZE_VOL_ONE_SEVEN_THIRTY_DAY(33, "ODPS表大小，7天波动检测",
-        new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
-            ImmutableList.of(new
-
-                LongLiteral("1"), new
-
-                LongLiteral("7"), new
-
-                LongLiteral("30"))),
-        CheckerType.VOL_STRATEGY_CHECK),
+    // /**
+    //  * 表大小1，7，30天波动检测
+    //  */
+    // TABLE_SIZE_VOL_ONE_SEVEN_THIRTY_DAY(33, "ODPS表大小，7天波动检测",
+    //     new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
+    //         ImmutableList.of(new
+    //
+    //             LongLiteral("1"), new
+    //
+    //             LongLiteral("7"), new
+    //
+    //             LongLiteral("30"))),
+    //     CheckerType.VOL_STRATEGY_CHECK),
 
     /**
      * 表行数
      */
-    TABLE_COUNT(300, "表行数", new TableFunction(BaseFunctionName.TABLE_COUNT, ImmutableList.of()),
+    TABLE_COUNT("SYSTEM:table:table_count:dynamic_threshold", "表行数", new TableFunction(BaseFunctionName.TABLE_COUNT, ImmutableList.of()),
         CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 表大小
      */
-    TABLE_SIZE(301, "表大小", new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
+    TABLE_SIZE("SYSTEM:table:table_size:dynamic_threshold", "表大小", new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
         CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 平均值
      */
-    AVG(302, "平均值", new ColumnFunction(BaseFunctionName.AVG, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
+    AVG("SYSTEM:field:avg:dynamic_threshold", "平均值", new ColumnFunction(BaseFunctionName.AVG, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 汇总值
      */
-    SUM(303, "汇总值", new ColumnFunction(BaseFunctionName.SUM, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
+    SUM("SYSTEM:field:sum:dynamic_threshold", "汇总值", new ColumnFunction(BaseFunctionName.SUM, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 最小值
      */
-    MIN(304, "最小值", new ColumnFunction(BaseFunctionName.MIN, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
+    MIN("SYSTEM:field:min:dynamic_threshold", "最小值", new ColumnFunction(BaseFunctionName.MIN, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 最大值
      */
-    MAX(305, "最大值", new ColumnFunction(BaseFunctionName.MAX, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
+    MAX("SYSTEM:field:max:dynamic_threshold", "最大值", new ColumnFunction(BaseFunctionName.MAX, null, null), CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 唯一值
      */
-    UNIQUE_COUNT_DY(306, "最大值", new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, null, null),
+    UNIQUE_COUNT_DY("SYSTEM:field:count_distinct:fixed", "最大值", new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, null, null),
 
         CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 离散值个数
      */
-    GROUP_COUNT(307, "离散值，分组个数", new ColumnFunction(BaseFunctionName.GROUP_COUNT, null, null),
+    GROUP_COUNT("SYSTEM:field:discrete_group_count:dynamic_threshold", "离散值，分组个数", new ColumnFunction(BaseFunctionName.DISCRETE_GROUP_COUNT, null, null),
 
         CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
-     * 状态值
+     * 字段组合重复个数
      */
-    STATE_COUNT(308, "离散值，状态格式", new ColumnFunction(BaseFunctionName.STATE_COUNT, null, null),
+    DUPLICATE_COUNT_FIELDS("SYSTEM:fields:duplicated_count:fixed", "字段组合重复值个数", new TableFunction(BaseFunctionName.UNIQUE, null), CheckerType.FIX_STRATEGY_CHECK);
 
-        CheckerType.DYNAMIC_STRATEGY_CHECK);
+    // /**
+    //  * 状态值
+    //  */
+    // STATE_COUNT(308, "离散值，状态格式", new ColumnFunction(BaseFunctionName.STATE_COUNT, null, null),
+    //
+    //     CheckerType.DYNAMIC_STRATEGY_CHECK);
 
     @Getter
-    private Integer templateId;
+    private String templateCode;
 
     @Getter
     private String ruleName;
@@ -148,8 +154,8 @@ public enum TemplateDefine {
     @Getter
     private CheckerType checkerType;
 
-    private TemplateDefine(Integer templateId, String ruleName, BaseFunction baseFunction, CheckerType checkerType) {
-        this.templateId = templateId;
+    private TemplateDefine(String templateCode, String ruleName, BaseFunction baseFunction, CheckerType checkerType) {
+        this.templateCode = templateCode;
         this.ruleName = ruleName;
         this.baseFunction = baseFunction;
         this.checkerType = checkerType;

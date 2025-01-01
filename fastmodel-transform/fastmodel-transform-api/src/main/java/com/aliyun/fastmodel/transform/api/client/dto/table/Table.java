@@ -38,6 +38,11 @@ public class Table {
     private boolean external;
 
     /**
+     * catalog名称
+     */
+    private String catalog;
+
+    /**
      * database 名字
      */
     private String database;

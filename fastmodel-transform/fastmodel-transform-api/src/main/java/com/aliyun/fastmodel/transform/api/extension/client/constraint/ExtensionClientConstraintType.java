@@ -32,7 +32,13 @@ public enum ExtensionClientConstraintType implements ConstraintType {
     /**
      * distribute key
      */
-    DISTRIBUTE("distribute");
+    DISTRIBUTE("distribute"),
+
+    /**
+     * watermark (flink)
+     */
+    WATERMARK("watermark")
+    ;
 
     private final String code;
 

@@ -62,7 +62,19 @@
             <groupId>com.aliyun.fastmodel</groupId>
             <artifactId>fastmodel-transform-hologres</artifactId>
         </dependency>
+        
+        <!--支持adb mysql转换-->
+         <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-adbmysql</artifactId>
+         </dependency>
 
+        
+         <!--支持flink转换-->
+         <dependency>
+                    <groupId>com.aliyun.fastmodel</groupId>
+                    <artifactId>fastmodel-transform-flink</artifactId>
+         </dependency>
 
     </dependencies>
 </project>

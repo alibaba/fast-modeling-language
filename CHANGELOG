@@ -156,3 +156,24 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.14
+新功能（new features）
+Core
+• 无
+
+
+Transformer
+• 新增FML到Flink建表转换
+• 修复Hologres的Decimal类型无法识别问题
+• 修复Adb Mysql的Decimal类型无法识别问题
+
+
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无

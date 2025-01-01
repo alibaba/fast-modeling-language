@@ -6,6 +6,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.constraint.CheckExpress
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ForeignKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.UniqueKeyExprConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.ClusterKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
@@ -184,6 +185,17 @@ public interface ExtensionAstVisitor<R, C> extends IAstVisitor<R, C> {
      */
     default R visitAggregateConstraint(AggregateKeyConstraint aggregateConstraint, C context) {
         return visitNode(aggregateConstraint, context);
+    }
+
+    /**
+     * visitAggregateConstraint
+     *
+     * @param waterMarkConstraint
+     * @param context
+     * @return
+     */
+    default R visitWaterMarkConstraint(WaterMarkConstraint waterMarkConstraint, C context) {
+        return visitNode(waterMarkConstraint, context);
     }
 
     /**

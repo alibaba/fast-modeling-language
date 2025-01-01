@@ -39,19 +39,16 @@ public enum BaseFunctionName {
      * 平均
      */
     AVG(FunctionGrade.COLUMN, "平均值", ""),
+
     /**
      * 汇总值
      */
     SUM(FunctionGrade.COLUMN, "汇总值", ""),
+
     /**
      * 空值个数
      */
     NULL_COUNT(FunctionGrade.COLUMN, "空值数", "非空"),
-
-    /**
-     * 空值/总行数
-     */
-    NULL_RATE(FunctionGrade.COLUMN, "空值率", ""),
 
     /**
      * 重复值个数
@@ -59,26 +56,29 @@ public enum BaseFunctionName {
     DUPLICATE_COUNT(FunctionGrade.COLUMN, "重复值数", "唯一"),
 
     /**
-     * 重复值/总行数
-     */
-    DUPLICATE_RATE(FunctionGrade.COLUMN, "重复率", ""),
-    /**
-     * 唯一值
+     * 不同值个数
      */
     UNIQUE_COUNT(FunctionGrade.COLUMN, "唯一值数", ""),
+
+    /**
+     * 重复值/总行数
+     */
+    DUPLICATE_PERCENT(FunctionGrade.COLUMN, "重复率", ""),
+
     /**
      * 离散值分组数
      */
-    GROUP_COUNT(FunctionGrade.COLUMN, "离散值分组数", ""),
+    DISCRETE_GROUP_COUNT(FunctionGrade.COLUMN, "离散值分组数", ""),
+
     /**
      * 离散值状态值
      */
-    STATE_COUNT(FunctionGrade.COLUMN, "离散值状态数", ""),
+    DISCRETE_VALUE_COUNT(FunctionGrade.COLUMN, "离散值状态数", ""),
 
     /**
      * 值是否在表里
      */
-    IN_TABLE(FunctionGrade.COLUMN, "表中", ""),
+    IN_TABLE(FunctionGrade.COLUMN, "标准代码", ""),
 
     /**
      * 表行数
@@ -86,9 +86,24 @@ public enum BaseFunctionName {
     TABLE_COUNT(FunctionGrade.TABLE, "表行数", ""),
 
     /**
+     * 表不同行数
+     */
+    DISTINCT_COUNT(FunctionGrade.TABLE, "表不同行数", ""),
+
+    /**
      * 表大小
      */
     TABLE_SIZE(FunctionGrade.TABLE, "表大小", ""),
+
+    /**
+     * 表大小波动
+     */
+    TABLE_SIZE_DELTA(FunctionGrade.TABLE, "表大小波动", ""),
+
+    /**
+     * 表行数波动
+     */
+    TABLE_COUNT_DELTA(FunctionGrade.TABLE, "表行数波动", ""),
 
     /**
      * 表中的唯一键

@@ -277,7 +277,33 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
     }
 
     @Test
-    public void testGeneratorPartitionByHash() {
+    public void testGeneratorDecimal() {
+        List<Column> columns = Lists.newArrayList();
+        Column c = Column.builder()
+            .name("c1")
+            .nullable(true)
+            .dataType("decimal")
+            .precision(10)
+            .scale(10)
+            .comment("comment")
+            .build();
+        columns.add(c);
+        List<Constraint> constraints = Lists.newArrayList();
+        List<BaseClientProperty> properties = Lists.newArrayList();
+        TablePartitionRaw tablePartitionRaw = new TablePartitionRaw();
+        tablePartitionRaw.setValueString("PARTITION BY VALUE(date_format(c1, '%Y%M%d'))");
+        properties.add(tablePartitionRaw);
+        Table table = Table.builder().name("t1")
+            .columns(columns)
+            .constraints(constraints)
+            .properties(properties)
+            .lifecycleSeconds(1000000L)
+            .build();
+        assertText("CREATE TABLE IF NOT EXISTS t1\n"
+            + "(\n"
+            + "   c1 DECIMAL(10,10) NULL COMMENT 'comment'\n"
+            + ")\n"
+            + "PARTITION BY VALUE(date_format(c1, '%Y%M%d')) LIFECYCLE 11", table);
 
     }
 

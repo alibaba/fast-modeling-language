@@ -9,6 +9,9 @@
 package com.aliyun.fastmodel.transform.api.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -32,26 +35,17 @@ public class StringJoinUtil {
      * @return {@link QualifiedName}
      * @throws AssertionError 如果arg是空
      */
-    public static QualifiedName join(String first, String second, String arg) {
-        if (StringUtils.isBlank(arg)) {
-            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(arg));
+    public static QualifiedName join(String... args) {
+        if (args == null || args.length == 0) {
+            return null;
+        }
+        if (StringUtils.isBlank(args[args.length - 1])) {
+            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(args[args.length - 1]));
             return QualifiedName.of(originalParts);
         }
-        boolean firstNotBlank = StringUtils.isNotBlank(first);
-        boolean secondNotBlank = StringUtils.isNotBlank(second);
-        if (firstNotBlank && secondNotBlank) {
-            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(first), new Identifier(second), new Identifier(arg));
-            return QualifiedName.of(originalParts);
-        }
-        if (firstNotBlank) {
-            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(first), new Identifier(arg));
-            return QualifiedName.of(originalParts);
-        }
-        if (secondNotBlank) {
-            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(second), new Identifier(arg));
-            return QualifiedName.of(originalParts);
-        }
-        ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(arg));
-        return QualifiedName.of(originalParts);
+        List<Identifier> identifiers = Arrays.stream(args)
+            .filter(StringUtils::isNotBlank)
+            .map(Identifier::new).collect(Collectors.toList());
+        return QualifiedName.of(identifiers);
     }
 }

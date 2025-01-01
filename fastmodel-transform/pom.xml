@@ -48,6 +48,7 @@
         <module>fastmodel-transform-starrocks</module>
         <module>fastmodel-transform-doris</module>
         <module>fastmodel-transform-oceanbase</module>
+        <module>fastmodel-transform-flink</module>
     </modules>
 
 

@@ -109,7 +109,7 @@ public class DropTableConverterTest {
         assertEquals(convert.toString(), "ALTER DQC_RULE ON TABLE test_test PARTITION (ds='[a-zA-Z0-9_-]*')\n"
             + "ADD (\n"
             + "   CONSTRAINT `字段规则-非空-(a)` CHECK(NULL_COUNT(a) = 0) NOT ENFORCED DISABLE,\n"
-            + "   CONSTRAINT `字段规则-表中-(a)` CHECK(IN_TABLE(a, mode, code) = 0) NOT ENFORCED DISABLE,\n"
+            + "   CONSTRAINT `字段规则-标准代码-(a)` CHECK(IN_TABLE(a, mode, code) = 0) NOT ENFORCED DISABLE,\n"
             + "   CONSTRAINT `字段规则-非空-(e)` CHECK(NULL_COUNT(e) = 0) NOT ENFORCED DISABLE,\n"
             + "   CONSTRAINT `字段规则-非空-(b)` CHECK(NULL_COUNT(b) = 0) NOT ENFORCED DISABLE,\n"
             + "   CONSTRAINT `字段规则-非空-(cc)` CHECK(NULL_COUNT(cc) = 0) NOT ENFORCED DISABLE,\n"

@@ -14,7 +14,7 @@
 			"propertyType":"STRING",
 			"ruleName":"字段规则-唯一-(new_col)",
 			"ruleType":"TEMPLATE",
-			"ruleValue":"14"
+			"ruleValue":"SYSTEM:field:duplicated_count:fixed:0"
 		},
 		{
 			"action":"ADD",
@@ -27,7 +27,7 @@
 			"propertyType":"STRING",
 			"ruleName":"字段规则-非空-(new_col)",
 			"ruleType":"TEMPLATE",
-			"ruleValue":"11"
+			"ruleValue":"SYSTEM:field:null_value:fixed:0"
 		}
 	],
 	"tableName":"dim_shop"

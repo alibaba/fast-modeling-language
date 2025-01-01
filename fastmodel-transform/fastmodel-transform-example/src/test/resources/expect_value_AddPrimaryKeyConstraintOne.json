@@ -13,7 +13,7 @@
 			"propertyType":"BIGINT",
 			"ruleName":"字段规则-唯一-(col1)",
 			"ruleType":"TEMPLATE",
-			"ruleValue":"14"
+			"ruleValue":"SYSTEM:field:duplicated_count:fixed:0"
 		}
 	],
 	"tableName":"dim_shop"

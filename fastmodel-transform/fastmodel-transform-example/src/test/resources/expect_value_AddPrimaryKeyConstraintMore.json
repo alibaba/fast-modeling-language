@@ -6,15 +6,14 @@
 		{
 			"action":"ADD",
 			"blockType":"BLOCK_WEAK",
-			"checkerType":"FIX_STRATEGY_CHECK",
 			"expectValue":"0",
 			"operator":"=",
 			"predictType":"NOT_DYNAMIC",
-			"property":"USER_DEFINED",
-			"propertyType":"user_defined",
+			"property":"col1,col2",
+			"propertyType":"table",
 			"ruleName":"表级规则-唯一-(col1,col2)",
-			"ruleType":"SLEF_CUSTOM",
-			"ruleValue":"SELECT count(*)\nFROM\n  (\n      SELECT\n        col1\n      , col2\n      FROM\n        dim_shop\n      GROUP BY col1,col2\n      HAVING count(*) > 1\n   )  t\n"
+			"ruleType":"TEMPLATE",
+			"ruleValue":"SYSTEM:fields:duplicated_count:fixed:0"
 		}
 	],
 	"tableName":"dim_shop"

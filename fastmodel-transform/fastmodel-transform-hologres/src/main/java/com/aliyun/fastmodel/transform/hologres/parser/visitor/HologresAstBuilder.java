@@ -678,7 +678,8 @@ public class HologresAstBuilder extends PostgreSQLParserBaseVisitor<Node> {
         if (StringUtils.equalsIgnoreCase(text, DataTypeEnums.DOUBLE.getName())) {
             return new HologresGenericDataType(HologresDataTypeName.DOUBLE_PRECISION.getValue());
         }
-        if (StringUtils.equalsIgnoreCase(text, DataTypeEnums.DECIMAL.name())) {
+        if (StringUtils.equalsIgnoreCase(text, DataTypeEnums.DECIMAL.name()) || StringUtils.equalsIgnoreCase(text,
+            HologresDataTypeName.DECIMAL.getAlias())) {
             Opt_type_modifiersContext opt_type_modifiersContext = ctx.opt_type_modifiers();
             if (opt_type_modifiersContext != null && opt_type_modifiersContext.expr_list() != null) {
                 List<A_exprContext> aExprContexts = opt_type_modifiersContext.expr_list().a_expr();

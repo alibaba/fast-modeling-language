@@ -59,7 +59,7 @@
         <java.compile.version>11</java.compile.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.version>0.8.5</jacoco.version>
-        <revision>0.5.13</revision>
+        <revision>0.5.14</revision>
         <maven_flatten_version>1.4.1</maven_flatten_version>
         <dep.antlr.version>4.13.1</dep.antlr.version>
     </properties>
@@ -148,7 +148,7 @@
         <profile>
             <id>jdk11</id>
             <properties>
-                <revision>0.5.13</revision>
+                <revision>0.5.14</revision>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -189,7 +189,7 @@
         <profile>
             <id>jdk8</id>
             <properties>
-                <revision>0.5.13-jdk8</revision>
+                <revision>0.5.14-jdk8</revision>
             </properties>
             <build>
                 <plugins>

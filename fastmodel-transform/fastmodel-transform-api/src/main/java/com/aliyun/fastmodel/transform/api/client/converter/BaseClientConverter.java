@@ -155,7 +155,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      */
     @Override
     public Node convertToNode(Table table, TableConfig tableConfig) {
-        QualifiedName of = StringJoinUtil.join(table.getDatabase(), table.getSchema(), table.getName());
+        QualifiedName of = StringJoinUtil.join(table.getCatalog(), table.getDatabase(), table.getSchema(), table.getName());
         Comment comment = null;
         if (table.getComment() != null) {
             comment = new Comment(table.getComment());
@@ -190,6 +190,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         Preconditions.checkArgument(table instanceof CreateTable, "unsupported convert to table:" + table.getClass());
         CreateTable createTable = (CreateTable)table;
         Boolean external = isExternal(createTable);
+        String catalog = toCatalog(createTable, context);
         String schema = toSchema(createTable, context);
         String suffix = createTable.getQualifiedName().getSuffix();
         String database = toDatabase(createTable, context.getDatabase());
@@ -200,6 +201,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return Table.builder()
             .ifNotExist(createTable.isNotExists())
             .external(external)
+            .catalog(catalog)
             .database(database)
             .schema(schema).name(suffix)
             .comment(createTable.getCommentValue())
@@ -328,6 +330,17 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             return qualifiedName.getParts().get(1);
         }
         return transformContext.getSchema();
+    }
+
+    /**
+     * get catalog
+     *
+     * @param createTable
+     * @param transformContext
+     * @return
+     */
+    protected String toCatalog(CreateTable createTable, T transformContext) {
+        return null;
     }
 
     /**
@@ -627,7 +640,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return constraintList;
     }
 
-    private void setOutlineConstraint(Constraint c, List<BaseConstraint> constraintList) {
+    protected void setOutlineConstraint(Constraint c, List<BaseConstraint> constraintList) {
         Identifier constraintName;
         if (StringUtils.isBlank(c.getName())) {
             constraintName = IdentifierUtil.sysIdentifier();

@@ -16,6 +16,7 @@ import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -348,5 +349,16 @@ public class HologresClientConverterTest {
         Column column = columns1.get(2);
         assertEquals(column.getName(), "c3");
         assertTrue(column.getPartitionKeyIndex() == 1);
+    }
+
+    @Test
+    public void testToDecimalColumns() {
+        Column c = Column.builder().name("c1")
+            .dataType("NUMERIC")
+            .precision(38)
+            .scale(10)
+            .build();
+        BaseDataType dataType = hologresClientConverter.getDataType(c);
+        assertEquals("DECIMAL(38,10)", dataType.toString());
     }
 }

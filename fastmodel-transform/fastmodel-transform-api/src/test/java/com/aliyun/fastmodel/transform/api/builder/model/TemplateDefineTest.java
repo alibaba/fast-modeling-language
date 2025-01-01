@@ -44,33 +44,39 @@ public class TemplateDefineTest {
     private BaseDataType baseDataType = DataTypeUtil.simpleType(DataTypeEnums.BIGINT);
 
     @Test
-    public void getTemplateIdByFunction() {
+    public void getTemplateCodeByFunction() {
         TemplateDefine templateIdByFunction = TemplateDefine.getTemplateIdByFunction(
             new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, new TableOrColumn(
                 QualifiedName.of("a.b")), baseDataType), CheckerType.FIX_STRATEGY_CHECK);
-        assertEquals(templateIdByFunction.getTemplateId(), Integer.valueOf(5));
+        assertEquals(templateIdByFunction.getTemplateCode(), "SYSTEM:field:count_distinct:fixed");
 
         templateIdByFunction = TemplateDefine.getTemplateIdByFunction(
             new ColumnFunction(BaseFunctionName.UNIQUE_COUNT, new TableOrColumn(
                 QualifiedName.of("a.b")), baseDataType), CheckerType.DYNAMIC_STRATEGY_CHECK);
-        assertEquals(templateIdByFunction.getTemplateId(), Integer.valueOf(306));
+        assertEquals(templateIdByFunction.getTemplateCode(), "SYSTEM:field:count_distinct:fixed");
     }
 
     @Test
-    public void getTemplateIdByFunction2() {
+    public void getTemplateCodeByFunction2() {
         TemplateDefine templateIdByFunction = TemplateDefine.getTemplateIdByFunction(
             new ColumnFunction(BaseFunctionName.NULL_COUNT, new TableOrColumn(
                 QualifiedName.of("a.b")), DataTypeUtil.simpleType(DataTypeEnums.BIGINT)),
             CheckerType.FIX_STRATEGY_CHECK);
-        assertEquals(templateIdByFunction.getTemplateId(), Integer.valueOf(11));
+        assertEquals(templateIdByFunction.getTemplateCode(), "SYSTEM:field:null_value:fixed");
     }
 
     @Test
-    public void testGetTemplateIdByVol() {
+    public void testGetTemplateCodeByVol() {
         TemplateDefine templateIdByFunction = TemplateDefine.getTemplateIdByFunction(
             new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
-                ImmutableList.of(new LongLiteral("1"), new LongLiteral("7"), new LongLiteral("30"))),
+                ImmutableList.of(new LongLiteral("7"))),
             CheckerType.VOL_STRATEGY_CHECK);
-        assertEquals(Integer.valueOf(33), templateIdByFunction.getTemplateId());
+        assertEquals("SYSTEM:table:table_size:flux:7_bizdate", templateIdByFunction.getTemplateCode());
+    }
+
+    @Test
+    public void testGetTemplateCodeByUnique() {
+        TemplateDefine templateDefine = TemplateDefine.getTemplateIdByFunction(new TableFunction(BaseFunctionName.UNIQUE, null), CheckerType.FIX_STRATEGY_CHECK);
+        assertEquals("SYSTEM:fields:duplicated_count:fixed", templateDefine.getTemplateCode());
     }
 }

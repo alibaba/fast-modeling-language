@@ -34,7 +34,7 @@ public class RuleTemplate {
     /**
      * 模板Id
      */
-    private Integer templateId;
+    private String templateCode;
 
     /**
      * 模板名称

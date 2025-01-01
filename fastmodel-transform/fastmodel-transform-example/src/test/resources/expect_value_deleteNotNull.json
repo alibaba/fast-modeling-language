@@ -14,7 +14,7 @@
 			"propertyType":"STRING",
 			"ruleName":"字段规则-非空-(test_code)",
 			"ruleType":"TEMPLATE",
-			"ruleValue":"11"
+			"ruleValue":"SYSTEM:field:null_value:fixed:0"
 		}
 	],
 	"tableName":"dim_shop_test25"

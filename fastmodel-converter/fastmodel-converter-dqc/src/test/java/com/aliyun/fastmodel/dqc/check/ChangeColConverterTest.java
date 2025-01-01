@@ -150,7 +150,7 @@ public class ChangeColConverterTest {
         List<ChangeDqcRuleElement> changeDqcRuleElement = changeRules.getChangeDqcRuleElement();
         assertEquals(changeRules.toString(), "ALTER DQC_RULE ON TABLE dim_shop\n"
             + "CHANGE (\n"
-            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, ``, code) = 0) NOT ENFORCED DISABLE\n"
+            + "   c1   CONSTRAINT `字段规则-标准代码-(c1)` CHECK(IN_TABLE(c1, ``, code) = 0) NOT ENFORCED DISABLE\n"
             + ")");
     }
 
@@ -178,8 +178,8 @@ public class ChangeColConverterTest {
         List<ChangeDqcRuleElement> changeDqcRuleElement = changeRules.getChangeDqcRuleElement();
         assertEquals(changeRules.toString(), "ALTER DQC_RULE ON TABLE dim_shop\n"
             + "CHANGE (\n"
-            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, dce, code) = 0) NOT ENFORCED DISABLE,\n"
-            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, abc, code) = 0) NOT ENFORCED\n"
+            + "   c1   CONSTRAINT `字段规则-标准代码-(c1)` CHECK(IN_TABLE(c1, dce, code) = 0) NOT ENFORCED DISABLE,\n"
+            + "   c1   CONSTRAINT `字段规则-标准代码-(c1)` CHECK(IN_TABLE(c1, abc, code) = 0) NOT ENFORCED\n"
             + ")");
     }
 
@@ -196,7 +196,7 @@ public class ChangeColConverterTest {
         List<ChangeDqcRuleElement> changeDqcRuleElement = changeRules.getChangeDqcRuleElement();
         assertEquals(changeRules.toString(), "ALTER DQC_RULE ON TABLE dim_shop\n"
             + "CHANGE (\n"
-            + "   c1   CONSTRAINT `字段规则-表中-(c1)` CHECK(IN_TABLE(c1, t1, code) = 0) NOT ENFORCED\n"
+            + "   c1   CONSTRAINT `字段规则-标准代码-(c1)` CHECK(IN_TABLE(c1, t1, code) = 0) NOT ENFORCED\n"
             + ")");
     }
 }

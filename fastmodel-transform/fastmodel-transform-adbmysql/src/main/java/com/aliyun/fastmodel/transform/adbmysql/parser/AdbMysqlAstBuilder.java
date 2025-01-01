@@ -390,6 +390,9 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
         } else if (ctx.lengthTwoDimension() != null) {
             dataTypeParameterList = ParserHelper.visit(this, ctx.lengthTwoDimension().decimalLiteral(), DecimalLiteral.class).stream()
                 .map(d -> new NumericParameter(d.getNumber())).collect(Collectors.toList());
+        } else if (ctx.lengthTwoOptionalDimension() != null) {
+            dataTypeParameterList = ParserHelper.visit(this, ctx.lengthTwoOptionalDimension().decimalLiteral(), DecimalLiteral.class).stream()
+                .map(d -> new NumericParameter(d.getNumber())).collect(Collectors.toList());
         }
         return new GenericDataType(new Identifier(typeName.getText()), dataTypeParameterList);
     }

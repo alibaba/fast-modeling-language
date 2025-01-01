@@ -133,6 +133,7 @@ public enum DialectName implements IDialectName {
      * ObOracle
      */
     OB_ORACLE(Constants.OB_ORACLE);
+
     @Getter
     private final String value;
 

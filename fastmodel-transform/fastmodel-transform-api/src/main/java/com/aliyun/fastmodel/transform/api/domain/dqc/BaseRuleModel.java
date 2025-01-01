@@ -67,7 +67,7 @@ public class BaseRuleModel implements DomainObject {
     private String ruleName;
 
     /**
-     * 规则内容，如果是模板是模板Id，如果是自定义规则，那么是一个sql
+     * 规则内容，如果是模板是模板Code，如果是自定义规则，那么是一个sql
      */
     private String ruleValue;
 

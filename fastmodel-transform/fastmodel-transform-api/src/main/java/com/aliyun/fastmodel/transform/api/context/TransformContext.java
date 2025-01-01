@@ -43,6 +43,11 @@ public class TransformContext {
     private boolean appendSemicolon;
 
     /**
+     * catalog
+     */
+    private String catalog;
+
+    /**
      * database
      */
     private String database;
@@ -84,6 +89,7 @@ public class TransformContext {
         appendSemicolon = context.isAppendSemicolon();
         dataTypeTransformer = context.getDataTypeTransformer();
         this.viewSetting = context.getViewSetting();
+        this.catalog = context.getCatalog();
         this.database = context.getDatabase();
         this.schema = context.getSchema();
         this.querySetting = context.getQuerySetting();
@@ -102,6 +108,7 @@ public class TransformContext {
         dataTypeTransformer = tBuilder.dataTypeTransformer;
         viewSetting = tBuilder.viewSetting;
         this.querySetting = tBuilder.querySetting;
+        this.catalog = tBuilder.catalog;
         this.database = tBuilder.database;
         this.schema = tBuilder.schema;
         this.prettyFormat = tBuilder.prettyFormat;
@@ -119,6 +126,11 @@ public class TransformContext {
     public static class Builder<T extends Builder<T>> {
 
         private boolean appendSemicolon;
+
+        /**
+         * catalog
+         */
+        private String catalog;
 
         /**
          * database
@@ -167,6 +179,11 @@ public class TransformContext {
 
         public T querySetting(QuerySetting querySetting) {
             this.querySetting = querySetting;
+            return (T)this;
+        }
+
+        public T catalog(String catalog) {
+            this.catalog = catalog;
             return (T)this;
         }
 

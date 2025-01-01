@@ -386,7 +386,7 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         return toPartition(list, properties);
     }
 
-    private PartitionedBy toPartition(List<ColumnDefinition> columnDefinitionList, List<BaseClientProperty> properties) {
+    protected PartitionedBy toPartition(List<ColumnDefinition> columnDefinitionList, List<BaseClientProperty> properties) {
         // range partition
         List<BaseClientProperty> rangePartitionProperties = properties.stream().filter(property ->
                 StringUtils.equalsIgnoreCase(property.getKey(), TABLE_RANGE_PARTITION.getValue()))
