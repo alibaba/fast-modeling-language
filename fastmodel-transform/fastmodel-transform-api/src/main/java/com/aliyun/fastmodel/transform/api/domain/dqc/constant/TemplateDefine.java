@@ -55,34 +55,22 @@ public enum TemplateDefine {
     DUPLICATE_COUNT("SYSTEM:field:duplicated_count:fixed", "字段重复值个数", new ColumnFunction(BaseFunctionName.DUPLICATE_COUNT, null, null),
         CheckerType.FIX_STRATEGY_CHECK),
 
-    TABLE_SIZE_VOL_ONE_DAY("SYSTEM:table:table_size:flux:1_bizdate", "ODPS表大小，1天波动检测", new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
-        ImmutableList.of()),
-        ImmutableList.of(new
+    TABLE_SIZE_VOL_ONE_DAY("SYSTEM:table:table_size:flux:1_bizdate", "ODPS表大小，1天波动检测",
+        new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
+            ImmutableList.of()),
+            ImmutableList.of(new
 
-            LongLiteral("1"))), CheckerType.VOL_STRATEGY_CHECK),
+                LongLiteral("1"))), CheckerType.VOL_STRATEGY_CHECK),
 
     /**
      * 表达式小，7天
      */
-    TABLE_SIZE_VOL_SEVEN_DAY("SYSTEM:table:table_size:flux:7_bizdate", "ODPS表大小，7天波动检测", new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
-        ImmutableList.of()),
-        ImmutableList.of(new
+    TABLE_SIZE_VOL_SEVEN_DAY("SYSTEM:table:table_size:flux:7_bizdate", "ODPS表大小，7天波动检测",
+        new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE,
+            ImmutableList.of()),
+            ImmutableList.of(new
 
-            LongLiteral("7"))), CheckerType.VOL_STRATEGY_CHECK),
-
-    // /**
-    //  * 表大小1，7，30天波动检测
-    //  */
-    // TABLE_SIZE_VOL_ONE_SEVEN_THIRTY_DAY(33, "ODPS表大小，7天波动检测",
-    //     new VolFunction(new TableFunction(BaseFunctionName.TABLE_SIZE, ImmutableList.of()),
-    //         ImmutableList.of(new
-    //
-    //             LongLiteral("1"), new
-    //
-    //             LongLiteral("7"), new
-    //
-    //             LongLiteral("30"))),
-    //     CheckerType.VOL_STRATEGY_CHECK),
+                LongLiteral("7"))), CheckerType.VOL_STRATEGY_CHECK),
 
     /**
      * 表行数
@@ -126,14 +114,16 @@ public enum TemplateDefine {
     /**
      * 离散值个数
      */
-    GROUP_COUNT("SYSTEM:field:discrete_group_count:dynamic_threshold", "离散值，分组个数", new ColumnFunction(BaseFunctionName.DISCRETE_GROUP_COUNT, null, null),
+    GROUP_COUNT("SYSTEM:field:discrete_group_count:dynamic_threshold", "离散值，分组个数",
+        new ColumnFunction(BaseFunctionName.DISCRETE_GROUP_COUNT, null, null),
 
         CheckerType.DYNAMIC_STRATEGY_CHECK),
 
     /**
      * 字段组合重复个数
      */
-    DUPLICATE_COUNT_FIELDS("SYSTEM:fields:duplicated_count:fixed", "字段组合重复值个数", new TableFunction(BaseFunctionName.UNIQUE, null), CheckerType.FIX_STRATEGY_CHECK);
+    DUPLICATE_COUNT_FIELDS("SYSTEM:fields:duplicated_count:fixed", "字段组合重复值个数", new TableFunction(BaseFunctionName.UNIQUE, null),
+        CheckerType.FIX_STRATEGY_CHECK);
 
     // /**
     //  * 状态值
@@ -162,7 +152,7 @@ public enum TemplateDefine {
     }
 
     public static TemplateDefine getTemplateIdByFunction(BaseFunction baseFunction,
-                                                         CheckerType checkerType) {
+        CheckerType checkerType) {
         TemplateDefine[] templateDefines = TemplateDefine.values();
         for (TemplateDefine templateDefine : templateDefines) {
             if (checkerType != templateDefine.checkerType) {
