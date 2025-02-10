@@ -177,3 +177,23 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.15
+新功能（new features）
+Core
+• 支持Show ETL语法，用于从模型到物化全流程信息输出
+
+
+Transformer
+• Hologres全新升级动态表支持
+• 新增AdbForPg转换器
+• 新增Postgresql转换器
+
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无
