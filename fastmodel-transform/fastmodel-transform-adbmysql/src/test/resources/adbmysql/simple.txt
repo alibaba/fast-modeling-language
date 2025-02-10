@@ -11,6 +11,6 @@ age int NOT NULL COMMENT '年龄',
 login_time timestamp NOT NULL COMMENT '登录时间',
 PRIMARY KEY (login_time, customer_id, phone_num)
  )
-DISTRIBUTE BY HASH(customer_id)
+DISTRIBUTED BY HASH(customer_id)
 PARTITION BY VALUE(DATE_FORMAT(login_time, '%Y%m%d')) LIFECYCLE 30
 COMMENT '客户信息表';

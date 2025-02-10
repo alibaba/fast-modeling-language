@@ -347,7 +347,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             formatExpression(checker.getExpression()) + formatComment(checker.getComment());
     }
 
-    private void appendProperties(StringBuilder sb, List<Property> properties) {
+    protected void appendProperties(StringBuilder sb, List<Property> properties) {
         if (properties == null || properties.isEmpty()) {
             return;
         }
@@ -662,7 +662,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     }
 
     protected void appendTableIndex(List<IndexSortKey> tableIndex) {
-        builder.append(" (");
+        builder.append("(");
         builder.append(tableIndex.stream().map(
             index -> {
                 if (index instanceof IndexColumnName) {
@@ -680,10 +680,9 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
     }
 
     private String formatIndexExpr(IndexExpr indexExpr) {
-        StringBuilder stringBuilder = new StringBuilder("(");
+        StringBuilder stringBuilder = new StringBuilder();
         String expression = formatExpression(indexExpr.getExpression());
         stringBuilder.append(expression);
-        stringBuilder.append(")");
         SortType sortType = indexExpr.getSortType();
         if (sortType != null) {
             stringBuilder.append(" ").append(sortType.name());

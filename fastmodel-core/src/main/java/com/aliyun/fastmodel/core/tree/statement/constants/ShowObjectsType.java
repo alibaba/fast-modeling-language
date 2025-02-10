@@ -164,7 +164,12 @@ public enum ShowObjectsType {
     /**
      * 物化信息
      */
-    MATERIALIZED_VIEWS("MATERIALIZED VIEWS");
+    MATERIALIZED_VIEWS("MATERIALIZED VIEWS"),
+
+    /**
+     * etl信息
+     */
+    ETL("ETL");
 
     /**
      * 对应的code信息

@@ -1,0 +1,14 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.mctest (
+	id int,
+	name varchar(1023),
+	age int,
+	dt string
+) ENGINE='ODPS'
+TABLE_PROPERTIES='{
+	"accessid":"LTAILd4****",
+	"endpoint":"http://service.cn-hangzhou.maxcompute.aliyun.com/api",
+	"accesskey":"4A5Q7ZVzcYnWMQPysX****",
+	"partition_column":"dt",
+	"project_name":"test_adb",
+	"table_name":"person"
+}';

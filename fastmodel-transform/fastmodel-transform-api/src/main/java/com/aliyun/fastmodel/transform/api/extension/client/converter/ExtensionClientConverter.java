@@ -41,23 +41,28 @@ import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionClientConstraintType;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.ListPartitionProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.MultiRangePartitionProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.SingleRangePartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.constraint.ForeignKeyClientConstraint;
+import com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.TimeExpressionPartitionProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.BaseClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.LessThanClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ListClientPartition;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.MultiRangeClientPartition;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.TimeExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ArrayClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.BaseClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.LessThanClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ListClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ListPartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.MultiRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.MultiRangePartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangePartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.TimeExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.TimeExpressionPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ClusteredKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ForeignKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.ClusterNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
@@ -110,6 +115,17 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
      */
     public abstract String getRaw(Node node);
 
+    /**
+     * 是否为external表
+     *
+     * @param createTable
+     * @return
+     */
+    @Override
+    protected Boolean isExternal(CreateTable createTable) {
+        return getPropertyBoolean(createTable, ExtensionPropertyKey.EXTERNAL);
+    }
+
     @Override
     public List<BaseClientProperty> toBaseClientProperty(CreateTable createTable) {
         List<BaseClientProperty> propertyList = Lists.newArrayList();
@@ -160,6 +176,17 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         }
     }
 
+    protected DistributeClientConstraint toDistribute(DistributeNonKeyConstraint distributeConstraint) {
+        DistributeClientConstraint starRocksDistributeConstraint = new DistributeClientConstraint();
+        starRocksDistributeConstraint.setBucket(distributeConstraint.getBucket());
+        if (CollectionUtils.isNotEmpty(distributeConstraint.getColumns())) {
+            starRocksDistributeConstraint.setColumns(
+                distributeConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList()));
+        }
+        starRocksDistributeConstraint.setRandom(distributeConstraint.getRandom());
+        return starRocksDistributeConstraint;
+    }
+
     private void processListPartition(ListPartitionedBy listPartitionedBy, List<BaseClientProperty> propertyList) {
         List<PartitionDesc> listPartitions = listPartitionedBy.getListPartitions();
         //结构化的返回
@@ -185,8 +212,7 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         }
     }
 
-    private void processExpressionPartition(ExpressionPartitionBy expressionPartitionBy,
-        List<BaseClientProperty> propertyList) {
+    private void processExpressionPartition(ExpressionPartitionBy expressionPartitionBy, List<BaseClientProperty> propertyList) {
         FunctionCall functionCall = expressionPartitionBy.getFunctionCall();
         if (functionCall == null) {
             return;
@@ -282,15 +308,13 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             SingleItemListPartition singleListPartition = (SingleItemListPartition)partitionDesc;
             ListClientPartition listPartitionValue = new ListClientPartition();
             listPartitionValue.setName(singleListPartition.getName().getOrigin());
-            List<List<PartitionClientValue>> partitionValue = singleListPartition.getListStringLiteral()
-                .getStringLiteralList().stream()
-                .map(stringLiteral -> {
-                    PartitionClientValue partitionClientValue = PartitionClientValue.builder()
-                        .value(StringLiteralUtil.strip(stringLiteral.getValue())).build();
+            List<List<PartitionClientValue>> partitionValue = singleListPartition.getListStringLiteral().getStringLiteralList().stream().map(
+                stringLiteral -> {
+                    PartitionClientValue partitionClientValue = PartitionClientValue.builder().value(
+                        StringLiteralUtil.strip(stringLiteral.getValue())).build();
                     return Lists.newArrayList(partitionClientValue);
                 }).collect(Collectors.toList());
-            ArrayClientPartitionKey arrayClientPartitionKey = ArrayClientPartitionKey.builder()
-                .partitionValue(partitionValue).build();
+            ArrayClientPartitionKey arrayClientPartitionKey = ArrayClientPartitionKey.builder().partitionValue(partitionValue).build();
             listPartitionValue.setPartitionKey(arrayClientPartitionKey);
 
             //property
@@ -301,13 +325,11 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             MultiItemListPartition multiItemListPartition = (MultiItemListPartition)partitionDesc;
             ListClientPartition listPartitionValue = new ListClientPartition();
             listPartitionValue.setName(multiItemListPartition.getName().getOrigin());
-            List<List<PartitionClientValue>> partitionValue = multiItemListPartition.getListStringLiterals().stream()
-                .map(listStringLiteral -> listStringLiteral.getStringLiteralList().stream()
-                    .map(stringLiteral -> PartitionClientValue.builder()
-                        .value(StringLiteralUtil.strip(stringLiteral.getValue())).build())
+            List<List<PartitionClientValue>> partitionValue = multiItemListPartition.getListStringLiterals().stream().map(
+                listStringLiteral -> listStringLiteral.getStringLiteralList().stream()
+                    .map(stringLiteral -> PartitionClientValue.builder().value(StringLiteralUtil.strip(stringLiteral.getValue())).build())
                     .collect(Collectors.toList())).collect(Collectors.toList());
-            ArrayClientPartitionKey arrayClientPartitionKey = ArrayClientPartitionKey.builder()
-                .partitionValue(partitionValue).build();
+            ArrayClientPartitionKey arrayClientPartitionKey = ArrayClientPartitionKey.builder().partitionValue(partitionValue).build();
             listPartitionValue.setPartitionKey(arrayClientPartitionKey);
 
             //property
@@ -353,33 +375,26 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
 
     private List<PartitionClientValue> getPartitionClientValues(LessThanPartitionKey lessThanPartitionKey) {
         ListPartitionValue partitionValues = lessThanPartitionKey.getPartitionValues();
-        List<PartitionClientValue> list = partitionValues.getPartitionValueList().stream().map(
-            x -> {
-                PartitionClientValue partitionClientValue = new PartitionClientValue();
-                partitionClientValue.setMaxValue(x.isMaxValue());
-                if (x.getStringLiteral() != null) {
-                    String raw = getRaw(x.getStringLiteral());
-                    partitionClientValue.setValue(StringLiteralUtil.strip(raw));
-                }
-                return partitionClientValue;
+        List<PartitionClientValue> list = partitionValues.getPartitionValueList().stream().map(x -> {
+            PartitionClientValue partitionClientValue = new PartitionClientValue();
+            partitionClientValue.setMaxValue(x.isMaxValue());
+            if (x.getStringLiteral() != null) {
+                String raw = getRaw(x.getStringLiteral());
+                partitionClientValue.setValue(StringLiteralUtil.strip(raw));
             }
-        ).collect(Collectors.toList());
+            return partitionClientValue;
+        }).collect(Collectors.toList());
         return list;
     }
 
     @Override
     protected PartitionedBy toPartitionedBy(Table table, List<Column> columns) {
         List<BaseClientProperty> properties = table.getProperties();
-        List<ColumnDefinition> list = columns.stream()
-            .filter(Column::isPartitionKey)
-            .sorted(Comparator.comparing(Column::getPartitionKeyIndex))
-            .map(x -> {
+        List<ColumnDefinition> list = columns.stream().filter(Column::isPartitionKey).sorted(Comparator.comparing(Column::getPartitionKeyIndex)).map(
+            x -> {
                 List<BaseClientProperty> clientProperties = x.getProperties();
-                return ColumnDefinition.builder().colName(new Identifier(x.getName()))
-                    .properties(toProperty(table, clientProperties))
-                    .build();
-            })
-            .collect(Collectors.toList());
+                return ColumnDefinition.builder().colName(new Identifier(x.getName())).properties(toProperty(table, clientProperties)).build();
+            }).collect(Collectors.toList());
         if (properties == null || properties.isEmpty()) {
             return super.toPartitionedBy(table, columns);
         }
@@ -388,9 +403,8 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
 
     protected PartitionedBy toPartition(List<ColumnDefinition> columnDefinitionList, List<BaseClientProperty> properties) {
         // range partition
-        List<BaseClientProperty> rangePartitionProperties = properties.stream().filter(property ->
-                StringUtils.equalsIgnoreCase(property.getKey(), TABLE_RANGE_PARTITION.getValue()))
-            .collect(Collectors.toList());
+        List<BaseClientProperty> rangePartitionProperties = properties.stream().filter(
+            property -> StringUtils.equalsIgnoreCase(property.getKey(), TABLE_RANGE_PARTITION.getValue())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(rangePartitionProperties)) {
             List<PartitionDesc> list = Lists.newArrayList();
             rangePartitionProperties.forEach(property -> toRangePartition(list, property));
@@ -398,9 +412,8 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         }
 
         // list partition
-        List<BaseClientProperty> listPartitionProperties = properties.stream().filter(property ->
-                StringUtils.equalsIgnoreCase(property.getKey(), TABLE_LIST_PARTITION.getValue()))
-            .collect(Collectors.toList());
+        List<BaseClientProperty> listPartitionProperties = properties.stream().filter(
+            property -> StringUtils.equalsIgnoreCase(property.getKey(), TABLE_LIST_PARTITION.getValue())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(listPartitionProperties)) {
             List<PartitionDesc> list = Lists.newArrayList();
             listPartitionProperties.forEach(property -> toListPartition(list, columnDefinitionList, property));
@@ -408,9 +421,8 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         }
 
         // expression partition
-        List<BaseClientProperty> expressionPartitionProperties = properties.stream().filter(property ->
-                StringUtils.equalsIgnoreCase(property.getKey(), TABLE_EXPRESSION_PARTITION.getValue()))
-            .collect(Collectors.toList());
+        List<BaseClientProperty> expressionPartitionProperties = properties.stream().filter(
+            property -> StringUtils.equalsIgnoreCase(property.getKey(), TABLE_EXPRESSION_PARTITION.getValue())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(expressionPartitionProperties)) {
             FunctionCall functionCall = buildFunctionCall(expressionPartitionProperties.get(0));
             return new ExpressionPartitionBy(columnDefinitionList, functionCall, null);
@@ -428,12 +440,9 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             MultiRangePartitionProperty multiRangePartitionProperty = (MultiRangePartitionProperty)baseClientProperty;
             MultiRangeClientPartition value = multiRangePartitionProperty.getValue();
             LongLiteral longLiteral = new LongLiteral(String.valueOf(value.getInterval()));
-            PartitionDesc rangePartition = new MultiRangePartition(
-                new StringLiteral(value.getStart()),
-                new StringLiteral(value.getEnd()),
+            PartitionDesc rangePartition = new MultiRangePartition(new StringLiteral(value.getStart()), new StringLiteral(value.getEnd()),
                 value.getDateTimeEnum() != null ? new IntervalLiteral(longLiteral, value.getDateTimeEnum()) : null,
-                value.getDateTimeEnum() == null ? longLiteral : null
-            );
+                value.getDateTimeEnum() == null ? longLiteral : null);
             list.add(rangePartition);
         }
     }
@@ -445,35 +454,23 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             LessThanClientPartitionKey lessThanClientPartitionKey = (LessThanClientPartitionKey)partitionKeyValue;
             List<PartitionClientValue> partitionValueList = Optional.ofNullable(lessThanClientPartitionKey.getPartitionValueList()).orElse(
                 Lists.newArrayList());
-            List<PartitionValue> collect = partitionValueList
-                .stream().map(x -> {
-                    return getPartitionValue(x);
-                })
-                .collect(Collectors.toList());
-            partitionKey = new LessThanPartitionKey(
-                lessThanClientPartitionKey.isMaxValue(),
-                new ListPartitionValue(collect)
-            );
+            List<PartitionValue> collect = partitionValueList.stream().map(x -> {
+                return getPartitionValue(x);
+            }).collect(Collectors.toList());
+            partitionKey = new LessThanPartitionKey(lessThanClientPartitionKey.isMaxValue(), new ListPartitionValue(collect));
         } else if (partitionKeyValue instanceof ArrayClientPartitionKey) {
             ArrayClientPartitionKey arrayClientPartitionKey = (ArrayClientPartitionKey)partitionKeyValue;
-            List<ListPartitionValue> collect = arrayClientPartitionKey.getPartitionValue().stream().map(
-                x -> {
-                    List<PartitionValue> partitionValueList = Lists.newArrayList();
-                    for (PartitionClientValue partitionClientValue : x) {
-                        PartitionValue partitionValue = getPartitionValue(partitionClientValue);
-                        partitionValueList.add(partitionValue);
-                    }
-                    return new ListPartitionValue(partitionValueList);
+            List<ListPartitionValue> collect = arrayClientPartitionKey.getPartitionValue().stream().map(x -> {
+                List<PartitionValue> partitionValueList = Lists.newArrayList();
+                for (PartitionClientValue partitionClientValue : x) {
+                    PartitionValue partitionValue = getPartitionValue(partitionClientValue);
+                    partitionValueList.add(partitionValue);
                 }
-            ).collect(Collectors.toList());
+                return new ListPartitionValue(partitionValueList);
+            }).collect(Collectors.toList());
             partitionKey = new ArrayPartitionKey(collect);
         }
-        return new SingleRangePartition(
-            new Identifier(rangePartitionValue.getName()),
-            rangePartitionValue.isIfNotExists(),
-            partitionKey,
-            null
-        );
+        return new SingleRangePartition(new Identifier(rangePartitionValue.getName()), rangePartitionValue.isIfNotExists(), partitionKey, null);
     }
 
     protected PartitionValue getPartitionValue(PartitionClientValue partitionClientValue) {
@@ -484,8 +481,7 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         return new PartitionValue(partitionClientValue.isMaxValue(), stringLiteral);
     }
 
-    private void toListPartition(List<PartitionDesc> list, List<ColumnDefinition> columnDefinitionList,
-        BaseClientProperty baseClientProperty) {
+    private void toListPartition(List<PartitionDesc> list, List<ColumnDefinition> columnDefinitionList, BaseClientProperty baseClientProperty) {
         if (!(baseClientProperty instanceof ListPartitionProperty)) {
             return;
         }
@@ -498,36 +494,23 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         }
         ArrayClientPartitionKey arrayClientPartitionKey = (ArrayClientPartitionKey)partitionKeyValue;
         if (multiPartition) {
-            List<ListStringLiteral> collect = arrayClientPartitionKey.getPartitionValue().stream().map(
-                x -> {
-                    List<StringLiteral> partitionValueList = Lists.newArrayList();
-                    for (PartitionClientValue partitionClientValue : x) {
-                        partitionValueList.add(new StringLiteral(partitionClientValue.getValue()));
-                    }
-                    return new ListStringLiteral(partitionValueList);
+            List<ListStringLiteral> collect = arrayClientPartitionKey.getPartitionValue().stream().map(x -> {
+                List<StringLiteral> partitionValueList = Lists.newArrayList();
+                for (PartitionClientValue partitionClientValue : x) {
+                    partitionValueList.add(new StringLiteral(partitionClientValue.getValue()));
                 }
-            ).collect(Collectors.toList());
-            MultiItemListPartition listPartition = new MultiItemListPartition(
-                new Identifier(listClientPartition.getName()),
-                false,
-                collect,
-                null
-            );
+                return new ListStringLiteral(partitionValueList);
+            }).collect(Collectors.toList());
+            MultiItemListPartition listPartition = new MultiItemListPartition(new Identifier(listClientPartition.getName()), false, collect, null);
             list.add(listPartition);
         } else {
-            List<StringLiteral> collect = arrayClientPartitionKey.getPartitionValue().stream().map(
-                x -> {
-                    PartitionClientValue partitionClientValue = x.get(0);
-                    return new StringLiteral(partitionClientValue.getValue());
-                }
-            ).collect(Collectors.toList());
+            List<StringLiteral> collect = arrayClientPartitionKey.getPartitionValue().stream().map(x -> {
+                PartitionClientValue partitionClientValue = x.get(0);
+                return new StringLiteral(partitionClientValue.getValue());
+            }).collect(Collectors.toList());
             ListStringLiteral partitionKey = new ListStringLiteral(collect);
-            SingleItemListPartition listPartition = new SingleItemListPartition(
-                new Identifier(listClientPartition.getName()),
-                false,
-                partitionKey,
-                null
-            );
+            SingleItemListPartition listPartition = new SingleItemListPartition(new Identifier(listClientPartition.getName()), false, partitionKey,
+                null);
             list.add(listPartition);
         }
     }
@@ -555,8 +538,39 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             }
             arguments.add(timeExpressionClientPartition.getInterval());
         }
-        return new FunctionCall(QualifiedName.of(timeExpressionClientPartition.getFuncName()),
-            false, arguments);
+        return new FunctionCall(QualifiedName.of(timeExpressionClientPartition.getFuncName()), false, arguments);
+    }
+
+    @Override
+    protected List<Constraint> toOutlineConstraint(CreateTable createTable) {
+        if (createTable.isConstraintEmpty()) {
+            return Lists.newArrayList();
+        }
+        List<Constraint> list = super.toOutlineConstraint(createTable);
+        List<BaseConstraint> constraintStatements = createTable.getConstraintStatements();
+        for (BaseConstraint constraint : constraintStatements) {
+            if (constraint instanceof ForeignKeyConstraint) {
+                ForeignKeyConstraint foreignKeyConstraint = (ForeignKeyConstraint)constraint;
+                ForeignKeyClientConstraint clientConstraint = new ForeignKeyClientConstraint();
+                clientConstraint.setName(foreignKeyConstraint.getName().getValue());
+                clientConstraint.setColumns(foreignKeyConstraint.getColNames().stream().map(Identifier::getValue).collect(Collectors.toList()));
+                clientConstraint.setReferenceTable(foreignKeyConstraint.getReferenceTable().toString());
+                clientConstraint.setReferenceColNames(
+                    foreignKeyConstraint.getReferenceColNames().stream().map(Identifier::getValue).collect(Collectors.toList()));
+                list.add(clientConstraint);
+            }
+        }
+        return list;
+    }
+
+    private DistributeClientConstraint toDistributeClientConstraint(DistributeNonKeyConstraint distributeConstraint) {
+        DistributeClientConstraint clientConstraint = new DistributeClientConstraint();
+        clientConstraint.setBucket(distributeConstraint.getBucket());
+        if (CollectionUtils.isNotEmpty(distributeConstraint.getColumns())) {
+            clientConstraint.setColumns(distributeConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList()));
+        }
+        clientConstraint.setRandom(distributeConstraint.getRandom());
+        return clientConstraint;
     }
 
     @Override
@@ -566,7 +580,12 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         if (StringUtils.isBlank(dataTypeName)) {
             throw new IllegalArgumentException("dataType name can't be null:" + column.getName());
         }
-        IDataTypeName byValue = getDataTypeName(dataTypeName);
+        IDataTypeName byValue = null;
+        try {
+            byValue = getDataTypeName(dataTypeName);
+        } catch (Exception e) {
+            return getLanguageParser().parseDataType(dataTypeName, context);
+        }
         if (byValue == null) {
             return getLanguageParser().parseDataType(dataTypeName, context);
         }
@@ -602,14 +621,14 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
         for (Constraint constraint : constraints) {
             ConstraintType type = constraint.getType();
             if (type == ExtensionClientConstraintType.DISTRIBUTE) {
-                DistributeConstraint distributeConstraint = toDistributeConstraint(constraint);
+                DistributeNonKeyConstraint distributeConstraint = toDistributeConstraint(constraint);
                 if (distributeConstraint == null) {
                     continue;
                 }
                 baseConstraints.add(distributeConstraint);
             }
             if (type == ExtensionClientConstraintType.ORDER_BY) {
-                OrderByConstraint orderByConstraint = toOrderByConstraint(constraint);
+                OrderByNonKeyConstraint orderByConstraint = toOrderByConstraint(constraint);
                 baseConstraints.add(orderByConstraint);
             }
 
@@ -622,8 +641,47 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
                 AggregateKeyConstraint aggregateKeyConstraint = toAggregateKeyConstraint(constraint);
                 baseConstraints.add(aggregateKeyConstraint);
             }
+
+            if (type == ExtensionClientConstraintType.CLUSTER_BY) {
+                ClusterNonKeyConstraint clusterKeyConstraint = toClusterNonKeyConstraint(constraint);
+                baseConstraints.add(clusterKeyConstraint);
+            }
+            if (type == ExtensionClientConstraintType.CLUSTERED_KEY) {
+                ClusteredKeyConstraint clusteredKeyConstraint = toClusteredKeyConstraint(constraint);
+                baseConstraints.add(clusteredKeyConstraint);
+            }
+
+            if (type == ExtensionClientConstraintType.FOREIGN_KEY) {
+                ForeignKeyClientConstraint foreignKeyClientConstraint = (ForeignKeyClientConstraint)constraint;
+                ForeignKeyConstraint foreignKeyConstraint = toForeignKeyConstraint(foreignKeyClientConstraint);
+                baseConstraints.add(foreignKeyConstraint);
+            }
         }
         return baseConstraints;
+    }
+
+    private ForeignKeyConstraint toForeignKeyConstraint(ForeignKeyClientConstraint foreignKeyClientConstraint) {
+        return new ForeignKeyConstraint(new Identifier(foreignKeyClientConstraint.getName()),
+            foreignKeyClientConstraint.getIndexName() != null ? new Identifier(foreignKeyClientConstraint.getIndexName()) : null,
+            foreignKeyClientConstraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList()),
+            QualifiedName.of(foreignKeyClientConstraint.getReferenceTable()),
+            foreignKeyClientConstraint.getReferenceColNames().stream().map(Identifier::new).collect(Collectors.toList()), null, null, null);
+    }
+
+    private ClusteredKeyConstraint toClusteredKeyConstraint(Constraint constraint) {
+        return new ClusteredKeyConstraint(constraint.getName() != null ? new Identifier(constraint.getName()) : IdentifierUtil.sysIdentifier(), true,
+            constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
+    }
+
+    /**
+     * 转换为聚集索引
+     *
+     * @param constraint
+     * @return
+     */
+    private ClusterNonKeyConstraint toClusterNonKeyConstraint(Constraint constraint) {
+        return new ClusterNonKeyConstraint(constraint.getName() != null ? new Identifier(constraint.getName()) : IdentifierUtil.sysIdentifier(), true,
+            constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
     }
 
     protected BaseExpression toDefaultValueExpression(BaseDataType baseDataType, String defaultValue) {
@@ -648,21 +706,16 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
     }
 
     private AggregateKeyConstraint toAggregateKeyConstraint(Constraint constraint) {
-        return new AggregateKeyConstraint(
-            IdentifierUtil.sysIdentifier(),
-            constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList())
-        );
+        return new AggregateKeyConstraint(IdentifierUtil.sysIdentifier(),
+            constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList()));
     }
 
     private DuplicateKeyConstraint toDuplicateKeyConstraint(Constraint constraint) {
-        return new DuplicateKeyConstraint(
-            IdentifierUtil.sysIdentifier(),
-            constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList()),
-            true
-        );
+        return new DuplicateKeyConstraint(IdentifierUtil.sysIdentifier(),
+            constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList()), true);
     }
 
-    private OrderByConstraint toOrderByConstraint(Constraint constraint) {
+    private OrderByNonKeyConstraint toOrderByConstraint(Constraint constraint) {
         String name = constraint.getName();
         Identifier nameIdentifier = null;
         if (StringUtils.isBlank(name)) {
@@ -671,26 +724,26 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             nameIdentifier = new Identifier(name);
         }
         List<Identifier> collect = constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList());
-        return new OrderByConstraint(nameIdentifier, collect);
+        return new OrderByNonKeyConstraint(nameIdentifier, collect);
     }
 
-    private DistributeConstraint toDistributeConstraint(Constraint constraint) {
+    private DistributeNonKeyConstraint toDistributeConstraint(Constraint constraint) {
         if (constraint instanceof DistributeClientConstraint) {
             DistributeClientConstraint clientConstraint = (DistributeClientConstraint)constraint;
             List<Identifier> list = null;
             if (CollectionUtils.isNotEmpty(constraint.getColumns())) {
                 list = constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList());
-                return new DistributeConstraint(list, clientConstraint.getBucket());
+                return new DistributeNonKeyConstraint(list, clientConstraint.getBucket());
             } else {
                 if (BooleanUtils.isTrue(clientConstraint.getRandom())) {
-                    return new DistributeConstraint(clientConstraint.getRandom(), clientConstraint.getBucket());
+                    return new DistributeNonKeyConstraint(clientConstraint.getRandom(), clientConstraint.getBucket());
                 }
             }
         }
         List<Identifier> list = null;
         if (CollectionUtils.isNotEmpty(constraint.getColumns())) {
             list = constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList());
-            return new DistributeConstraint(list, null);
+            return new DistributeNonKeyConstraint(list, null);
         }
         return null;
     }

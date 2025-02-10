@@ -56,7 +56,7 @@ public class TableIndexCompareTest {
             ).build();
         List<BaseStatement> baseStatementList = tableIndexCompare.compareTableElement(before, after);
         assertEquals(1, baseStatementList.size());
-        assertEquals(baseStatementList.get(0).toString(), "CREATE INDEX index_name ON abc (a)");
+        assertEquals(baseStatementList.get(0).toString(), "CREATE INDEX index_name ON abc(a)");
     }
 
     @Test
@@ -94,6 +94,6 @@ public class TableIndexCompareTest {
         List<BaseStatement> baseStatementList = tableIndexCompare.compareTableElement(before, after);
         assertEquals(2, baseStatementList.size());
         assertEquals(baseStatementList.get(0).toString(), "DROP INDEX index_name ON abc");
-        assertEquals(baseStatementList.get(1).toString(), "CREATE INDEX index_name ON abc (b)");
+        assertEquals(baseStatementList.get(1).toString(), "CREATE INDEX index_name ON abc(b)");
     }
 }

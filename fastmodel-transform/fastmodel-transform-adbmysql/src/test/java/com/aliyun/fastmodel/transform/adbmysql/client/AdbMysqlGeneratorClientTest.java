@@ -33,8 +33,8 @@ import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.TimeExpressionPartitionProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.TimeExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.TimeExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.TimeExpressionPartitionProperty;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -91,7 +91,7 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
-            + "   c1 BIGINT NULL COMMENT 'comment'\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
             + ")\n"
             + "PARTITION BY VALUE(date_format(c1, '%Y%M%d'))\n"
             + "HOT_PARTITION_COUNT=10\n"
@@ -136,7 +136,7 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
-            + "   c1 BIGINT NULL COMMENT 'comment'\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
             + ")\n"
             + "PARTITION BY VALUE(date_format(c1, '%Y%M%d'))\n"
             + "BLOCK_SIZE=10\n"
@@ -175,7 +175,7 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
-            + "   c1 BIGINT NULL COMMENT 'comment'\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
             + ")\n"
             + "HOT_PARTITION_COUNT=10\n"
             + "BLOCK_SIZE=10\n"
@@ -213,10 +213,10 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
-            + "   c1 BIGINT NULL COMMENT 'comment',\n"
-            + "   c2 VARCHAR(10) NULL COMMENT 'comment'\n"
+            + "   c1 BIGINT COMMENT 'comment',\n"
+            + "   c2 VARCHAR(10) COMMENT 'comment'\n"
             + ")\n"
-            + "DISTRIBUTE BY HASH(c2)", table);
+            + "DISTRIBUTED BY HASH(c2)", table);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
-            + "   c1 BIGINT NULL COMMENT 'comment'\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
             + ")\n"
             + "PARTITION BY VALUE(date_format(c1, '%Y%M%d')) LIFECYCLE 11", table);
     }
@@ -271,7 +271,7 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS db1.t1\n"
             + "(\n"
-            + "   c1 BIGINT NULL COMMENT 'comment'\n"
+            + "   c1 BIGINT COMMENT 'comment'\n"
             + ")\n"
             + "PARTITION BY VALUE(date_format(c1, '%Y%M%d')) LIFECYCLE 11", table);
     }
@@ -301,7 +301,7 @@ public class AdbMysqlGeneratorClientTest extends BaseAdbMysqlTest {
             .build();
         assertText("CREATE TABLE IF NOT EXISTS t1\n"
             + "(\n"
-            + "   c1 DECIMAL(10,10) NULL COMMENT 'comment'\n"
+            + "   c1 DECIMAL(10,10) COMMENT 'comment'\n"
             + ")\n"
             + "PARTITION BY VALUE(date_format(c1, '%Y%M%d')) LIFECYCLE 11", table);
 

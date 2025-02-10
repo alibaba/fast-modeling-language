@@ -1,0 +1,6 @@
+CREATE TABLE sales (id int, year int, qtr int, c_rank int, code char(1), region text)
+DISTRIBUTED BY (id)
+PARTITION BY LIST (code)
+( PARTITION sales VALUES ('S'),
+  PARTITION returns VALUES ('R')
+);

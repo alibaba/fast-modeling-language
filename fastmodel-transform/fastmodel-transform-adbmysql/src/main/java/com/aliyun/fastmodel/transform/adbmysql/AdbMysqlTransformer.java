@@ -8,6 +8,7 @@ import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlLanguageParser;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.builder.BuilderFactory;
 import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
@@ -59,5 +60,10 @@ public class AdbMysqlTransformer implements Transformer<BaseStatement> {
     @Override
     public Node reverseTable(Table table, ReverseContext context) {
         return adbMysqlClientConverter.convertToNode(table, TableConfig.builder().build());
+    }
+
+    @Override
+    public BaseClientProperty create(String name, String value) {
+        return adbMysqlClientConverter.getPropertyConverter().create(name, value);
     }
 }

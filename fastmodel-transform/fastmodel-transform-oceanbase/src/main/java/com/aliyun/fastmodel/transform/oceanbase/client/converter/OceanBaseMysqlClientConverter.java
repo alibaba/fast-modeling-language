@@ -31,9 +31,9 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.UniqueKeyExprClientConstraint;
 import com.aliyun.fastmodel.transform.api.extension.client.converter.ExtensionClientConverter;
 import com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.BaseClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.BaseClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangeClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.UniqueKeyExprConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
@@ -73,6 +73,7 @@ import com.aliyun.fastmodel.transform.oceanbase.parser.tree.partition.desc.eleme
 import com.aliyun.fastmodel.transform.oceanbase.parser.tree.partition.desc.element.SubRangePartitionElement;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +84,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author panguanjing
  * @date 2024/2/5
  */
+@Getter
 public class OceanBaseMysqlClientConverter extends ExtensionClientConverter<OceanBaseContext> {
 
     private final OceanBaseMysqlLanguageParser oceanBaseMysqlLanguageParser;
@@ -465,7 +467,7 @@ public class OceanBaseMysqlClientConverter extends ExtensionClientConverter<Ocea
         if (e.getSubPartitionElementList() != null) {
             List<SubPartitionElement> subPartitionElementList = e.getSubPartitionElementList()
                 .stream().map(
-                    ele -> oceanBasePartitionClientConverter.getSubPartitionElement(ele)
+                    oceanBasePartitionClientConverter::getSubPartitionElement
                 ).collect(Collectors.toList());
             subPartitionList = new SubPartitionList(subPartitionElementList);
         }

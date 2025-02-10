@@ -59,6 +59,9 @@ import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.Token;
 import org.apache.commons.collections.CollectionUtils;
 
+import static com.aliyun.fastmodel.common.parser.ParserHelper.getLocation;
+import static com.aliyun.fastmodel.common.parser.ParserHelper.getOrigin;
+
 /**
  * @author 子梁
  * @date 2024/5/15
@@ -80,7 +83,7 @@ public class FlinkAstBuilder extends FlinkSqlParserBaseVisitor<Node> {
         if (list.size() == 1) {
             return list.get(0);
         }
-        return new CompositeStatement(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx), list);
+        return new CompositeStatement(getLocation(ctx), getOrigin(ctx), list);
     }
 
     @Override

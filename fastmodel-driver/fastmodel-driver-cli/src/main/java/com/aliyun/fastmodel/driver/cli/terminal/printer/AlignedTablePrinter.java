@@ -34,7 +34,7 @@ import org.jline.utils.WCWidth;
 import static java.lang.Math.max;
 
 /**
- * Desc:
+ * 对齐表格的打印处理
  *
  * @author panguanjing
  * @date 2020/12/29

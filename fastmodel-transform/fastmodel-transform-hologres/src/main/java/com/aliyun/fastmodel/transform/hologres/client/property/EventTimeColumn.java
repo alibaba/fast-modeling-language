@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class EventTimeColumn extends BaseClientProperty<List<String>> {
 
-    public static final String EVENT_TIME_COLUMN = HoloPropertyKey.EVENT_TIME_COLUMN.getValue();
+    public static final String EVENT_TIME_COLUMN = HologresPropertyKey.EVENT_TIME_COLUMN.getValue();
 
     public EventTimeColumn() {
         this.setKey(EVENT_TIME_COLUMN);

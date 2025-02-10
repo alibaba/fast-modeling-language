@@ -30,7 +30,7 @@ import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.extension.tree.column.AggregateDesc;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
@@ -165,7 +165,7 @@ public class StarRocksOutVisitorTest {
         List<Property> columnProperties = Lists.newArrayList();
         columns.add(ColumnDefinition.builder().colName(new Identifier("c1")).properties(columnProperties).build());
         List<BaseConstraint> list = Lists.newArrayList();
-        DistributeConstraint distributeConstraint = new DistributeConstraint(
+        DistributeNonKeyConstraint distributeConstraint = new DistributeNonKeyConstraint(
             Lists.newArrayList(new Identifier("c1")), 4
         );
         list.add(distributeConstraint);

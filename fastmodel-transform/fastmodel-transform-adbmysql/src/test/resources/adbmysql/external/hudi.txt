@@ -1,0 +1,8 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.osstest2
+(id int,
+name string,
+age int,
+city string)
+STORED AS HUDI
+LOCATION  'oss://testBucketName/osstest/test'
+TBLPROPERTIES ('type' = 'cow');

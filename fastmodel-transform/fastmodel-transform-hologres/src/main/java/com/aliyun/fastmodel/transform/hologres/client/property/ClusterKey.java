@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ClusterKey extends BaseClientProperty<List<ColumnOrder>> {
 
-    public static final String CLUSTERING_KEY = HoloPropertyKey.CLUSTERING_KEY.getValue();
+    public static final String CLUSTERING_KEY = HologresPropertyKey.CLUSTERING_KEY.getValue();
 
     public ClusterKey() {
         this.setKey(CLUSTERING_KEY);

@@ -716,13 +716,13 @@ public class OceanBaseMysqlOutVisitor extends FastModelVisitor implements OceanB
         }
         builder.append("(");
         List<Identifier> colNames = foreignKeyConstraint.getColNames();
-        String collect = colNames.stream().map(c -> formatExpression(c)).collect(joining(","));
+        String collect = colNames.stream().map(this::formatExpression).collect(joining(","));
         builder.append(collect).append(")");
         //reference
         builder.append(" REFERENCES ");
         builder.append(formatName(foreignKeyConstraint.getReferenceTable()));
 
-        String referenceColumns = foreignKeyConstraint.getReferenceColNames().stream().map(c -> formatExpression(c)).collect(joining(","));
+        String referenceColumns = foreignKeyConstraint.getReferenceColNames().stream().map(this::formatExpression).collect(joining(","));
         builder.append("(").append(referenceColumns).append(")");
 
         if (foreignKeyConstraint.getMatchAction() != null) {

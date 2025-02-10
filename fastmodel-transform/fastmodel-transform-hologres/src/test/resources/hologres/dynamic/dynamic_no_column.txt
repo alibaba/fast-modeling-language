@@ -1,0 +1,6 @@
+CREATE DYNAMIC TABLE sales_incremental
+  WITH (refresh_mode='incremental')
+AS
+  SELECT day, hour, sum(amount), count(1)
+    FROM base_sales
+  GROUP BY day, hour;

@@ -1,0 +1,22 @@
+CREATE DYNAMIC TABLE public.tpch_q1_incremental
+(a,b)
+PARTITION BY LIST (a)
+with (
+refresh_mode='incremental',
+auto_refresh_enable='true',
+incremental_auto_refresh_schd_start_time='2024-09-15 23:50:0',
+incremental_auto_refresh_interval='3 minutes',
+incremental_guc_hg_computing_resource='serverless',
+incremental_guc_hg_experimental_serverless_computing_required_cores='30'
+) AS select
+        l_returnflag,
+        l_linestatus,
+        count(*) as count_order
+from
+        hologres_dataset_tpch_100g.lineitem
+where
+        l_shipdate <= date '1998-12-01' - interval '120' day
+group by
+        l_returnflag,
+        l_linestatus
+;

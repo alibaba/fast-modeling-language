@@ -1,0 +1,4 @@
+CREATE TABLE baby.rank (
+    id int, rank int, year smallint, gender char(1), count int
+)
+DISTRIBUTED BY (rank, gender, year);

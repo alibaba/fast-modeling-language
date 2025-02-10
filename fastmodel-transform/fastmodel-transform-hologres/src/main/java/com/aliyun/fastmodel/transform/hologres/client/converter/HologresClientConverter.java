@@ -27,9 +27,10 @@ import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
-import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
+import com.aliyun.fastmodel.transform.hologres.client.property.HologresPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.format.HologresAstVisitor;
 import com.aliyun.fastmodel.transform.hologres.parser.HologresParser;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
@@ -60,7 +61,7 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
     public BaseDataType getDataType(Column column) {
         String dataTypeName = column.getDataType();
         if (StringUtils.isBlank(dataTypeName)) {
-            throw new IllegalArgumentException("dataType name can't be null:" + column.getName());
+            return null;
         }
         IDataTypeName byValue = HologresDataTypeName.getByValue(dataTypeName);
         Dimension dimension = byValue.getDimension();
@@ -97,7 +98,12 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
         }
 
         if (table.isExternal()) {
-            Property property = new Property(HoloPropertyKey.FOREIGN.getValue(), "true");
+            Property property = new Property(HologresPropertyKey.FOREIGN.getValue(), Boolean.toString(true));
+            list.add(property);
+        }
+
+        if (table.isDynamic()) {
+            Property property = new Property(HologresPropertyKey.DYNAMIC.getValue(), Boolean.toString(true));
             list.add(property);
         }
         return list;
@@ -110,6 +116,13 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
             return super.toDefaultBaseValue(withDataTypeNameExpression.getBaseExpression());
         }
         return super.toDefaultBaseValue(defaultValue);
+    }
+
+    @Override
+    protected String formatExpression(BaseExpression baseExpression) {
+        HologresAstVisitor hologresAstVisitor = new HologresAstVisitor(HologresTransformContext.builder().build());
+        baseExpression.accept(hologresAstVisitor, 0);
+        return hologresAstVisitor.getBuilder().toString();
     }
 
     @Override
@@ -134,13 +147,21 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
 
     @Override
     public Boolean isExternal(CreateTable createTable) {
+        return getaBoolean(createTable, HologresPropertyKey.FOREIGN);
+    }
+
+    private Boolean getaBoolean(CreateTable createTable, HologresPropertyKey hologresPropertyKey) {
         List<Property> properties = createTable.getProperties();
         if (CollectionUtils.isEmpty(properties)) {
             return false;
         }
         Optional<Property> first = properties.stream().filter(
-            p -> StringUtils.equalsIgnoreCase(HoloPropertyKey.FOREIGN.getValue(), p.getName())).findFirst();
+            p -> StringUtils.equalsIgnoreCase(hologresPropertyKey.getValue(), p.getName())).findFirst();
         return first.filter(property -> BooleanUtils.toBoolean(property.getValue())).isPresent();
+    }
+
+    protected Boolean isDynamic(CreateTable createTable) {
+        return getaBoolean(createTable, HologresPropertyKey.DYNAMIC);
     }
 
     @Override
@@ -148,9 +169,9 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
         List<BaseClientProperty> propertyList = super.toBaseClientProperty(createTable);
 
         // remove foreign key
-        propertyList.removeIf(p -> StringUtils.equalsIgnoreCase(HoloPropertyKey.FOREIGN.getValue(), p.getKey()));
+        propertyList.removeIf(p -> StringUtils.equalsIgnoreCase(HologresPropertyKey.FOREIGN.getValue(), p.getKey()));
         // remove lifecycle
-        propertyList.removeIf(p -> StringUtils.equalsIgnoreCase(HoloPropertyKey.TIME_TO_LIVE_IN_SECONDS.getValue(), p.getKey()));
+        propertyList.removeIf(p -> StringUtils.equalsIgnoreCase(HologresPropertyKey.TIME_TO_LIVE_IN_SECONDS.getValue(), p.getKey()));
 
         return propertyList;
     }
@@ -162,9 +183,8 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
         }
         IDataTypeName typeName = baseDataType.getTypeName();
         String type = typeName.getValue();
-        String value = defaultValue;
         if (StringUtils.equalsIgnoreCase(HologresDataTypeName.TIMESTAMPTZ.getValue(), type)) {
-            return new TimestampLiteral(value);
+            return new TimestampLiteral(defaultValue);
         }
         BaseExpression baseExpression = super.getBaseExpression(baseDataType, defaultValue);
         if (baseExpression != null) {

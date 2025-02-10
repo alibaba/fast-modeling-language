@@ -127,7 +127,7 @@ simpleCreateTable
     RR_BRACKET
     commentSpec?
     partitionDefinition?
-    withOption
+    withOption?
     likeDefinition?
     ;
 

@@ -33,7 +33,7 @@ public interface OutputPrinter {
     /**
      * 输出行内容到控制台
      *
-     * @param rows 行内容
+     * @param rows   行内容
      * @throws IOException io异常
      */
     void printRows(List<DriverRow> rows) throws IOException;

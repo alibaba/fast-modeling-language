@@ -3,15 +3,16 @@ package com.aliyun.fastmodel.transform.api.extension.visitor;
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.CheckExpressionConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ClusteredKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ForeignKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.UniqueKeyExprConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.ClusterKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.ClusterNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupItem;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
@@ -25,6 +26,24 @@ import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.Less
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.ListPartitionValue;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionKey;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.keyvalue.PartitionValue;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.BaseSubPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.SubHashPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.SubKeyPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.SubListPartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.SubRangePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.BasePartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.BaseSubPartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.HashPartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.ListPartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.RangePartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.SubHashPartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.SubListPartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.SubPartitionList;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.element.SubRangePartitionElement;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.template.SubHashTemplatePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.template.SubKeyTemplatePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.template.SubListTemplatePartition;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.sub.template.SubRangeTemplatePartition;
 
 /**
  * 扩展的visitor
@@ -209,11 +228,11 @@ public interface ExtensionAstVisitor<R, C> extends IAstVisitor<R, C> {
         return visitNode(duplicateConstraint, context);
     }
 
-    default R visitOrderByConstraint(OrderByConstraint orderByConstraint, C context) {
+    default R visitOrderByConstraint(OrderByNonKeyConstraint orderByConstraint, C context) {
         return visitNode(orderByConstraint, context);
     }
 
-    default R visitDistributeKeyConstraint(DistributeConstraint distributeKeyConstraint, C context) {
+    default R visitDistributeKeyConstraint(DistributeNonKeyConstraint distributeKeyConstraint, C context) {
         return visitNode(distributeKeyConstraint, context);
     }
 
@@ -221,11 +240,18 @@ public interface ExtensionAstVisitor<R, C> extends IAstVisitor<R, C> {
         return visitNode(rollupItem, context);
     }
 
-    default R visitRollupConstraint(RollupConstraint rollupConstraint, C context) {
+    default R visitRollupConstraint(RollupNonKeyConstraint rollupConstraint, C context) {
         return visitNode(rollupConstraint, context);
     }
 
-    default R visitClusterKeyConstraint(ClusterKeyConstraint clusterKeyConstraint, C context) {
+    /**
+     * visit cluster key constraint
+     *
+     * @param clusterKeyConstraint
+     * @param context
+     * @return
+     */
+    default R visitClusterKeyConstraint(ClusterNonKeyConstraint clusterKeyConstraint, C context) {
         return visitNode(clusterKeyConstraint, context);
     }
 
@@ -239,5 +265,207 @@ public interface ExtensionAstVisitor<R, C> extends IAstVisitor<R, C> {
 
     default R visitUniqueKeyExprConstraint(UniqueKeyExprConstraint uniqueKeyExprConstraint, C context) {
         return visitNode(uniqueKeyExprConstraint, context);
+    }
+
+    default R visitClusteredKeyConstraint(ClusteredKeyConstraint clusteredKeyConstraint, C context) {
+        return visitNode(clusteredKeyConstraint, context);
+    }
+
+    /**
+     * sub range partition
+     *
+     * @param subRangePartition
+     * @param context
+     * @return
+     */
+    default R visitSubRangePartition(SubRangePartition subRangePartition, C context) {
+        return visitNode(subRangePartition, context);
+    }
+
+    /**
+     * sub list partition
+     *
+     * @param subListPartition
+     * @param context
+     * @return
+     */
+    default R visitSubListPartition(SubListPartition subListPartition, C context) {
+        return visitNode(subListPartition, context);
+    }
+
+    /**
+     * sub key partition
+     *
+     * @param subKeyPartition
+     * @param context
+     * @return
+     */
+    default R visitSubKeyPartition(SubKeyPartition subKeyPartition, C context) {
+        return visitNode(subKeyPartition, context);
+    }
+
+    /**
+     * base sub partition
+     *
+     * @param baseSubPartition
+     * @param context
+     * @return
+     */
+    default R visitBaseSubPartition(BaseSubPartition baseSubPartition, C context) {
+        return visitNode(baseSubPartition, context);
+    }
+
+    /**
+     * visit sub Hash Partition
+     *
+     * @param subHashPartition
+     * @param context
+     * @return
+     */
+    default R visitSubHashPartition(SubHashPartition subHashPartition, C context) {
+        return visitNode(subHashPartition, context);
+    }
+
+    /**
+     * sub range partition element
+     *
+     * @param subRangePartitionElement
+     * @param context
+     * @return
+     */
+    default R visitRangeSubPartitionElement(SubRangePartitionElement subRangePartitionElement, C context) {
+        return visitNode(subRangePartitionElement, context);
+    }
+
+    /**
+     * visit sub hash template partition
+     *
+     * @param subHashTemplatePartition
+     * @param context
+     * @return
+     */
+    default R visitSubHashTemplatePartition(SubHashTemplatePartition subHashTemplatePartition, C context) {
+        return visitNode(subHashTemplatePartition, context);
+    }
+
+    /**
+     * sub range template partition
+     *
+     * @param subRangeTemplatePartition
+     * @param context
+     * @return
+     */
+    default R visitSubRangeTemplatePartition(SubRangeTemplatePartition subRangeTemplatePartition, C context) {
+        return visitNode(subRangeTemplatePartition, context);
+    }
+
+    /**
+     * sub list template partition
+     *
+     * @param subListTemplatePartition
+     * @param context
+     * @return
+     */
+    default R visitSubListTemplatePartition(SubListTemplatePartition subListTemplatePartition, C context) {
+        return visitNode(subListTemplatePartition, context);
+    }
+
+    /**
+     * subKeyTemplatePartition
+     *
+     * @param subKeyTemplatePartition
+     * @param context
+     * @return
+     */
+    default R visitSubKeyTemplatePartition(SubKeyTemplatePartition subKeyTemplatePartition, C context) {
+        return visitNode(subKeyTemplatePartition, context);
+    }
+
+    /**
+     * visit sub partition list
+     *
+     * @param subPartitionList
+     * @param context
+     * @return
+     */
+    default R visitSubPartitionList(SubPartitionList subPartitionList, C context) {
+        return visitNode(subPartitionList, context);
+    }
+
+    /**
+     * subHashPartitionElement
+     *
+     * @param subHashPartitionElement
+     * @param context
+     * @return
+     */
+    default R visitHashSubPartitionElement(SubHashPartitionElement subHashPartitionElement, C context) {
+        return visitNode(subHashPartitionElement, context);
+    }
+
+    /**
+     * rangePartitionElement
+     *
+     * @param rangePartitionElement
+     * @param context
+     * @return
+     */
+    default R visitRangePartitionElement(RangePartitionElement rangePartitionElement, C context) {
+        return visitNode(rangePartitionElement, context);
+    }
+
+    /**
+     * subListPartitionElement
+     *
+     * @param subListPartitionElement
+     * @param context
+     * @return
+     */
+    default R visitListSubPartitionElement(SubListPartitionElement subListPartitionElement, C context) {
+        return visitNode(subListPartitionElement, context);
+    }
+
+    /**
+     * partitionElement
+     *
+     * @param partitionElement
+     * @param context
+     * @return
+     */
+    default R visitPartitionElement(BasePartitionElement partitionElement, C context) {
+        return visitNode(partitionElement, context);
+    }
+
+    /**
+     * listPartitionElement
+     *
+     * @param listPartitionElement
+     * @param context
+     * @return
+     */
+    default R visitListPartitionElement(ListPartitionElement listPartitionElement, C context) {
+        return visitNode(listPartitionElement, context);
+    }
+
+    /**
+     * subPartitionElement
+     *
+     * @param subPartitionElement
+     * @param context
+     * @return
+     */
+    default R visitSubPartitionElement(BaseSubPartitionElement subPartitionElement, C context) {
+        return visitNode(subPartitionElement, context);
+    }
+
+    /**
+     * hashPartitionElement
+     *
+     * @param hashPartitionElement
+     * @param context
+     * @return
+     */
+    default R visitHashPartitionElement(HashPartitionElement hashPartitionElement, C context) {
+        return visitNode(hashPartitionElement, context);
     }
 }

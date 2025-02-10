@@ -13,14 +13,14 @@ import java.util.function.Function;
 
 import com.aliyun.fastmodel.transform.api.client.converter.BasePropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ClusterKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.BinLogTTL;
 import com.aliyun.fastmodel.transform.hologres.client.property.BitMapColumn;
-import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn;
 import com.aliyun.fastmodel.transform.hologres.client.property.DistributionKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.client.property.EventTimeColumn;
-import com.aliyun.fastmodel.transform.hologres.client.property.HoloPropertyKey;
+import com.aliyun.fastmodel.transform.hologres.client.property.HologresPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.SegmentKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.TableGroup;
 import com.aliyun.fastmodel.transform.hologres.client.property.TableOrientation;
@@ -96,7 +96,7 @@ public class HologresPropertyConverter extends BasePropertyConverter {
             return enableBingLogLevel;
         });
 
-        PROPERTY_FUNCTION_MAP.put(HoloPropertyKey.BINLOG_TTL.getValue(), value -> {
+        PROPERTY_FUNCTION_MAP.put(HologresPropertyKey.BINLOG_TTL.getValue(), value -> {
             BinLogTTL ttl = new BinLogTTL();
             ttl.setValueString(value);
             return ttl;
@@ -113,6 +113,7 @@ public class HologresPropertyConverter extends BasePropertyConverter {
             segmentKey.setValueString(value);
             return segmentKey;
         });
+
     }
 
     /**

@@ -14,7 +14,7 @@ import com.aliyun.fastmodel.core.tree.IAstVisitor;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
-import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresExpressionVisitor;
+import com.aliyun.fastmodel.transform.hologres.format.HologresExpressionVisitor;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresVisitor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,7 +34,7 @@ public class HologresArrayDataType extends BaseDataType {
     private final List<ArrayBounds> dataTypeParameter;
 
     public HologresArrayDataType(BaseDataType source,
-                                 List<ArrayBounds> dataTypeParameter) {
+        List<ArrayBounds> dataTypeParameter) {
         this.source = source;
         this.dataTypeParameter = dataTypeParameter;
     }

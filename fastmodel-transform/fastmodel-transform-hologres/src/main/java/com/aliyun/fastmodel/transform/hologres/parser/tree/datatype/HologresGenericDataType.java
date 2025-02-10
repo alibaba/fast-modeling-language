@@ -15,10 +15,9 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
-import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresExpressionVisitor;
+import com.aliyun.fastmodel.transform.hologres.format.HologresExpressionVisitor;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresVisitor;
 import lombok.Getter;
-import lombok.ToString;
 
 /**
  * HologresGenericDataType

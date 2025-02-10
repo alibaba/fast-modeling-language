@@ -3,12 +3,14 @@ package com.aliyun.fastmodel.transform.flink.format;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
@@ -18,6 +20,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstrai
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.flink.context.FlinkTransformContext;
+import com.aliyun.fastmodel.transform.flink.parser.util.FlinkReservedWordUtil;
 import com.aliyun.fastmodel.transform.flink.parser.visitor.FlinkAstVisitor;
 import com.aliyun.fastmodel.transform.flink.parser.visitor.FlinkExpressionAstVisitor;
 import org.apache.commons.collections.CollectionUtils;
@@ -25,6 +28,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_PARTITION_RAW;
+import static java.util.stream.Collectors.joining;
 
 /**
  * @author 子梁
@@ -137,11 +141,37 @@ public class FlinkOutVisitor extends FastModelVisitor implements FlinkAstVisitor
         List<ColumnDefinition> partitioned = partitionedBy.getColumnDefinitions();
         String collect = partitioned.stream().map(
             x -> formatExpression(x.getColName())
-        ).collect(Collectors.joining(", "));
+        ).collect(joining(", "));
         builder.append(collect);
 
         builder.append(")");
         return true;
+    }
+
+    @Override
+    public String formatName(QualifiedName name) {
+        return name.getOriginalParts().stream()
+                .map(e -> {
+                    return formatColName(e, 0);
+                })
+                .collect(joining("."));
+    }
+
+    @Override
+    public String formatColName(Identifier colName, Integer size) {
+        String value = colName.getValue();
+        if (!colName.isDelimited()) {
+            boolean reservedKeyWord = FlinkReservedWordUtil.isReservedKeyWord(value);
+            //如果node是关键字，那么进行转义处理
+            if (reservedKeyWord) {
+                value = StripUtils.addPrefix(value);
+            } else {
+                value = formatExpression(colName);
+            }
+        } else {
+            value = formatExpression(colName);
+        }
+        return StringUtils.rightPad(value, size);
     }
 
     private String formatPhysicalColumnDefinition(ColumnDefinition column, Integer max) {

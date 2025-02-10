@@ -63,6 +63,11 @@ public class Table {
     private String comment;
 
     /**
+     * 是否动态表
+     */
+    private boolean dynamic;
+
+    /**
      * 默认是true
      */
     @Default

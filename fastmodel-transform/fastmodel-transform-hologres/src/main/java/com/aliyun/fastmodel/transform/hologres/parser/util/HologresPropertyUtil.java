@@ -24,7 +24,7 @@ public class HologresPropertyUtil {
         if (list.isEmpty()) {
             return value;
         }
-        if (hologresVersion == HologresVersion.V2) {
+        if (hologresVersion.greaterThan(HologresVersion.V1)) {
             //按照2.0的方式，call set_table_property('tbl', 'clustering_key', '"C1",c2');
             String[] strings = list.stream().map(l -> {
                 if (l.startsWith(StripUtils.DOUBLE_QUOTE)) {

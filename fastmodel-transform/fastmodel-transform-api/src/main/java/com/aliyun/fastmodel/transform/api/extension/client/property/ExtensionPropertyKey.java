@@ -31,6 +31,9 @@ public enum ExtensionPropertyKey implements PropertyKey {
      */
     TABLE_DISTRIBUTED_BUCKETS("distributed_buckets"),
 
+    /**
+     * column key
+     */
     COLUMN_KEY("column_key"),
 
     /**
@@ -42,6 +45,11 @@ public enum ExtensionPropertyKey implements PropertyKey {
      * column agg desc
      */
     COLUMN_AGG_DESC("column_agg_desc"),
+
+    /**
+     * colum  check
+     */
+    COLUMN_CHECK("column_check"),
 
     /**
      * index type
@@ -63,6 +71,11 @@ public enum ExtensionPropertyKey implements PropertyKey {
     TABLE_PARTITION_RAW("partition_raw"),
 
     /**
+     * Table partition
+     */
+    TABLE_PARTITION("partition"),
+
+    /**
      * list partition
      */
     TABLE_LIST_PARTITION("list_partition"),
@@ -80,7 +93,19 @@ public enum ExtensionPropertyKey implements PropertyKey {
     /**
      * 保留最近多少数量的分区
      */
-    PARTITION_LIVE_NUMBER("partition_live_number", true);
+    PARTITION_LIVE_NUMBER("partition_live_number", true),
+
+
+    /**
+     * cluster key
+     */
+    CLUSTERING_KEY("clustering_key", true),
+
+    /**
+     * external
+     */
+    EXTERNAL("external")
+    ;
 
     private final String value;
 

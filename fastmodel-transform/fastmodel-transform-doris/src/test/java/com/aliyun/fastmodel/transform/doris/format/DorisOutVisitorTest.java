@@ -1,7 +1,7 @@
 package com.aliyun.fastmodel.transform.doris.format;
 
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.doris.context.DorisContext;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class DorisOutVisitorTest {
 
     @Test
     public void testVisitDorisGenericDataType() {
-        DistributeConstraint distributeConstraint1 = new DistributeConstraint(Lists.newArrayList(
+        DistributeNonKeyConstraint distributeConstraint1 = new DistributeNonKeyConstraint(Lists.newArrayList(
             new Identifier("c1"),
             new Identifier("c2")
         ), 10);

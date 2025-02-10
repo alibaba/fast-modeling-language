@@ -17,7 +17,6 @@ import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
-import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresAstBuilder;
 import com.google.auto.service.AutoService;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
@@ -38,17 +37,17 @@ public class HologresParser implements LanguageParser<Node, ReverseContext> {
 
     @Override
     public Node parseNode(String code, ReverseContext context) throws ParseException {
-        return getNode(code, context, PostgreSQLParser::root);
+        return getNode(code, context, HologreSQLParser::root);
     }
 
-    private Node getNode(String code, ReverseContext context, Function<PostgreSQLParser, ParserRuleContext> function) {
+    private Node getNode(String code, ReverseContext context, Function<HologreSQLParser, ParserRuleContext> function) {
         CodePointCharStream charStream = CharStreams.fromString(code);
         CaseChangingCharStream caseChangingCharStream = new CaseChangingCharStream(charStream, true);
-        PostgreSQLLexer lexer = new PostgreSQLLexer(caseChangingCharStream);
+        HologreSQLLexer lexer = new HologreSQLLexer(caseChangingCharStream);
         lexer.removeErrorListeners();
         lexer.addErrorListener(LISTENER);
         CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
-        PostgreSQLParser fastModelGrammarParser = new PostgreSQLParser(commonTokenStream);
+        HologreSQLParser fastModelGrammarParser = new HologreSQLParser(commonTokenStream);
         fastModelGrammarParser.removeErrorListeners();
         fastModelGrammarParser.addErrorListener(LISTENER);
         ParserRuleContext tree;
@@ -65,11 +64,11 @@ public class HologresParser implements LanguageParser<Node, ReverseContext> {
 
     @Override
     public BaseDataType parseDataType(String code, ReverseContext context) throws ParseException {
-        return (BaseDataType)getNode(code, context, PostgreSQLParser::typename);
+        return (BaseDataType)getNode(code, context, HologreSQLParser::typename);
     }
 
     @Override
     public <T> T parseExpression(String code) throws ParseException {
-        return (T)getNode(code, ReverseContext.builder().build(), PostgreSQLParser::b_expr);
+        return (T)getNode(code, ReverseContext.builder().build(), HologreSQLParser::b_expr);
     }
 }

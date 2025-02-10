@@ -200,7 +200,7 @@ createTable
        ( tableOption (','? tableOption)* )?
        partitionDefinitions? keyViolate=(IGNORE | REPLACE)?
        AS? selectStatement                                          #queryCreateTable
-    | CREATE TEMPORARY? TABLE ifNotExists?
+    | CREATE TEMPORARY?  (ext=EXTERNAL)? TABLE ifNotExists?
        tableName createDefinitions?
        tableAttribute?
        partitionDefinitions?
@@ -333,11 +333,13 @@ indexType
 indexOption
     : KEY_BLOCK_SIZE EQUAL_SYMBOL? fileSizeLiteral
     | indexType
-    | WITH PARSER uid
+    | WITH optionType=(PARSER | ANALYZER)  uid
     | COMMENT STRING_LITERAL
     | (VISIBLE | INVISIBLE)
     | ENGINE_ATTRIBUTE EQUAL_SYMBOL? STRING_LITERAL
     | SECONDARY_ENGINE_ATTRIBUTE EQUAL_SYMBOL? STRING_LITERAL
+    | algorithm=HNSW_PQ
+    | distancemeasure=SQUARED_L2
     ;
 
 procedureParameter
@@ -410,10 +412,9 @@ tableConstraint
       UNIQUE indexFormat=(INDEX | KEY)? index=uid?
       indexType? indexColumnNames indexOption*                      #uniqueKeyTableConstraint
     | (CONSTRAINT name=uid?)?
-      FOREIGN KEY index=uid? indexColumnNames
-      referenceDefinition                                           #foreignKeyTableConstraint
-    | (CONSTRAINT name=uid?)?
-      CHECK '(' expression ')'                                      #checkTableConstraint
+      FOREIGN KEY index=uid? indexColumnNames    referenceDefinition  #foreignKeyTableConstraint
+    | (CONSTRAINT name=uid?)? CHECK '(' expression ')'              #checkTableConstraint
+    | (CONSTRAINT name=uid?)? CLUSTERED KEY index=uid? indexColumnNames # clusterKeyTableConstraint
     ;
 
 referenceDefinition
@@ -440,7 +441,7 @@ referenceControlType
 indexColumnDefinition
     : indexFormat=(INDEX | KEY) uid? indexType?
       indexColumnNames indexOption*                                 #simpleIndexDeclaration
-    | (FULLTEXT | SPATIAL)
+    | idx=(FULLTEXT | SPATIAL | ANN )
       indexFormat=(INDEX | KEY)? uid?
       indexColumnNames indexOption*                                 #specialIndexDeclaration
     ;
@@ -490,7 +491,21 @@ tableOption
     | INDEX_ALL '=' STRING_LITERAL                                                  #tableOptionIndexAll
     | HOT_PARTITION_COUNT '=' decimalLiteral                                        #tableOptionHotPartitionCount
     | TABLE_PROPERTIES '=' STRING_LITERAL                                           #tableOptionTableProperties
+    | STORED AS  storeValue=( TEXTFILE | ORC | PARQUET | JSON | RCFIL| HUDI | STRING_LITERAL)  #tableOptionStoredAs
+    | LOCATION '='? STRING_LITERAL                                                  #tableOptionLocation
+    | TBLPROPERTIES '(' tblPropertiesList ')'                                       #tableOptionTblProperties
+    | ROW FORMAT DELIMITED FIELDS TERMINATED BY value=STRING_LITERAL                #tableOptionRowFormatTerminatedBy
     ;
+
+tblPropertiesList:
+    kv+=keyValueProperty (COMMA kv+=keyValueProperty)*
+;
+
+keyValueProperty
+    :
+      key=STRING_LITERAL EQUAL_SYMBOL value=STRING_LITERAL
+    ;
+
 
 tableType
     : MYSQL | ODBC
@@ -501,7 +516,7 @@ tablespaceStorage
     ;
 
 tableAttribute
-    : DISTRIBUTE BY (HASH colNames) | BROADCAST
+    : (DISTRIBUTE | DISTRIBUTED) BY ((HASH colNames) | BROADCAST)
     ;
 
 colNames
@@ -2245,7 +2260,7 @@ constant
 dataType
     : typeName=(
       CHAR | CHARACTER | VARCHAR | TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT
-       | NCHAR | NVARCHAR | LONG
+       | NCHAR | NVARCHAR | LONG | STRING
       )
       VARYING?
       lengthOneDimension? BINARY?
@@ -2289,7 +2304,7 @@ dataType
       (charSet charsetName)?
       (COLLATE collationName)?                                      #longVarcharDataType    // LONG VARCHAR is the same as LONG
     | LONG VARBINARY                                                #longVarbinaryDataType
-    | typeName=ARRAY LESS_SYMBOL elemType=dataType GREATER_SYMBOL                  #listDataType
+    | typeName=ARRAY LESS_SYMBOL elemType=dataType GREATER_SYMBOL  lengthOneDimension?    #listDataType
     | typeName=MAP LESS_SYMBOL left=dataType COMMA right=dataType GREATER_SYMBOL   #mapDataType
     ;
 
@@ -2659,7 +2674,12 @@ expressionAtom
     | left=expressionAtom bitOperator right=expressionAtom          #bitExpressionAtom
     | left=expressionAtom mathOperator right=expressionAtom         #mathExpressionAtom
     | left=expressionAtom jsonOperator right=expressionAtom         #jsonExpressionAtom
+    | lambdaParameter LAMBDA_IMPLEMENT expressionAtom               #lambdaExpressionAtom
     ;
+
+ lambdaParameter:
+    uid
+ ;
 
 unaryOperator
     : '!' | '~' | '+' | '-' | NOT
@@ -2782,7 +2802,8 @@ keywordsCanBeId
     | TRANSACTION | TRANSACTIONAL | TRIGGERS | TRUNCATE | UNBOUNDED | UNDEFINED | UNDOFILE
     | UNDO_BUFFER_SIZE | UNINSTALL | UNKNOWN | UNTIL | UPGRADE | USA | USER | USE_FRM | USER_RESOURCES
     | VALIDATION | VALUE | VAR_POP | VAR_SAMP | VARIABLES | VARIANCE | VERSION_TOKEN_ADMIN | VIEW | VIRTUAL
-    | WAIT | WARNINGS | WITHOUT | WORK | WRAPPER | X509 | XA | XA_RECOVER_ADMIN | XML | MAP
+    | WAIT | WARNINGS | WITHOUT | WORK | WRAPPER | X509 | XA | XA_RECOVER_ADMIN | XML | MAP | CLUSTERED | ANN | HNSW_PQ | EXTERNAL | NAME
+    | LOCATION | TBLPROPERTIES | DELIMITED | ANALYZER | FULLTEXT | BROADCAST | DISTRIBUTED | DISTRIBUTE
     ;
 
 functionNameBase

@@ -1,0 +1,7 @@
+CREATE TABLE store_returns
+(
+  sr_sale_id bigint,
+  sr_store_sk bigint,
+  sr_item_sk bigint NOT NULL,
+  FOREIGN KEY (sr_item_sk) REFERENCES item (i_item_sk)
+);

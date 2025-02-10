@@ -49,6 +49,8 @@
         <module>fastmodel-transform-doris</module>
         <module>fastmodel-transform-oceanbase</module>
         <module>fastmodel-transform-flink</module>
+        <module>fastmodel-transform-adbpg</module>
+        <module>fastmodel-transform-postgresql</module>
     </modules>
 
 

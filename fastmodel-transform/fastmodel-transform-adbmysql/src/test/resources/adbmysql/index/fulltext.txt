@@ -1,0 +1,14 @@
+CREATE TABLE `tbl_fulltext_demo` (
+  `id` int,
+  `content` varchar,
+  `content_alinlp` varchar,
+  `content_ik` varchar,
+  `content_standard` varchar,
+  `content_ngram` varchar,
+  FULLTEXT INDEX fidx_c(`content`),
+  FULLTEXT INDEX fidx_alinlp(`content_alinlp`) WITH ANALYZER alinlp,
+  FULLTEXT INDEX fidx_ik(`content_ik`) WITH ANALYZER ik,
+  FULLTEXT INDEX fidx_standard(`content_standard`) WITH ANALYZER standard,
+  FULLTEXT INDEX fidx_ngram(`content_ngram`) WITH ANALYZER ngram,
+  PRIMARY KEY (`id`)
+) DISTRIBUTED BY HASH(id);

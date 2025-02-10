@@ -43,26 +43,26 @@ public class FlinkTransformerTest {
     @Test
     public void testReverse() throws Exception {
         DialectNode dialectNode = new DialectNode("CREATE TABLE catalog.database.MyTable (\n" +
-            "  `user_id` BIGINT COMMENT '23',\n" +
-            "  `name` STRING NOT NULL,\n" +
-            "  `age` VARCHAR(4) NOT NULL,\n" +
-            "  `time` TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
-            "  `test` DECIMAL(20,4),\n" +
-            "  `array` ARRAY<STRING>,\n" +
-            "  `map` MAP<STRING,BIGINT>,\n" +
-            "  `row` ROW<a STRING, b BIGINT>,\n" +
-            "  `raw` RAW('a','b'),\n" +
-            "  `timestamp` TIMESTAMP_LTZ(3) METADATA FROM `row`,  -- use column name as metadata key\n" +
-            "  `cost` AS age * test,\n" +
-            "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
-            "   PRIMARY KEY (user_id, name) NOT ENFORCED \n" +
-            ")\n" +
-            "PARTITIONED BY (user_id, name)\n" +
-            "WITH (\n" +
-            "  'connector' = 'kafka',\n" +
-            "  'test' = 'true'\n" +
-            ");");
-        ReverseContext context = ReverseContext.builder().build();
+                "  `user_id` BIGINT COMMENT '23',\n" +
+                "  `name` STRING NOT NULL,\n" +
+                "  `age` VARCHAR(4) NOT NULL,\n" +
+                "  `time` TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
+                "  `test` DECIMAL(20,4),\n" +
+                "  `array` ARRAY<STRING>,\n" +
+                "  `map` MAP<STRING,BIGINT>,\n" +
+                "  `row` ROW<a STRING, b BIGINT>,\n" +
+                "  `raw` RAW('a','b'),\n" +
+                "  `timestamp` TIMESTAMP_LTZ(3) METADATA FROM `row`,  -- use column name as metadata key\n" +
+                "  `cost` AS age * test,\n" +
+                "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
+                "   PRIMARY KEY (user_id, name) NOT ENFORCED \n" +
+                ")\n" +
+                "PARTITIONED BY (user_id, name)\n" +
+                "WITH (\n" +
+                "  'connector' = 'kafka',\n" +
+                "  'test' = 'true'\n" +
+                ");");
+        ReverseContext context = ReverseContext.builder().merge(true).build();
         BaseStatement reverse = flinkTransformer.reverse(dialectNode, context);
         assertTrue(reverse instanceof CreateTable);
         CreateTable createTable = (CreateTable) reverse;
@@ -148,24 +148,24 @@ public class FlinkTransformerTest {
         BaseStatement createTable = flinkTransformer.reverse(dialectNode, context);
 
         DialectNode result = flinkTransformer.transform(createTable, new TransformContext(null));
-        Assert.assertEquals("CREATE TABLE catalog.database.MyTable\n" +
-            "(\n" +
-            "   user_id   BIGINT COMMENT '23',\n" +
-            "   name      STRING NOT NULL,\n" +
-            "   age       VARCHAR(4) NOT NULL,\n" +
-            "   time      TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
-            "   test      DECIMAL(20,4),\n" +
-            "   array     ARRAY<STRING>,\n" +
-            "   map       MAP<STRING,BIGINT>,\n" +
-            "   row       ROW<a STRING,b BIGINT>,\n" +
-            "   raw       RAW('a','b'),\n" +
-            "   timestamp TIMESTAMP_LTZ(3) METADATA FROM row,\n" +
-            "   cost      AS age * test,\n" +
-            "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
-            "   PRIMARY KEY(user_id,name)\n" +
-            ")\n" +
-            "PARTITIONED BY (user_id, name)\n" +
-            "WITH ('connector'='kafka','test'='true');", result.getNode());
+        Assert.assertEquals("CREATE TABLE `catalog`.`database`.MyTable\n" +
+                "(\n" +
+                "   user_id   BIGINT COMMENT '23',\n" +
+                "   name      STRING NOT NULL,\n" +
+                "   age       VARCHAR(4) NOT NULL,\n" +
+                "   `time`    TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
+                "   test      DECIMAL(20,4),\n" +
+                "   `array`   ARRAY<STRING>,\n" +
+                "   `map`     MAP<STRING,BIGINT>,\n" +
+                "   `row`     ROW<a STRING,b BIGINT>,\n" +
+                "   `raw`     RAW('a','b'),\n" +
+                "   `timestamp` TIMESTAMP_LTZ(3) METADATA FROM row,\n" +
+                "   cost      AS age * test,\n" +
+                "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
+                "   PRIMARY KEY(user_id,name)\n" +
+                ")\n" +
+                "PARTITIONED BY (user_id, name)\n" +
+                "WITH ('connector'='kafka','test'='true');", result.getNode());
     }
 
     @Test

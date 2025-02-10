@@ -6,5 +6,5 @@ CREATE TABLE public.test_2 (
    c4 TEXT,
    PRIMARY KEY(c1)
 );
-CALL SET_TABLE_PROPERTY('public.test_2', 'dictionary_encoding_columns', '"c1":auto,"c3":auto,"c2":auto');
+CALL SET_TABLE_PROPERTY('public.test_2', 'dictionary_encoding_columns', '"c1":auto,"c3":on,"c2":on');
 COMMIT;

@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -39,7 +40,10 @@ import com.aliyun.fastmodel.driver.cli.terminal.InputParser;
 import com.aliyun.fastmodel.driver.cli.terminal.QueryRunner;
 import com.aliyun.fastmodel.driver.cli.terminal.TerminalUtils;
 import com.aliyun.fastmodel.driver.cli.terminal.printer.AlignedTablePrinter;
+import com.aliyun.fastmodel.driver.cli.terminal.printer.DumpFilePrinter;
+import com.aliyun.fastmodel.driver.cli.terminal.printer.DumpInfo;
 import com.aliyun.fastmodel.driver.cli.terminal.printer.OutputPrinter;
+import com.aliyun.fastmodel.driver.model.DriverColumnInfo;
 import com.aliyun.fastmodel.driver.model.QueryResult;
 import com.aliyun.fastmodel.parser.StatementSplitter;
 import com.aliyun.fastmodel.parser.StatementSplitter.StatementText;
@@ -171,15 +175,22 @@ public class Console implements Callable<Integer> {
                     default:
                         break;
                 }
+                //判断是否为dump
+                String dumpCommand = getCommand(line);
+                boolean isDump = StringUtils.equalsIgnoreCase(dumpCommand, "dump");
+                String afterLine = isDump ? getStatement(line) : line;
+                DumpInfo dumpInfo = DumpInfo.builder()
+                    .dump(isDump)
+                    .build();
 
-                StatementSplitter statementSplitter = new StatementSplitter(line, STATEMENT_DELIMITERS);
+                StatementSplitter statementSplitter = new StatementSplitter(afterLine, STATEMENT_DELIMITERS);
                 for (StatementText split : statementSplitter.getStatements()) {
                     String statement = split.getStatement();
                     if (StatementSplitter.isEmptyStatement(statement)) {
                         continue;
                     }
                     String replace = StringUtils.replace(statement, "\n", " ");
-                    process(queryRunner, replace, reader.getTerminal());
+                    process(queryRunner, replace, reader.getTerminal(), dumpInfo);
                 }
                 remaining = whitespace().trimTrailingFrom(statementSplitter.getPartialStatement());
             }
@@ -193,6 +204,25 @@ public class Console implements Callable<Integer> {
                 e.printStackTrace(System.err);
             }
         }
+    }
+
+    private String getStatement(String input) {
+        String[] parts = CharMatcher.whitespace().trimAndCollapseFrom(input, ' ').split("\\|");
+        if (parts.length == 0) {
+            return StringUtils.EMPTY;
+        }
+        if (parts.length == 2) {
+            return CharMatcher.whitespace().trimFrom(parts[1]);
+        }
+        return input;
+    }
+
+    private String getCommand(String input) {
+        String[] parts = CharMatcher.whitespace().trimAndCollapseFrom(input, ' ').split("\\|");
+        if (parts.length == 0) {
+            return StringUtils.EMPTY;
+        }
+        return CharMatcher.whitespace().trimFrom(parts[0]);
     }
 
     /**
@@ -212,7 +242,7 @@ public class Console implements Callable<Integer> {
         return Paths.get(Strings.nullToEmpty(StandardSystemProperty.USER_HOME.value()), ".fastmodel_history");
     }
 
-    private void process(QueryRunner queryRunner, String statement, Terminal terminal) {
+    private void process(QueryRunner queryRunner, String statement, Terminal terminal, DumpInfo dumpInfo) {
         QueryResult execute = null;
         try {
             execute = queryRunner.execute(statement);
@@ -221,11 +251,11 @@ public class Console implements Callable<Integer> {
                 writer.append("OK").append('\n');
                 writer.flush();
             } else {
-                OutputPrinter alignedTablePrinter = new AlignedTablePrinter(execute.getColumnInfos(), writer);
+                OutputPrinter outputPrinter = getOutputPrinter(execute.getColumnInfos(), dumpInfo, writer);
                 try {
-                    alignedTablePrinter.printRows(execute.getRows());
+                    outputPrinter.printRows(execute.getRows());
                 } finally {
-                    alignedTablePrinter.finish();
+                    outputPrinter.finish();
                 }
             }
         } catch (SQLException | IOException | RuntimeException e) {
@@ -236,6 +266,13 @@ public class Console implements Callable<Integer> {
                 System.err.println("Error running command: " + e.getMessage());
             }
         }
+    }
+
+    private OutputPrinter getOutputPrinter(List<DriverColumnInfo> columnInfos, DumpInfo dumpInfo, Writer writer) {
+        if (dumpInfo == null || !dumpInfo.isDump()) {
+            return new AlignedTablePrinter(columnInfos, writer);
+        }
+        return new DumpFilePrinter(columnInfos, dumpInfo.getFileName(), writer);
     }
 
     private static Writer createWriter(OutputStream out) {

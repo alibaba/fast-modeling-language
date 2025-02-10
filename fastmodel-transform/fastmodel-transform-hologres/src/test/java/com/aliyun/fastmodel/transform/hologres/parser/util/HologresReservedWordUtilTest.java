@@ -21,4 +21,10 @@ public class HologresReservedWordUtilTest {
         boolean abc = HologresReservedWordUtil.isReservedKeyWord("abc");
         assertFalse(abc);
     }
+
+    @Test
+    public void testAge() {
+        boolean r = HologresReservedWordUtil.isReservedKeyWord("age");
+        assertFalse(r);
+    }
 }

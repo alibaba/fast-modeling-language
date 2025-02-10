@@ -1,0 +1,19 @@
+CREATE TABLE public.user_info (
+    id integer NOT NULL default nextval('user_info_id_seq'::regclass),
+    username character varying(50) NOT NULL, password character varying(50) NOT NULL,
+    email character varying(100) NOT NULL,
+    created_at timestamp with time zone NOT NULL default CURRENT_TIMESTAMP ,
+    PRIMARY KEY (id)
+  )
+  with (
+      orientation = 'column',storage_format = 'orc',
+      bitmap_columns = 'username,password,email',
+      dictionary_encoding_columns = 'username:auto,password:auto,email:auto',
+      distribution_key = 'id',segment_key = 'created_at',
+      table_group = 'holo_db_tg_default',
+      table_storage_mode = 'any',
+      time_to_live_in_seconds = '3153600000'
+  );
+COMMENT ON TABLE public.user_info IS NULL;
+ALTER TABLE public.user_info OWNER TO holo_db_developer;
+END;

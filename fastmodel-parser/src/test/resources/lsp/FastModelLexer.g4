@@ -322,6 +322,7 @@ KW_HELP : H E L P ;
 KW_AFTER : A F T E R ;
 KW_MOVE : M O V E ;
 KW_STATISTIC : S T A T I S T I C ;
+KW_ETL : E T L ;
 
 EQUAL:'=';
 LESSTHAN:'<';

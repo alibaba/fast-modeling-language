@@ -19,7 +19,7 @@ import lombok.Getter;
 public class ListPartitionedBy extends PartitionedBy {
 
     /**
-     * rangePartitions
+     * listPartitions
      */
     private final List<PartitionDesc> listPartitions;
 

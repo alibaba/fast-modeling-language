@@ -35,7 +35,7 @@ public class IndexTest extends BaseTest {
     public void testCreateIndex() {
         String fml = "create index t_name on t1(a,b)";
         CreateIndex parse = parse(fml, CreateIndex.class);
-        assertEquals(parse.toString(), "CREATE INDEX t_name ON t1 (a,b)");
+        assertEquals(parse.toString(), "CREATE INDEX t_name ON t1(a,b)");
     }
 
     @Test

@@ -20,8 +20,8 @@ import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
@@ -291,10 +291,10 @@ public class StarRocksLanguageParserTest {
         CreateTable createTable = (CreateTable)node;
         boolean distributeKey = false;
         for (BaseConstraint baseConstraint : createTable.getConstraintStatements()) {
-            if (baseConstraint instanceof DistributeConstraint) {
-                DistributeConstraint uniqueConstraint = (DistributeConstraint)baseConstraint;
+            if (baseConstraint instanceof DistributeNonKeyConstraint) {
+                DistributeNonKeyConstraint uniqueConstraint = (DistributeNonKeyConstraint)baseConstraint;
                 distributeKey = true;
-                assertEquals(uniqueConstraint.getCustomType(), DistributeConstraint.TYPE);
+                assertEquals(uniqueConstraint.getCustomType(), DistributeNonKeyConstraint.TYPE);
                 assertEquals(1, uniqueConstraint.getColumns().size());
             }
         }
@@ -317,10 +317,10 @@ public class StarRocksLanguageParserTest {
         CreateTable createTable = (CreateTable)node;
         boolean distributeKey = false;
         for (BaseConstraint baseConstraint : createTable.getConstraintStatements()) {
-            if (baseConstraint instanceof DistributeConstraint) {
-                DistributeConstraint uniqueConstraint = (DistributeConstraint)baseConstraint;
+            if (baseConstraint instanceof DistributeNonKeyConstraint) {
+                DistributeNonKeyConstraint uniqueConstraint = (DistributeNonKeyConstraint)baseConstraint;
                 distributeKey = true;
-                assertEquals(uniqueConstraint.getCustomType(), DistributeConstraint.TYPE);
+                assertEquals(uniqueConstraint.getCustomType(), DistributeNonKeyConstraint.TYPE);
                 assertEquals(1, uniqueConstraint.getColumns().size());
                 assertEquals(Integer.valueOf(3), uniqueConstraint.getBucket());
             }
@@ -344,10 +344,10 @@ public class StarRocksLanguageParserTest {
         CreateTable createTable = (CreateTable)node;
         boolean distributeKey = false;
         for (BaseConstraint baseConstraint : createTable.getConstraintStatements()) {
-            if (baseConstraint instanceof DistributeConstraint) {
-                DistributeConstraint uniqueConstraint = (DistributeConstraint)baseConstraint;
+            if (baseConstraint instanceof DistributeNonKeyConstraint) {
+                DistributeNonKeyConstraint uniqueConstraint = (DistributeNonKeyConstraint)baseConstraint;
                 distributeKey = true;
-                assertEquals(uniqueConstraint.getCustomType(), DistributeConstraint.TYPE);
+                assertEquals(uniqueConstraint.getCustomType(), DistributeNonKeyConstraint.TYPE);
                 assertEquals(Integer.valueOf(3), uniqueConstraint.getBucket());
                 assertTrue(uniqueConstraint.getRandom());
             }
@@ -383,10 +383,10 @@ public class StarRocksLanguageParserTest {
         CreateTable createTable = (CreateTable)node;
         boolean hasOrder = false;
         for (BaseConstraint baseConstraint : createTable.getConstraintStatements()) {
-            if (baseConstraint instanceof OrderByConstraint) {
-                OrderByConstraint orderByConstraint = (OrderByConstraint)baseConstraint;
+            if (baseConstraint instanceof OrderByNonKeyConstraint) {
+                OrderByNonKeyConstraint orderByConstraint = (OrderByNonKeyConstraint)baseConstraint;
                 hasOrder = true;
-                assertEquals(orderByConstraint.getCustomType(), OrderByConstraint.TYPE);
+                assertEquals(orderByConstraint.getCustomType(), OrderByNonKeyConstraint.TYPE);
             }
         }
         assertTrue(hasOrder);

@@ -1,0 +1,8 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.osstest1
+(id int,
+name string,
+age int,
+city string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY  ','
+STORED AS TEXTFILE
+LOCATION  'oss://testBucketName/osstest/p1=hangzhou/p2=2023-06-13/data.csv';

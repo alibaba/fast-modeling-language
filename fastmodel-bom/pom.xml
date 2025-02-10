@@ -195,6 +195,19 @@
                 <version>${project.version}</version>
             </dependency>
 
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-adbpg</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-postgresql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 </project>

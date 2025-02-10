@@ -41,16 +41,16 @@ public class DictEncodingColumnTest {
         List<ColumnStatus> value = dictEncodingColumns.getValue();
         assertEquals(value.size(), 2);
         ColumnStatus columnStatus = value.get(0);
-        assertEquals(columnStatus.getStatus(), Status.AUTO);
+        assertEquals(columnStatus.getStatus(), Status.ON);
     }
 
     @Test
     public void testSetColumnList() {
         DictEncodingColumn dictEncodingColumns = new DictEncodingColumn();
         dictEncodingColumns.setValueString("c1,c2");
-        assertEquals("c1:auto,c2:auto", dictEncodingColumns.valueString());
+        assertEquals("c1:on,c2:on", dictEncodingColumns.valueString());
         dictEncodingColumns.setColumnList(Lists.newArrayList("\"c1\"", "\"c2\""));
-        assertEquals("\"c1\":auto,\"c2\":auto", dictEncodingColumns.valueString());
+        assertEquals("\"c1\":on,\"c2\":on", dictEncodingColumns.valueString());
     }
 
     @Test

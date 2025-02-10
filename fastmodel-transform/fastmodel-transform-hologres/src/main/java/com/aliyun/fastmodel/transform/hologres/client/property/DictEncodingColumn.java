@@ -27,7 +27,7 @@ public class DictEncodingColumn extends BaseClientProperty<List<ColumnStatus>> {
     /**
      * columns
      */
-    public static final String DICTIONARY_ENCODING_COLUMN = HoloPropertyKey.DICTIONARY_ENCODING_COLUMN.getValue();
+    public static final String DICTIONARY_ENCODING_COLUMN = HologresPropertyKey.DICTIONARY_ENCODING_COLUMN.getValue();
 
     public DictEncodingColumn() {
         this.setKey(DICTIONARY_ENCODING_COLUMN);
@@ -43,7 +43,7 @@ public class DictEncodingColumn extends BaseClientProperty<List<ColumnStatus>> {
 
     @Override
     public void setValueString(String value) {
-        List<ColumnStatus> of = ColumnStatus.of(value, Status.AUTO);
+        List<ColumnStatus> of = ColumnStatus.of(value, Status.ON);
         this.setValue(of);
     }
 

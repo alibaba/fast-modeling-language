@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.formatter.ExpressionFormatter;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Property;
@@ -34,13 +35,16 @@ import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
+import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.adbmysql.parser.tree.index.IndexOptionName;
+import com.aliyun.fastmodel.transform.adbmysql.parser.visitor.AdbMysqlAstVisitor;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ClusteredKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ForeignKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.NonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
-import com.aliyun.fastmodel.transform.api.extension.visitor.ExtensionAstVisitor;
-import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.api.format.PropertyValueType;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.collect.ImmutableList;
@@ -57,7 +61,7 @@ import static java.util.stream.Collectors.joining;
  * @author panguanjing
  * @date 2023/2/11
  */
-public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAstVisitor<Boolean, Integer> {
+public class AdbMysqlOutVisitor extends FastModelVisitor implements AdbMysqlAstVisitor<Boolean, Integer> {
 
     private final AdbMysqlTransformContext mysqlTransformContext;
 
@@ -69,11 +73,8 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
     public Boolean visitCreateTable(CreateTable node, Integer indent) {
         boolean columnEmpty = node.isColumnEmpty();
         //maxcompute不支持没有列的表
-        boolean executable = true;
-        if (columnEmpty) {
-            executable = false;
-        }
-        builder.append("CREATE TABLE ");
+        boolean executable = !columnEmpty;
+        builder.append(formatCreateTable(node));
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
@@ -133,6 +134,8 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
         appendLifecycle(node);
         //storage policy
         appendProperty(node);
+        //external table property
+        appendExternalTable(node);
         //append comment
         if (node.getComment() != null) {
             if (!isEndNewLine(builder.toString())) {
@@ -141,6 +144,46 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
             builder.append(formatComment(node.getComment(), true));
         }
         return executable;
+    }
+
+    private void appendExternalTable(CreateTable node) {
+        if (node.isPropertyEmpty()) {
+            return;
+        }
+        //row format
+        String rowFormat = PropertyUtil.getPropertyValue(node.getProperties(), AdbMysqlPropertyKey.ROW_FORMAT.getValue());
+        if (StringUtils.isNotBlank(rowFormat)) {
+            builder.append("\nROW FORMAT DELIMITED FIELDS TERMINATED BY ");
+            builder.append(StripUtils.addStrip(rowFormat));
+        }
+        String stored = PropertyUtil.getPropertyValue(node.getProperties(), AdbMysqlPropertyKey.STORED_BY.getValue());
+        if (StringUtils.isNotBlank(stored)) {
+            builder.append("\nSTORED AS ").append(stored);
+        }
+        String location = PropertyUtil.getPropertyValue(node.getProperties(), AdbMysqlPropertyKey.LOCATION.getValue());
+        if (StringUtils.isNotBlank(location)) {
+            builder.append("\nLOCATION ").append(StripUtils.addStrip(location));
+        }
+        String tblProperties = PropertyUtil.getPropertyValue(node.getProperties(), AdbMysqlPropertyKey.TBL_PROPERTIES.getValue());
+        if (StringUtils.isNotBlank(tblProperties)) {
+            builder.append("\nTBLPROPERTIES").append("(");
+            builder.append(tblProperties);
+            builder.append(")");
+        }
+    }
+
+    private String formatCreateTable(CreateTable node) {
+        String c = "CREATE TABLE ";
+        if (node.isPropertyEmpty()) {
+            return c;
+        }
+        Optional<Property> externalOpt = node.getProperties().stream()
+            .filter(property -> StringUtils.equalsIgnoreCase(AdbMysqlPropertyKey.EXTERNAL.getValue(), property.getName()))
+            .findAny();
+        if (externalOpt.isPresent()) {
+            return "CREATE EXTERNAL TABLE ";
+        }
+        return c;
     }
 
     private void appendProperty(CreateTable node) {
@@ -160,6 +203,9 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
         builder.append(StringUtils.LF);
         String val = collect.stream().map(p -> {
             AdbMysqlPropertyKey propertyKey = AdbMysqlPropertyKey.getByValue(p.getName());
+            if (propertyKey == null) {
+                return StringUtils.EMPTY;
+            }
             if (propertyKey.getValueType() == PropertyValueType.NUMBER_LITERAL) {
                 return p.getName() + "=" + p.getValue();
             } else {
@@ -208,7 +254,6 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
         Optional<Property> first = properties.stream().filter(p -> StringUtils.equalsIgnoreCase(p.getName(), adbMysqlPropertyKey.getValue()))
             .findFirst();
         return first.map(Property::getValue).orElse(null);
-
     }
 
     private void appendLifecycle(CreateTable node) {
@@ -225,6 +270,11 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
         stringBuilder.append(collect);
         stringBuilder.append(")");
         return stringBuilder.toString();
+    }
+
+    @Override
+    protected String formatExpression(BaseExpression baseExpression) {
+        return new AdbMysqlExpressionVisitor().process(baseExpression);
     }
 
     @Override
@@ -251,7 +301,7 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
     public Boolean visitPrimaryConstraint(PrimaryConstraint primaryConstraint, Integer indent) {
         builder.append(indentString(indent)).append("PRIMARY KEY(");
         builder.append(
-            primaryConstraint.getColNames().stream().map(ExpressionFormatter::formatExpression).collect(joining(",")));
+            primaryConstraint.getColNames().stream().map(this::formatExpression).collect(joining(",")));
         builder.append(")");
         return true;
     }
@@ -312,6 +362,35 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
     }
 
     @Override
+    public Boolean visitTableIndex(TableIndex tableIndex, Integer ident) {
+        List<Property> properties = tableIndex.getProperties();
+        if (CollectionUtils.isEmpty(properties)) {
+            return super.visitTableIndex(tableIndex, ident);
+        }
+        String value = PropertyUtil.getPropertyValue(properties, IndexOptionName.INDEX_TYPE.getValue());
+        builder.append(indentString(ident));
+        if (StringUtils.isNotBlank(value)) {
+            builder.append(value);
+            builder.append(StringUtils.SPACE);
+        }
+        builder.append("INDEX ").append(formatExpression(tableIndex.getIndexName()));
+        appendTableIndex(tableIndex.getIndexColumnNames());
+        String propertyValue = PropertyUtil.getPropertyValue(properties, IndexOptionName.ANALYZER.getValue());
+        if (StringUtils.isNotBlank(propertyValue)) {
+            builder.append(" WITH ANALYZER " + propertyValue);
+        }
+        String parser = PropertyUtil.getPropertyValue(properties, IndexOptionName.PARSER.getValue());
+        if (StringUtils.isNotBlank(parser)) {
+            builder.append(" WITH PARSER " + parser);
+        }
+        String comment = PropertyUtil.getPropertyValue(properties, IndexOptionName.INDEX_COMMENT.getValue());
+        if (StringUtils.isNotBlank(comment)) {
+            builder.append(" COMMENT ").append(StripUtils.addStrip(comment));
+        }
+        return true;
+    }
+
+    @Override
     public Boolean visitAddPartitionCol(AddPartitionCol addPartitionCol, Integer context) {
         super.visitAddPartitionCol(addPartitionCol, context);
         return false;
@@ -337,8 +416,13 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
 
     @Override
     protected String getCode(QualifiedName qualifiedName) {
-        QualifiedName tableName = StringJoinUtil.join(this.mysqlTransformContext.getDatabase(),
-            this.mysqlTransformContext.getSchema(), qualifiedName.getSuffix());
+        QualifiedName tableName = null;
+        if (StringUtils.isNotBlank(this.mysqlTransformContext.getDatabase())) {
+            tableName = StringJoinUtil.join(this.mysqlTransformContext.getDatabase(), this.mysqlTransformContext.getSchema(),
+                qualifiedName.getSuffix());
+        } else {
+            tableName = qualifiedName;
+        }
         return formatName(tableName);
     }
 
@@ -351,8 +435,6 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
         Boolean notNull = column.getNotNull();
         if (BooleanUtils.isTrue(notNull)) {
             sb.append(" NOT NULL");
-        } else if (BooleanUtils.isFalse(notNull)) {
-            sb.append(" NULL");
         }
         if (column.getDefaultValue() != null) {
             sb.append(" DEFAULT ").append(formatExpression(column.getDefaultValue()));
@@ -400,23 +482,72 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements ExtensionAst
     }
 
     @Override
-    public Boolean visitDistributeKeyConstraint(DistributeConstraint distributeKeyConstraint, Integer context) {
+    public Boolean visitDistributeKeyConstraint(DistributeNonKeyConstraint distributeKeyConstraint, Integer context) {
         if (!isEndNewLine(builder.toString())) {
             builder.append(StringUtils.LF);
         }
         if (BooleanUtils.isTrue(distributeKeyConstraint.getRandom())) {
-            builder.append("DISTRIBUTE BY BROADCAST");
+            builder.append("DISTRIBUTED BY BROADCAST");
         } else {
-            String value = distributeKeyConstraint.getColumns().stream()
+            String value = distributeKeyConstraint.getColumns()
+                .stream()
                 .map(this::formatExpression)
                 .collect(joining(","));
-            builder.append("DISTRIBUTE BY HASH(").append(value).append(")");
+            builder.append("DISTRIBUTED BY HASH(").append(value).append(")");
         }
         return true;
     }
 
     @Override
-    protected String formatExpression(BaseExpression baseExpression) {
-        return new DefaultExpressionVisitor().process(baseExpression);
+    public Boolean visitClusteredKeyConstraint(ClusteredKeyConstraint clusteredKeyConstraint, Integer indent) {
+        builder.append(indentString(indent));
+        //CLUSTERED KEY index=uid? indexColumnNames
+        builder.append("CLUSTERED KEY ");
+        if (!IdentifierUtil.isSysIdentifier(clusteredKeyConstraint.getName())) {
+            String process = formatExpression(clusteredKeyConstraint.getName());
+            builder.append(process);
+        }
+        String value = clusteredKeyConstraint.getColumns()
+            .stream()
+            .map(this::formatExpression)
+            .collect(joining(",", "(", ")"));
+        builder.append(value);
+        return true;
+    }
+
+    @Override
+    public Boolean visitForeignKeyConstraint(ForeignKeyConstraint foreignKeyConstraint, Integer context) {
+        Identifier name = foreignKeyConstraint.getName();
+        if (!IdentifierUtil.isSysIdentifier(name)) {
+            builder.append(indentString(context)).append(CONSTRAINT).append(formatExpression(name));
+            builder.append(" FOREIGN KEY");
+        } else {
+            builder.append(indentString(context)).append("FOREIGN KEY");
+        }
+        if (foreignKeyConstraint.getIndexName() != null) {
+            builder.append(" ").append(formatExpression(foreignKeyConstraint.getIndexName()));
+        }
+        builder.append("(");
+        List<Identifier> colNames = foreignKeyConstraint.getColNames();
+        String collect = colNames.stream().map(this::formatExpression).collect(joining(","));
+        builder.append(collect).append(")");
+        //reference
+        builder.append(" REFERENCES ");
+        builder.append(formatName(foreignKeyConstraint.getReferenceTable()));
+
+        String referenceColumns = foreignKeyConstraint.getReferenceColNames().stream().map(this::formatExpression).collect(joining(","));
+        builder.append("(").append(referenceColumns).append(")");
+
+        if (foreignKeyConstraint.getMatchAction() != null) {
+            builder.append(" MATCH ").append(foreignKeyConstraint.getMatchAction().name());
+        }
+
+        if (foreignKeyConstraint.getReferenceAction() != null) {
+            //ON (DELETE|UPDATE) reference_action
+            builder.append(" ON ");
+            builder.append(foreignKeyConstraint.getReferenceOperator().name());
+            builder.append(" ").append(foreignKeyConstraint.getReferenceAction().getValue());
+        }
+        return true;
     }
 }

@@ -43,7 +43,6 @@ import com.aliyun.fastmodel.core.tree.expr.literal.NullLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
 import com.aliyun.fastmodel.core.tree.statement.constants.ColumnPropertyDefaultKey;
-import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintScope;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
@@ -66,6 +65,7 @@ import com.aliyun.fastmodel.transform.api.client.dto.index.Index;
 import com.aliyun.fastmodel.transform.api.client.dto.index.IndexKey;
 import com.aliyun.fastmodel.transform.api.client.dto.index.IndexSortType;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.client.dto.property.StringProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
@@ -74,6 +74,7 @@ import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.UniqueKeyExprClientConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.UniqueKeyExprConstraint;
+import com.aliyun.fastmodel.transform.api.format.PropertyKey;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -126,7 +127,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      * @return
      */
     protected Long toLifeCycleSeconds(CreateTable createTable) {
-        return 0L;
+        return null;
     }
 
     /**
@@ -139,6 +140,16 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return false;
     }
 
+    protected Boolean getPropertyBoolean(CreateTable createTable, PropertyKey propertyKey) {
+        List<Property> properties = createTable.getProperties();
+        if (CollectionUtils.isEmpty(properties)) {
+            return false;
+        }
+        Optional<Property> first = properties.stream().filter(
+            p -> StringUtils.equalsIgnoreCase(propertyKey.getValue(), p.getName())).findFirst();
+        return first.filter(property -> BooleanUtils.toBoolean(property.getValue())).isPresent();
+    }
+
     /**
      * fromat expression
      *
@@ -146,6 +157,9 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      * @return
      */
     protected String formatExpression(BaseExpression baseExpression) {
+        if (StringUtils.isNotBlank(baseExpression.getOrigin())) {
+            return baseExpression.getOrigin();
+        }
         return baseExpression.toString();
     }
 
@@ -155,7 +169,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
      */
     @Override
     public Node convertToNode(Table table, TableConfig tableConfig) {
-        QualifiedName of = StringJoinUtil.join(table.getCatalog(), table.getDatabase(), table.getSchema(), table.getName());
+        QualifiedName qualifiedName = StringJoinUtil.join(table.getCatalog(), table.getDatabase(), table.getSchema(), table.getName());
         Comment comment = null;
         if (table.getComment() != null) {
             comment = new Comment(table.getComment());
@@ -167,7 +181,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         List<ColumnDefinition> columnDefines = toColumnDefinition(table, table.getColumns());
         return CreateTable.builder()
             .ifNotExist(table.isIfNotExist())
-            .tableName(of)
+            .tableName(qualifiedName)
             .columns(columnDefines)
             .partition(partitionedBy)
             .tableIndex(tableIndexList)
@@ -190,6 +204,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         Preconditions.checkArgument(table instanceof CreateTable, "unsupported convert to table:" + table.getClass());
         CreateTable createTable = (CreateTable)table;
         Boolean external = isExternal(createTable);
+        Boolean dynamic = isDynamic(createTable);
         String catalog = toCatalog(createTable, context);
         String schema = toSchema(createTable, context);
         String suffix = createTable.getQualifiedName().getSuffix();
@@ -201,6 +216,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         return Table.builder()
             .ifNotExist(createTable.isNotExists())
             .external(external)
+            .dynamic(dynamic)
             .catalog(catalog)
             .database(database)
             .schema(schema).name(suffix)
@@ -211,6 +227,10 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             .indices(indices)
             .properties(properties)
             .build();
+    }
+
+    protected Boolean isDynamic(CreateTable createTable) {
+        return false;
     }
 
     protected List<Index> toIndex(CreateTable createTable) {
@@ -395,7 +415,9 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
             }).collect(Collectors.toList());
             list.addAll(columns);
         }
-        if (createTable.isPartitionEmpty()) {return list;}
+        if (createTable.isPartitionEmpty()) {
+            return list;
+        }
         //分区信息，如果column里面已经含有分区信息，那么更新下
         List<ColumnDefinition> partitionColumns = createTable.getPartitionedBy().getColumnDefinitions();
         int index = 0;
@@ -446,23 +468,20 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         //outline constraint only primary key and unique key
         for (BaseConstraint constraint : constraintStatements) {
             Constraint constraintDto = new Constraint();
-            constraintDto.setName(constraintDto.getName());
-            ConstraintScope scope = constraint.getConstraintType().getScope();
+            constraintDto.setName(constraint.getName().getValue());
             constraintDto.setType(OutlineConstraintType.getByValue(constraint.getConstraintType().getCode()));
-            if (scope != ConstraintScope.COLUMN) {
-                continue;
-            }
             if (constraint instanceof PrimaryConstraint) {
                 PrimaryConstraint primaryConstraint = (PrimaryConstraint)constraint;
                 List<String> columns = primaryConstraint.getColNames().stream().map(Identifier::getValue).collect(Collectors.toList());
                 constraintDto.setColumns(columns);
+                list.add(constraintDto);
             }
             if (constraint instanceof UniqueConstraint) {
                 UniqueConstraint primaryConstraint = (UniqueConstraint)constraint;
                 List<String> columns = primaryConstraint.getColumnNames().stream().map(Identifier::getValue).collect(Collectors.toList());
                 constraintDto.setColumns(columns);
+                list.add(constraintDto);
             }
-            list.add(constraintDto);
         }
         return list;
     }
@@ -602,9 +621,12 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         if (CollectionUtils.isEmpty(columns)) {
             return null;
         }
-        List<ColumnDefinition> collect = columns.stream().filter(Column::isPartitionKey).sorted(Comparator.comparing(Column::getPartitionKeyIndex))
+        List<ColumnDefinition> collect = columns.stream()
+            .filter(Column::isPartitionKey)
+            .sorted(Comparator.comparing(Column::getPartitionKeyIndex))
             .map(c -> ColumnDefinition.builder().colName(new Identifier(c.getName())).comment(new Comment(c.getComment())).dataType(getDataType(c))
-                .notNull(BooleanUtils.isFalse(c.isNullable())).primary(c.isPrimaryKey()).build()).collect(Collectors.toList());
+                .notNull(BooleanUtils.isFalse(c.isNullable())).primary(c.isPrimaryKey()).build())
+            .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(collect)) {
             return null;
         }
@@ -714,28 +736,54 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
 
     protected Column getColumn(ColumnDefinition c, boolean partitionKey, Integer partitionKeyIndex) {
         BaseDataType dataType = c.getDataType();
+        String dataTypeNameValue = null;
+        IDataTypeName dataTypeName = null;
+        if (dataType != null) {
+            dataTypeName = dataType.getTypeName();
+            dataTypeNameValue = dataTypeName != null ? dataTypeName.getValue() : null;
+        }
+        List<BaseClientProperty> properties = toColumnProperties(c.getColumnProperties());
         Column column = Column.builder()
             .id(c.getColName().getValue())
             .name(c.getColName().getValue())
             .comment(c.getCommentValue())
-            .dataType(dataType.getTypeName().getValue())
+            .dataType(dataTypeNameValue)
             .nullable(BooleanUtils.isNotTrue(c.getNotNull()))
             .primaryKey(BooleanUtils.isTrue(c.getPrimary()))
             .partitionKey(partitionKey)
             .defaultValue(toDefaultBaseValue(c.getDefaultValue()))
-            .partitionKeyIndex(partitionKeyIndex).build();
-        IDataTypeName typeName = dataType.getTypeName();
-        Dimension dimension = typeName.getDimension();
+            .partitionKeyIndex(partitionKeyIndex)
+            .properties(properties)
+            .build();
+        if (dataTypeName == null) {
+            return column;
+        }
+        Dimension dimension = dataTypeName.getDimension();
         if (dimension == Dimension.MULTIPLE) {
             //如果是多纬度的类型，直接设置类型文本
-            column.setDataType(dataType.getOrigin());
+            column.setDataType(formatExpression(dataType));
             return column;
         }
         if (!(dataType instanceof GenericDataType)) {
+            column.setDataType(formatExpression(dataType));
             return column;
         }
         GenericDataType genericDataType = (GenericDataType)dataType;
         return getColumn(genericDataType, column, dimension);
+    }
+
+    private List<BaseClientProperty> toColumnProperties(List<Property> columnProperties) {
+        if (columnProperties == null) {
+            return null;
+        }
+        return columnProperties.stream().map(
+            c -> {
+                StringProperty stringProperty = new StringProperty();
+                stringProperty.setKey(c.getName());
+                stringProperty.setValueString(c.getValue());
+                return stringProperty;
+            }
+        ).collect(Collectors.toList());
     }
 
     private Column getColumn(GenericDataType genericDataType, Column column, Dimension dimension) {
@@ -797,7 +845,7 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         }
         if (aClass == FunctionCall.class) {
             FunctionCall functionCall = (FunctionCall)defaultValue;
-            return functionCall.toString();
+            return formatExpression(functionCall);
         }
         if (aClass == CurrentTimestamp.class) {
             return CurrentTimestamp.CURRENT_TIMESTAMP;

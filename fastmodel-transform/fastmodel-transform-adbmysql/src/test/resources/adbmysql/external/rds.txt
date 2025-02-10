@@ -1,0 +1,12 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.mysqltest (
+	id int,
+	name varchar(1023),
+	age int
+ ) ENGINE = 'MYSQL'
+ TABLE_PROPERTIES = '{
+   "url":"jdbc:mysql://rm-bp1gx6h1tyd04****.mysql.rds.aliyuncs.com:3306/test_adb",
+   "tablename":"person",
+   "username":"testUserName",
+   "password":"testUserPassword",
+   "charset":"utf8"
+}';

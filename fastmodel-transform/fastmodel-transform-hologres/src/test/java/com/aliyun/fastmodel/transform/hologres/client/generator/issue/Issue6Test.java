@@ -52,7 +52,7 @@ public class Issue6Test extends BaseIssueTest {
             + "   c4 TEXT,\n"
             + "   PRIMARY KEY(c1)\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('public.test_2', 'dictionary_encoding_columns', '\"c1\":auto,\"c3\":auto,\"c2\":auto');\n"
+            + "CALL SET_TABLE_PROPERTY('public.test_2', 'dictionary_encoding_columns', '\"c1\":auto,\"c3\":on,\"c2\":on');\n"
             + "COMMIT;", generator);
     }
 

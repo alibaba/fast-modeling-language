@@ -56,6 +56,7 @@ showObjectTypes:
     | KW_CODES
     | KW_COLUMNS
     | KW_MATERIALIZED KW_VIEWS
+    | KW_ETL
 ;
 
 dictType:

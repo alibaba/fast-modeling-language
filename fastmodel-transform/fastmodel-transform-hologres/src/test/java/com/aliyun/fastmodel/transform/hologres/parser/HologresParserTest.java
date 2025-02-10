@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
+import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
@@ -20,6 +21,7 @@ import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.SetColComment;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -34,6 +36,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Desc:
@@ -209,4 +212,32 @@ public class HologresParserTest {
         CompositeStatement createTable = (CompositeStatement)hologresParser2.parseNode(value, ReverseContext.builder().merge(true).build());
         assertEquals(7, createTable.getChildren().size());
     }
+
+    @Test
+    @SneakyThrows
+    public void testDefaultValue() {
+        String value = IOUtils.resourceToString("/hologres/reverse_default_value.txt", Charset.defaultCharset());
+        CompositeStatement node = (CompositeStatement)hologresParser2.parseNode(value, ReverseContext.builder().build());
+        assertEquals(2, node.getStatements().size());
+        List<BaseStatement> children = node.getChildren();
+        CreateTable createTable = (CreateTable)children.get(0);
+        List<ColumnDefinition> columnDefines = createTable.getColumnDefines();
+        BaseExpression defaultValue = columnDefines.get(0).getDefaultValue();
+        assertNotNull(defaultValue);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDynamicTable() {
+        String v = IOUtils.resourceToString("/hologres/dynamic/dynamic_table.txt", Charset.defaultCharset());
+        CreateTable c = (CreateTable)hologresParser2.parseNode(v, ReverseContext.builder().build());
+        assertEquals("public.tpch_q1_incremental", c.getQualifiedName().toString());
+        List<ColumnDefinition> columnDefines = c.getColumnDefines();
+        assertTrue(columnDefines.size() > 0);
+        PartitionedBy partitionedBy = c.getPartitionedBy();
+        assertEquals(1, partitionedBy.getColumnDefinitions().size());
+        List<Property> properties = c.getProperties();
+        assertEquals(8, properties.size());
+    }
+
 }

@@ -355,10 +355,11 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
 
     @Override
     public String visitIdentifier(Identifier node, Void context) {
-        if (!node.isDelimited()) {
-            return node.getValue();
+        String value = node.getValue();
+        boolean containsSpecialChars = value.contains(":");
+        if (!node.isDelimited() && !containsSpecialChars) {
+            return value;
         } else {
-            String value = node.getValue();
             //if value is start `, then
             if (value.startsWith(PREFIX)) {
                 return value;
@@ -742,7 +743,4 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
             return builder.toString();
         };
     }
-
 }
-
-

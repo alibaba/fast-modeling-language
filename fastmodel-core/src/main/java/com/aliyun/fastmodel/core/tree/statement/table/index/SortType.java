@@ -8,6 +8,8 @@
 
 package com.aliyun.fastmodel.core.tree.statement.table.index;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Sort Type
  *
@@ -23,4 +25,14 @@ public enum SortType {
      * 倒序
      */
     DESC;
+
+    public static SortType fromValue(String sort) {
+        SortType[] sortTypes = SortType.values();
+        for (SortType sortType : sortTypes) {
+            if (StringUtils.equalsIgnoreCase(sortType.name(), sort)) {
+                return sortType;
+            }
+        }
+        return null;
+    }
 }

@@ -39,6 +39,7 @@ import com.aliyun.fastmodel.core.tree.expr.atom.GroupingOperation;
 import com.aliyun.fastmodel.core.tree.expr.atom.IfExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.InPredicate;
 import com.aliyun.fastmodel.core.tree.expr.atom.IntervalExpression;
+import com.aliyun.fastmodel.core.tree.expr.atom.LambdaExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.ListExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.SearchedCaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.atom.SimpleCaseExpression;
@@ -1356,7 +1357,25 @@ public interface IAstVisitor<R, C> {
         return visitRowDataType(jsonDataType, context);
     }
 
+    /**
+     * visit index expr
+     *
+     * @param indexExpr
+     * @param context
+     * @return
+     */
     default R visitIndexExpr(IndexExpr indexExpr, C context) {
         return visitNode(indexExpr, context);
+    }
+
+    /**
+     * lambda expression
+     *
+     * @param lambdaExpression
+     * @param context
+     * @return
+     */
+    default R visitLambdaExpression(LambdaExpression lambdaExpression, C context) {
+        return visitExpression(lambdaExpression, context);
     }
 }

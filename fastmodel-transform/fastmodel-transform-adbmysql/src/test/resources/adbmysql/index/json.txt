@@ -1,0 +1,6 @@
+CREATE TABLE json_test(
+  id int,
+  vj json,
+  index idx_vj_array(vj->'$[*]')
+)
+DISTRIBUTED BY HASH(id);

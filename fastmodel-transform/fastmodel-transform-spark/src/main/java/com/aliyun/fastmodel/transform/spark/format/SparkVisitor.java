@@ -6,8 +6,9 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
-import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.hive.format.HiveHelper;
 import com.aliyun.fastmodel.transform.hive.format.HivePropertyKey;
@@ -199,6 +200,26 @@ public class SparkVisitor extends FastModelVisitor {
 
         removeNewLine(builder);
         return executable;
+    }
+
+    @Override
+    public String formatColumnDefinition(ColumnDefinition column, Integer max) {
+        BaseDataType dataType = column.getDataType();
+        String col = formatColName(column.getColName(), max);
+        StringBuilder sb = new StringBuilder().append(col);
+        if (dataType != null) {
+            sb.append(" ").append(formatDataType(dataType));
+        }
+
+        boolean isNotNull = column.getNotNull() != null && column.getNotNull();
+        if (isNotNull) {
+            sb.append(" NOT NULL");
+        }
+        if (column.getDefaultValue() != null) {
+            sb.append(" DEFAULT ").append(formatExpression(column.getDefaultValue()));
+        }
+        sb.append(formatComment(column.getComment(), isEndNewLine(sb.toString())));
+        return sb.toString();
     }
 
     private void appendColumns(CreateTable node, boolean columnNotEmpty, String elementIndent) {

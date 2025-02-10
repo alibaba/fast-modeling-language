@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.common.utils.StripUtils;
@@ -231,5 +232,22 @@ public class ParserHelper {
             }
         }
         return list;
+    }
+
+    public static List<String> getColumnList(List<Identifier> columnList) {
+        if (columnList == null) {
+            return null;
+        }
+        return columnList.stream()
+            .map(Identifier::getValue)
+            .collect(Collectors.toList());
+    }
+
+    public static LongLiteral getLongLiteral(Long value) {
+        LongLiteral partitionCount = null;
+        if (value != null) {
+            partitionCount = new LongLiteral(String.valueOf(value));
+        }
+        return partitionCount;
     }
 }

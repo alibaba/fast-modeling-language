@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.transform.api.client.CodeGenerator;
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.client.dto.property.StringProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.request.DdlGeneratorModelRequest;
 import com.aliyun.fastmodel.transform.api.client.dto.request.DdlReverseSqlRequest;
 import com.aliyun.fastmodel.transform.api.client.dto.result.DdlGeneratorResult;
@@ -21,7 +23,10 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
+import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.hologres.client.property.HologresPropertyKey;
+import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -349,6 +354,116 @@ public class HologresCodeGeneratorModelTest {
             + ");\n"
             + "COMMENT ON TABLE \"schema\".abc IS '''abc';\n"
             + "COMMENT ON COLUMN \"schema\".abc.c1 IS 'comment';\n"
+            + "COMMIT;", generate.getDialectNodes().get(0).getNode());
+    }
+
+    @Test
+    public void testGeneratorDynamicTable() {
+        DefaultCodeGenerator defaultCodeGenerator = new DefaultCodeGenerator();
+        DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(DialectMeta.getByNameAndVersion(DialectName.HOLOGRES.getName(), HologresVersion.V3))
+            .caseSensitive(false)
+            .build();
+        request.setConfig(config);
+        List<Column> a = Lists.newArrayList(
+            Column.builder()
+                .id("c1")
+                .name("c1")
+                .build()
+        );
+        List<BaseClientProperty> properties = Lists.newArrayList();
+        StringProperty property = new StringProperty();
+        property.setKey("refresh_mode");
+        property.setValue("incremental");
+        properties.add(property);
+
+        property = new StringProperty();
+        property.setKey("auto_refresh_enable");
+        property.setValue("true");
+        properties.add(property);
+
+        property = new StringProperty();
+        property.setKey("incremental_auto_refresh_schd_start_time");
+        property.setValue("2024-09-15 23:50:0");
+        properties.add(property);
+
+        property = new StringProperty();
+        property.setKey("incremental_auto_refresh_interval");
+        property.setValue("3 minutes");
+        properties.add(property);
+
+        property = new StringProperty();
+        property.setKey("incremental_guc_hg_computing_resource");
+        property.setValue("serverless");
+        properties.add(property);
+
+        property = new StringProperty();
+        property.setKey("incremental_guc_hg_experimental_serverless_computing_required_cores");
+        property.setValue("30");
+        properties.add(property);
+
+        property = new StringProperty();
+        property.setKey(HologresPropertyKey.TASK_DEFINITION.getValue());
+        property.setValue("select\n"
+            + "        l_returnflag,\n"
+            + "        l_linestatus,\n"
+            + "        count(*) as count_order\n"
+            + "from\n"
+            + "        hologres_dataset_tpch_100g.lineitem\n"
+            + "where\n"
+            + "        l_shipdate <= date '1998-12-01' - interval '120' day\n"
+            + "group by\n"
+            + "        l_returnflag,\n"
+            + "        l_linestatus\n"
+            + ";");
+        properties.add(property);
+        /**
+         * refresh_mode='incremental',
+         * auto_refresh_enable='true',
+         * incremental_auto_refresh_schd_start_time='2024-09-15 23:50:0',
+         * incremental_auto_refresh_interval='3 minutes',
+         * incremental_guc_hg_computing_resource='serverless',
+         * incremental_guc_hg_experimental_serverless_computing_required_cores='30'
+         */
+        Table table = Table.builder()
+            .dynamic(true)
+            .ifNotExist(false)
+            .name("abc")
+            .schema("schema")
+            .columns(a)
+            .comment("abc")
+            .properties(properties)
+            .build();
+        request.setAfter(table);
+        DdlGeneratorResult generate = defaultCodeGenerator.generate(request);
+        assertEquals("BEGIN;\n"
+            + "CREATE DYNAMIC TABLE \"schema\".abc (\n"
+            + "   c1\n"
+            + ")\n"
+            + "WITH (\n"
+            + "   refresh_mode='incremental',\n"
+            + "   auto_refresh_enable='true',\n"
+            + "   incremental_auto_refresh_schd_start_time='2024-09-15 23:50:0',\n"
+            + "   incremental_auto_refresh_interval='3 minutes',\n"
+            + "   incremental_guc_hg_computing_resource='serverless',\n"
+            + "   incremental_guc_hg_experimental_serverless_computing_required_cores='30'\n"
+            + ") AS\n"
+            + "select\n"
+            + "        l_returnflag,\n"
+            + "        l_linestatus,\n"
+            + "        count(*) as count_order\n"
+            + "from\n"
+            + "        hologres_dataset_tpch_100g.lineitem\n"
+            + "where\n"
+            + "        l_shipdate <= date '1998-12-01' - interval '120' day\n"
+            + "group by\n"
+            + "        l_returnflag,\n"
+            + "        l_linestatus\n"
+            + ";\n"
+            + "COMMIT;\n"
+            + "BEGIN;\n"
+            + "COMMENT ON TABLE \"schema\".abc IS 'abc';\n"
             + "COMMIT;", generate.getDialectNodes().get(0).getNode());
     }
 }

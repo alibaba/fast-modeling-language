@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.transform.hologres.context;
 
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * builder
@@ -26,6 +27,7 @@ import lombok.Getter;
  * @date 2021/3/7
  */
 @Getter
+@Setter
 public class HologresTransformContext extends TransformContext {
 
     public static final String COLUMN = "column";
@@ -38,6 +40,11 @@ public class HologresTransformContext extends TransformContext {
 
     private boolean caseSensitive;
 
+    /**
+     * 使用set语句代替call set table_property
+     */
+    private boolean useAlterTableSetSentence;
+
     public HologresTransformContext(TransformContext context) {
         super(context);
         if (context instanceof HologresTransformContext) {
@@ -45,6 +52,7 @@ public class HologresTransformContext extends TransformContext {
             orientation = hologresTransformContext.getOrientation();
             timeToLiveInSeconds = hologresTransformContext.getTimeToLiveInSeconds();
             caseSensitive = hologresTransformContext.isCaseSensitive();
+            useAlterTableSetSentence = hologresTransformContext.isUseAlterTableSetSentence();
         }
     }
 
@@ -53,6 +61,7 @@ public class HologresTransformContext extends TransformContext {
         orientation = builder.getOrientation();
         timeToLiveInSeconds = builder.getTimeToLiveInSeconds();
         caseSensitive = builder.isCaseSensitive();
+        useAlterTableSetSentence = builder.isUseAlterTableSetSentence();
     }
 
     public static Builder builder() {
@@ -67,6 +76,8 @@ public class HologresTransformContext extends TransformContext {
         private Long timeToLiveInSeconds = DEFAULT_SECONDS;
 
         private boolean caseSensitive;
+
+        private boolean useAlterTableSetSentence;
 
         @Override
         public HologresTransformContext build() {
@@ -85,6 +96,11 @@ public class HologresTransformContext extends TransformContext {
 
         public Builder caseSensitive(boolean caseSensitive) {
             this.caseSensitive = caseSensitive;
+            return this;
+        }
+
+        public Builder useAlterTableSetSentence(boolean useAlterTableSetSentence) {
+            this.useAlterTableSetSentence = useAlterTableSetSentence;
             return this;
         }
 

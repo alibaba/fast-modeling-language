@@ -38,8 +38,7 @@ public class HologresV2Transformer extends HologresTransformer {
             HologresVersion.V2);
         StatementBuilder builder = BuilderFactory.getInstance().getBuilder(source, dialectMeta, context);
         HologresTransformContext hologresTransformContext = new HologresTransformContext(context);
-        DialectNode build = builder.build(source, hologresTransformContext);
-        return build;
+        return builder.build(source, hologresTransformContext);
     }
 
 }

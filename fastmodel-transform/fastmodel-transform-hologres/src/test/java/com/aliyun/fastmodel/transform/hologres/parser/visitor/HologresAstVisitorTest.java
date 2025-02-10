@@ -25,6 +25,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
+import com.aliyun.fastmodel.transform.hologres.format.HologresAstVisitor;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresGenericDataType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -237,5 +238,23 @@ public class HologresAstVisitorTest {
         HologresAstVisitor hologresAstVisitor = new HologresAstVisitor(HologresTransformContext.builder().schema("s1").build(), HologresVersion.V2);
         hologresAstVisitor.visitRenameTable(renameTable, 0);
         assertEquals("ALTER TABLE s1.t1 RENAME TO t2", hologresAstVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testSetPropertiesWithAlterTable() {
+        HologresAstVisitor hologresAstVisitor = new HologresAstVisitor(HologresTransformContext.builder().schema("s1").useAlterTableSetSentence(true)
+            .build(), HologresVersion.V2);
+        List<Property> properties = Lists.newArrayList();
+        properties.add(new Property("refresh_mode", "batch"));
+        properties.add(new Property("incremental_auto_refresh_schd_start_time", "immediate"));
+        SetTableProperties setProperties = new SetTableProperties(
+            QualifiedName.of("a.b"),
+            properties
+        );
+        hologresAstVisitor.visitSetTableProperties(setProperties, 0);
+        String s = hologresAstVisitor.getBuilder().toString();
+        assertEquals("BEGIN;\n"
+            + "ALTER TABLE s1.b SET (refresh_mode='batch',incremental_auto_refresh_schd_start_time='immediate');\n"
+            + "COMMIT;", s);
     }
 }

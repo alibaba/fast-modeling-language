@@ -1,0 +1,9 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.otstest (
+	id int,
+	name string,
+	age int
+) ENGINE = 'OTS'
+TABLE_PROPERTIES = '{
+	"mapped_name":"person",
+	"location":"https://w0****la.cn-hangzhou.vpc.tablestore.aliyuncs.com"
+}';

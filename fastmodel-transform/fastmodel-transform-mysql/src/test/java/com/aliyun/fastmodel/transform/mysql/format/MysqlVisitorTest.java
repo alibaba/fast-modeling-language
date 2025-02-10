@@ -107,7 +107,7 @@ public class MysqlVisitorTest {
             + "   c1 BIGINT,\n"
             + "   PRIMARY KEY(c1),\n"
             + "   UNIQUE KEY (c1),\n"
-            + "   INDEX idx_name (c1)\n)");
+            + "   INDEX idx_name(c1)\n)");
     }
 
     @Test

@@ -1,0 +1,3 @@
+CREATE TABLE sales (txn_id int, qty int, date date)
+WITH (appendoptimized=true, compresslevel=5)
+DISTRIBUTED BY (txn_id);

@@ -1,5 +1,6 @@
 package com.aliyun.fastmodel.transform.oceanbase.client.converter.partition.impl;
 
+import com.aliyun.fastmodel.transform.oceanbase.client.converter.OceanBaseMysqlClientConverter;
 import org.junit.Test;
 
 /**
@@ -10,8 +11,11 @@ import org.junit.Test;
  */
 public class OceanBasePartitionClientConverterImplTest {
 
+    private OceanBaseMysqlClientConverter baseMysqlClientConverter = new OceanBaseMysqlClientConverter();
+
     @Test
     public void toSubPartitionClient() {
+
     }
 
     @Test

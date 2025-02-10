@@ -1,0 +1,15 @@
+Create Table `ADB_EXTERNAL_TPCH_10GB`.`External_customer`
+ (
+`c_custkey` int NOT NULL COMMENT '',
+`c_name` varchar(1024) NOT NULL COMMENT '',
+`c_address` varchar(1024) NOT NULL COMMENT '',
+`c_nationkey` int NOT NULL COMMENT '',
+`c_phone` varchar(15) NOT NULL COMMENT '',
+`c_acctbal` decimal(15, 2) NOT NULL COMMENT '',
+`c_mktsegment` varchar(10) NOT NULL COMMENT '',
+`c_comment` varchar(1024) NOT NULL COMMENT '',
+`dummy` varchar(1024)
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS `TEXTFILE`
+LOCATION 'oss://dataset-cn-shanghai-external/customer/' ;

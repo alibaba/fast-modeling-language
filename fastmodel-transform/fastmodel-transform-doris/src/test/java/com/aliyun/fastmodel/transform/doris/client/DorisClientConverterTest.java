@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.parser.LanguageParser;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
@@ -12,6 +13,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
+import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
@@ -67,11 +69,11 @@ public class DorisClientConverterTest {
     @Test
     public void getRawListPartitionValue() {
         BaseExpression stringLiteral = new StringLiteral("abc");
-        List<PartitionValue> partitonValueList = Lists.newArrayList(
+        List<PartitionValue> partitionValueList = Lists.newArrayList(
             new PartitionValue(false, stringLiteral)
         );
         ListPartitionValue listPartitionValue = new ListPartitionValue(
-            partitonValueList
+            partitionValueList
         );
         String raw = dorisClientConverter.getRaw(listPartitionValue);
         assertEquals("\"abc\"", raw);
@@ -82,4 +84,11 @@ public class DorisClientConverterTest {
         PropertyConverter propertyConverter = dorisClientConverter.getPropertyConverter();
         assertNotNull(propertyConverter);
     }
+
+    @Test
+    public void testDataType() {
+        BaseDataType dataType = dorisClientConverter.getDataType(Column.builder().name("c1").dataType("varchar(200)").build());
+        assertEquals("VARCHAR(200)", dataType.toString());
+    }
+
 }

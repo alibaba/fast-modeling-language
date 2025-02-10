@@ -20,10 +20,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class BinLogTTL extends BaseClientProperty<Long> {
 
-    public static final String BINLOG_TTL = HoloPropertyKey.BINLOG_TTL.getValue();
+    public static final String BINLOG_TTL = HologresPropertyKey.BINLOG_TTL.getValue();
 
     public BinLogTTL() {
-        this.setKey(HoloPropertyKey.BINLOG_TTL.getValue());
+        this.setKey(HologresPropertyKey.BINLOG_TTL.getValue());
     }
 
     @Override

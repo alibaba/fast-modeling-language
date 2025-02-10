@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DistributionKey extends BaseClientProperty<List<String>> {
 
-    public static final String DISTRIBUTION_KEY = HoloPropertyKey.DISTRIBUTION_KEY.getValue();
+    public static final String DISTRIBUTION_KEY = HologresPropertyKey.DISTRIBUTION_KEY.getValue();
 
     public DistributionKey() {
         this.setKey(DISTRIBUTION_KEY);

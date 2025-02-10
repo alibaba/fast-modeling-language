@@ -1,0 +1,19 @@
+CREATE TABLE sales (id int, year int, qtr int, c_rank int, code char(1), region text)
+DISTRIBUTED BY (id)
+PARTITION BY RANGE (year)
+
+  SUBPARTITION BY RANGE (qtr)
+    SUBPARTITION TEMPLATE (
+    START (1) END (5) EVERY (1),
+    DEFAULT SUBPARTITION bad_qtr )
+
+    SUBPARTITION BY LIST (region)
+      SUBPARTITION TEMPLATE (
+      SUBPARTITION usa VALUES ('usa'),
+      SUBPARTITION europe VALUES ('europe'),
+      SUBPARTITION asia VALUES ('asia'),
+      DEFAULT SUBPARTITION other_regions)
+
+( START (2009) END (2011) EVERY (1),
+  DEFAULT PARTITION outlying_years);
+

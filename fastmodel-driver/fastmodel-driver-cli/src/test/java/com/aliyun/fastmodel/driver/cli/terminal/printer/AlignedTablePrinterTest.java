@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.aliyun.fastmodel.driver.model.DriverColumnInfo;
 import com.aliyun.fastmodel.driver.model.DriverRow;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,14 +40,20 @@ public class AlignedTablePrinterTest {
     @Before
     public void before() {
         List<DriverColumnInfo> columnInfo = new ArrayList<>();
+        DriverColumnInfo e = new DriverColumnInfo();
+        e.setColumnName("c");
+        columnInfo.add(e);
         alignedTablePrinter = new AlignedTablePrinter(columnInfo, new PrintWriter(System.out));
     }
 
     @Test
     public void print() throws IOException {
         List<DriverRow> list = new ArrayList<>();
+        List<String> data = Lists.newArrayList();
+        data.add("select 1;");
+        DriverRow r = new DriverRow(data);
+        list.add(r);
         alignedTablePrinter.printRows(list);
-
     }
 
     @Test

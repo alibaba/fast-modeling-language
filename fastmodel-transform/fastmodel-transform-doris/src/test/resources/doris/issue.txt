@@ -1,0 +1,26 @@
+CREATE TABLE `realtime_test` (
+  `update_time` datetime NOT NULL COMMENT '创建时间',
+  `id` bigint NOT NULL COMMENT 'id',
+  `value` text NULL COMMENT '值',
+  `comment` text NULL COMMENT '备注',
+  `crete_time` datetime NOT NULL COMMENT '创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`update_time`, `id`)
+COMMENT '测试表'
+AUTO PARTITION BY RANGE (date_trunc(`update_time`, 'day'))
+()
+DISTRIBUTED BY HASH(`id`) BUCKETS AUTO
+PROPERTIES (
+  "file_cache_ttl_seconds" = "0",
+  "is_being_synced" = "false",
+  "storage_medium" = "hdd",
+  "storage_format" = "V2",
+  "inverted_index_storage_format" = "V2",
+  "enable_unique_key_merge_on_write" = "true",
+  "light_schema_change" = "true",
+  "disable_auto_compaction" = "false",
+  "enable_single_replica_compaction" = "false",
+  "group_commit_interval_ms" = "10000",
+  "group_commit_data_bytes" = "134217728",
+  "enable_mow_light_delete" = "false"
+);

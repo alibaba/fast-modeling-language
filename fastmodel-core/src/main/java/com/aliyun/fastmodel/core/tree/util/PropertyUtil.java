@@ -45,17 +45,22 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class PropertyUtil {
 
+    /**
+     * to map use lower case
+     *
+     * @param propertyList
+     * @return {@see Map}
+     */
     public static Map<String, String> toMap(List<Property> propertyList) {
-        if (propertyList == null) {
-            return Maps.newLinkedHashMap();
-        }
-        Map<String, String> maps = new LinkedHashMap<>(propertyList.size());
-        for (Property property : propertyList) {
-            maps.put(property.getName(), property.getValue());
-        }
-        return maps;
+        return toMap(propertyList, false);
     }
 
+    /**
+     * to property with map
+     *
+     * @param map
+     * @return
+     */
     public static List<Property> toProperty(Map<String, String> map) {
         if (map == null) {
             return ImmutableList.of();
@@ -79,8 +84,23 @@ public class PropertyUtil {
         if (properties == null || properties.isEmpty()) {
             return null;
         }
-        Map<String, String> stringStringMap = toMap(properties);
-        return stringStringMap.get(propertyKey);
+        Map<String, String> stringStringMap = toMap(properties, true);
+        return stringStringMap.get(propertyKey.toLowerCase());
+    }
+
+    private static Map<String, String> toMap(List<Property> propertyList, boolean lowerCase) {
+        if (propertyList == null) {
+            return Maps.newLinkedHashMap();
+        }
+        Map<String, String> maps = new LinkedHashMap<>(propertyList.size());
+        for (Property property : propertyList) {
+            if (lowerCase) {
+                maps.put(property.getName().toLowerCase(), property.getValue());
+            } else {
+                maps.put(property.getName(), property.getValue());
+            }
+        }
+        return maps;
     }
 
     /**

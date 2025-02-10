@@ -2,7 +2,7 @@ package com.aliyun.fastmodel.transform.oceanbase.client.property.range;
 
 import java.util.List;
 
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangeClientPartition;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

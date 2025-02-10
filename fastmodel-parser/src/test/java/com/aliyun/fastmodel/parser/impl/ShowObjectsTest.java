@@ -331,4 +331,22 @@ public class ShowObjectsTest extends BaseTest {
         WhereCondition whereCondition = (WhereCondition)showObjects.getConditionElement();
         assertEquals(whereCondition.getBaseExpression().toString(), "logic_table IN ('a', 'b', 'c')");
     }
+
+    @Test
+    public void testShowEtl() {
+        String fml = "show etl where table in ('a','b', 'c');";
+        ShowObjects showObjects = parse(fml, ShowObjects.class);
+        assertEquals(ShowObjectsType.ETL, showObjects.getShowType());
+    }
+
+    @Test
+    public void testShowEtlFromTable() {
+        String fml = "show etl from t1";
+        ShowObjects showObjects = parse(fml, ShowObjects.class);
+        assertEquals("t1", showObjects.getTableName().get(0).toString());
+        fml = "show etl from t1,t2";
+        showObjects = parse(fml, ShowObjects.class);
+        List<QualifiedName> tableName = showObjects.getTableName();
+        assertEquals(2, tableName.size());
+    }
 }

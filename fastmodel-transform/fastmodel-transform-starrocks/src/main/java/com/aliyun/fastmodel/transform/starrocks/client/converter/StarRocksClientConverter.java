@@ -24,8 +24,8 @@ import com.aliyun.fastmodel.transform.api.extension.client.constraint.ExtensionC
 import com.aliyun.fastmodel.transform.api.extension.client.converter.ExtensionClientConverter;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
 import com.aliyun.fastmodel.transform.starrocks.format.StarRocksOutVisitor;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
@@ -70,14 +70,14 @@ public class StarRocksClientConverter extends ExtensionClientConverter<StarRocks
     }
 
     private void convertConstraint(BaseConstraint baseConstraint, List<Constraint> outlineConstraint) {
-        if (baseConstraint instanceof DistributeConstraint) {
-            DistributeConstraint distributeConstraint = (DistributeConstraint)baseConstraint;
-            DistributeClientConstraint starRocksDistributeConstraint = toStarRocksDistributeConstraint(distributeConstraint);
+        if (baseConstraint instanceof DistributeNonKeyConstraint) {
+            DistributeNonKeyConstraint distributeConstraint = (DistributeNonKeyConstraint)baseConstraint;
+            DistributeClientConstraint starRocksDistributeConstraint = toDistribute(distributeConstraint);
             outlineConstraint.add(starRocksDistributeConstraint);
             return;
         }
-        if (baseConstraint instanceof OrderByConstraint) {
-            OrderByConstraint orderByConstraint = (OrderByConstraint)baseConstraint;
+        if (baseConstraint instanceof OrderByNonKeyConstraint) {
+            OrderByNonKeyConstraint orderByConstraint = (OrderByNonKeyConstraint)baseConstraint;
             Constraint constraint = toOrderClientConstraint(orderByConstraint);
             outlineConstraint.add(constraint);
             return;
@@ -111,23 +111,12 @@ public class StarRocksClientConverter extends ExtensionClientConverter<StarRocks
             .build();
     }
 
-    private Constraint toOrderClientConstraint(OrderByConstraint orderByConstraint) {
+    private Constraint toOrderClientConstraint(OrderByNonKeyConstraint orderByConstraint) {
         List<String> collect = orderByConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList());
         return Constraint.builder().name(orderByConstraint.getName().getValue())
             .columns(collect)
             .type(ExtensionClientConstraintType.ORDER_BY)
             .build();
-    }
-
-    private DistributeClientConstraint toStarRocksDistributeConstraint(DistributeConstraint distributeConstraint) {
-        DistributeClientConstraint starRocksDistributeConstraint = new DistributeClientConstraint();
-        starRocksDistributeConstraint.setBucket(distributeConstraint.getBucket());
-        if (CollectionUtils.isNotEmpty(distributeConstraint.getColumns())) {
-            starRocksDistributeConstraint.setColumns(
-                distributeConstraint.getColumns().stream().map(Identifier::getValue).collect(Collectors.toList()));
-        }
-        starRocksDistributeConstraint.setRandom(distributeConstraint.getRandom());
-        return starRocksDistributeConstraint;
     }
 
     @Override

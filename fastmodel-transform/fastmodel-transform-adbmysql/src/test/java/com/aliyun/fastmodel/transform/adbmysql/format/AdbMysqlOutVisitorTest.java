@@ -16,7 +16,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class AdbMysqlOutVisitorTest {
         properties.add(new Property(AdbMysqlPropertyKey.HOT_PARTITION_COUNT.getValue(), "10"));
         List<BaseConstraint> constraints = Lists.newArrayList();
         ArrayList<Identifier> es = Lists.newArrayList(new Identifier("c1"), new Identifier("c2"));
-        constraints.add(new DistributeConstraint(es, null));
+        constraints.add(new DistributeNonKeyConstraint(es, null));
         CreateTable node = CreateTable.builder()
             .tableName(QualifiedName.of("abc"))
             .columns(columns)
@@ -72,7 +72,7 @@ public class AdbMysqlOutVisitorTest {
             + "   c1 BIGINT,\n"
             + "   c2 BIGINT\n"
             + ")\n"
-            + "DISTRIBUTE BY HASH(c1,c2)\n"
+            + "DISTRIBUTED BY HASH(c1,c2)\n"
             + "PARTITION BY VALUE(DATE_FORMAT(c2, '%Y%m%d')) LIFECYCLE 10\n"
             + "BLOCK_SIZE=10\n"
             + "STORAGE_POLICY='MIXED'\n"
@@ -97,7 +97,7 @@ public class AdbMysqlOutVisitorTest {
         properties.add(new Property(AdbMysqlPropertyKey.HOT_PARTITION_COUNT.getValue(), "10"));
         List<BaseConstraint> constraints = Lists.newArrayList();
         ArrayList<Identifier> es = Lists.newArrayList(new Identifier("c1"), new Identifier("c2"));
-        constraints.add(new DistributeConstraint(es, null));
+        constraints.add(new DistributeNonKeyConstraint(es, null));
         CreateTable node = CreateTable.builder()
             .tableName(QualifiedName.of("abc"))
             .columns(columns)
@@ -113,7 +113,7 @@ public class AdbMysqlOutVisitorTest {
             + "   c1 BIGINT,\n"
             + "   c2 BIGINT\n"
             + ")\n"
-            + "DISTRIBUTE BY HASH(c1,c2)\n"
+            + "DISTRIBUTED BY HASH(c1,c2)\n"
             + "PARTITION BY VALUE(c2) LIFECYCLE 10\n"
             + "BLOCK_SIZE=10\n"
             + "STORAGE_POLICY='MIXED'\n"

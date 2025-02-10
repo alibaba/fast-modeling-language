@@ -67,7 +67,7 @@ public class OceanBaseMysqlTransformerTest extends BaseOceanbaseTest {
             + "   c1 INT PRIMARY KEY,\n"
             + "   c2 INT,\n"
             + "   c3 INT,\n"
-            + "   INDEX i1 (c2)\n"
+            + "   INDEX i1(c2)\n"
             + ")", transform.getNode());
     }
 
@@ -80,7 +80,7 @@ public class OceanBaseMysqlTransformerTest extends BaseOceanbaseTest {
             + "   c1 INT,\n"
             + "   c2 INT,\n"
             + "   UNIQUE KEY((c1 + c2)),\n"
-            + "   INDEX i1 ((c1 + 1))\n"
+            + "   INDEX i1(c1 + 1)\n"
             + ")", transform.getNode());
     }
 

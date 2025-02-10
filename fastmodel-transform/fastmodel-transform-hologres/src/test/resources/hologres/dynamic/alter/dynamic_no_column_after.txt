@@ -1,0 +1,6 @@
+CREATE DYNAMIC TABLE b.sales_incremental
+  WITH (refresh_mode='streaming',auto_refresh_enable='true')
+AS
+  SELECT day, sum(amount), count(1)
+    FROM base_sales
+  GROUP BY day;

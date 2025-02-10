@@ -12,8 +12,14 @@ import lombok.Getter;
 @Getter
 public enum ExtensionClientConstraintType implements ConstraintType {
 
+    /**
+     * aggregate key
+     */
     AGGREGATE_KEY("aggregate_key"),
 
+    /**
+     * duplicate key
+     */
     DUPLICATE_KEY("duplicate_key"),
     /**
      * unique key
@@ -37,7 +43,29 @@ public enum ExtensionClientConstraintType implements ConstraintType {
     /**
      * watermark (flink)
      */
-    WATERMARK("watermark")
+    WATERMARK("watermark"),
+
+    /**
+     * cluster by
+     */
+    CLUSTER_BY("clusterBy"),
+
+    /**
+     * clustered key
+     */
+    CLUSTERED_KEY("clusteredKey"),
+
+    /**
+     * 向量索引
+     */
+    ANN_INDEX("annIndex"),
+
+    /**
+     * 外键
+     */
+    FOREIGN_KEY("foreignKey");
+
+
     ;
 
     private final String code;

@@ -21,7 +21,10 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.CustomConstrain
 
 /**
  * 用于表达非key的constraint
- *
+ * 位置在table的之外
+ * create table xx (
+ *      key constraint
+ * ) non_key_constraint
  * @author panguanjing
  * @date 2023/12/15
  */

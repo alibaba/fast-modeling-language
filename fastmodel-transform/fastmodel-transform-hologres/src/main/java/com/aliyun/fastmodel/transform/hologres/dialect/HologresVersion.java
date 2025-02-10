@@ -18,7 +18,12 @@ public enum HologresVersion implements IVersion {
     /**
      * 2.0
      */
-    V2(Constants.V2);
+    V2(Constants.V2),
+
+    /**
+     * 3.0版本
+     */
+    V3(Constants.V3);
 
     @Getter
     private final String value;
@@ -28,6 +33,21 @@ public enum HologresVersion implements IVersion {
     public static class Constants {
         public static final String V1 = "1.0";
         public static final String V2 = "2.0";
+        public static final String V3 = "3.0";
+    }
+
+    /**
+     * 比较两个版本大小
+     *
+     * @param hologresVersion version
+     * @return
+     */
+    public boolean greaterThan(HologresVersion hologresVersion) {
+        if (hologresVersion == null) {
+            return true;
+        }
+        String value = this.getValue();
+        return Double.compare(Double.parseDouble(value), Double.parseDouble(hologresVersion.getValue())) > 0;
     }
 
     public static HologresVersion getByValue(String value) {

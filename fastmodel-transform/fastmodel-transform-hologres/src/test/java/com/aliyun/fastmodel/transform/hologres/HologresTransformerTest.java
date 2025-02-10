@@ -1,17 +1,9 @@
 /*
- * Copyright 2021-2022 Alibaba Group Holding Ltd.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright (c)  2021. Aliyun.com All right reserved. This software is the
+ * confidential and proprietary information of Aliyun.com ("Confidential
+ * Information"). You shall not disclose such Confidential Information and shall
+ * use it only in accordance with the terms of the license agreement you entered
+ * into with Aliyun.com.
  */
 
 package com.aliyun.fastmodel.transform.hologres;
@@ -386,7 +378,7 @@ public class HologresTransformerTest {
             + "   c3 TEXT NOT NULL,\n"
             + "   PRIMARY KEY(c1,c2)\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('t1', 'dictionary_encoding_columns', '\"c1:auto,c2:auto\"');\n"
+            + "CALL SET_TABLE_PROPERTY('t1', 'dictionary_encoding_columns', '\"c1:on,c2:on\"');\n"
             + "CALL SET_TABLE_PROPERTY('t1', 'segment_key', '\"c1\"');\n"
             + "COMMIT;");
     }
@@ -617,12 +609,7 @@ public class HologresTransformerTest {
                 "call set_table_property('tbl', 'time_to_live_in_seconds', '36');\n" +
                 "commit;"
         );
-        ReverseContext build = ReverseContext.builder().merge(true).build();
-        Node node = hologresTransformer.reverse(dialectNode, build);
-        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
-
-        Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
+        String node1 = generator(dialectNode);
         assertEquals("BEGIN;\n" +
             "CREATE TABLE tbl (\n" +
             "   id            BIGINT NOT NULL,\n" +
@@ -664,12 +651,7 @@ public class HologresTransformerTest {
                 "CALL set_table_property ('tbl1', 'auto_partitioning.num_retention', '2');\n" +
                 "COMMIT;"
         );
-        ReverseContext build = ReverseContext.builder().merge(true).build();
-        Node node = hologresTransformer.reverse(dialectNode, build);
-        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
-
-        Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
+        String node1 = generator(dialectNode);
         assertEquals("BEGIN;\n" +
             "CREATE TABLE tbl1 (\n" +
             "   c1 TEXT NOT NULL,\n" +
@@ -692,12 +674,7 @@ public class HologresTransformerTest {
                 "SERVER odps_server \n" +
                 "OPTIONS(project_name '<odps_project>', table_name '<odps_table>');"
         );
-        ReverseContext build = ReverseContext.builder().merge(true).build();
-        Node node = hologresTransformer.reverse(dialectNode, build);
-        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
-
-        Node reverseNode = hologresTransformer.reverseTable(table);
-        String node1 = hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
+        String node1 = generator(dialectNode);
         assertEquals("BEGIN;\n" +
             "CREATE FOREIGN TABLE src_pt (\n" +
             "   id TEXT,\n" +
@@ -706,6 +683,74 @@ public class HologresTransformerTest {
             "SERVER odps_server\n" +
             "OPTIONS(project_name '<odps_project>', table_name '<odps_table>');\n" +
             "COMMIT;", node1);
+    }
+
+    private String generator(DialectNode dialectNode) {
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node node = hologresTransformer.reverse(dialectNode, build);
+        Table table = hologresTransformer.transformTable(node, TransformContext.builder().build());
+        Node reverseNode = hologresTransformer.reverseTable(table);
+        return hologresTransformer.transform((BaseStatement)reverseNode, TransformContext.builder().build()).getNode();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testWithTable() {
+        String v = IOUtils.resourceToString("/hologres/reverse_default_value.txt", Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(v);
+        String generator = generator(dialectNode);
+        assertEquals("BEGIN;\n"
+            + "CREATE TABLE user_info (\n"
+            + "   id         INTEGER NOT NULL DEFAULT nextval('user_info_id_seq'::REGCLASS),\n"
+            + "   username   VARCHAR(50) NOT NULL,\n"
+            + "   \"password\" VARCHAR(50) NOT NULL,\n"
+            + "   email      VARCHAR(100) NOT NULL,\n"
+            + "   created_at TIMESTAMP WITH TIME ZONE NOT NULL,\n"
+            + "   PRIMARY KEY(id)\n"
+            + ");\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'time_to_live_in_seconds', '3153600000');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'storage_format', 'orc');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'bitmap_columns', '\"username,password,email\"');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'dictionary_encoding_columns', '\"username:auto,password:auto,email:auto\"');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'distribution_key', '\"id\"');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'segment_key', '\"created_at\"');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'table_group', 'holo_db_tg_default');\n"
+            + "CALL SET_TABLE_PROPERTY('user_info', 'table_storage_mode', 'any');\n"
+            + "COMMIT;", generator);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDynamicTable() {
+        String name = "/hologres/dynamic/dynamic_table.txt";
+        String v = IOUtils.resourceToString(name, Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(v);
+        String generator = generator(dialectNode);
+        String result = IOUtils.resourceToString(name + ".result", Charset.defaultCharset());
+        assertEquals(result, generator);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDynamicTable2() {
+        String name = "/hologres/dynamic/dynamic_no_column.txt";
+        String v = IOUtils.resourceToString(name, Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(v);
+        String generator = generator(dialectNode);
+        String result = IOUtils.resourceToString(name + ".result", Charset.defaultCharset());
+        assertEquals(result, generator);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDynamicTable3() {
+        String name = "/hologres/dynamic/dynamic_no_column2.txt";
+        String v = IOUtils.resourceToString(name, Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(v);
+        String generator = generator(dialectNode);
+        String result = IOUtils.resourceToString(name + ".result", Charset.defaultCharset());
+        assertEquals(result, generator);
     }
 
     @Test(expected = MergeException.class)
@@ -717,4 +762,3 @@ public class HologresTransformerTest {
         assertEquals(7, createTable.getChildren().size());
     }
 }
-

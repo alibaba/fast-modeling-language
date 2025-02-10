@@ -39,8 +39,8 @@ import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.ClusterKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.ClusterNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
@@ -158,14 +158,14 @@ public class DorisAstBuilder extends DorisParserBaseVisitor<Node> {
         }
         //cluster by
         if (ctx.CLUSTER() != null) {
-            ClusterKeyConstraint clusterByConstraint = getClusterByConstraint(ctx);
+            ClusterNonKeyConstraint clusterByConstraint = getClusterByConstraint(ctx);
             constraints.add(clusterByConstraint);
         }
 
         //distributed by
         if (ctx.DISTRIBUTED() != null) {
             //distribute key constraint
-            DistributeConstraint distributeKeyConstraint = getDistributeKeyConstraint(ctx);
+            DistributeNonKeyConstraint distributeKeyConstraint = getDistributeKeyConstraint(ctx);
             constraints.add(distributeKeyConstraint);
         }
 
@@ -401,14 +401,14 @@ public class DorisAstBuilder extends DorisParserBaseVisitor<Node> {
         return aggregateKeyConstraint;
     }
 
-    private ClusterKeyConstraint getClusterByConstraint(CreateTableContext ctx) {
+    private ClusterNonKeyConstraint getClusterByConstraint(CreateTableContext ctx) {
         IdentifierListContext clusterKeys = ctx.clusterKeys;
         List<Identifier> list = ParserHelper.visit(this, ctx.clusterKeys.identifierSeq().ident, Identifier.class);
-        ClusterKeyConstraint clusterByConstraint = new ClusterKeyConstraint(list);
+        ClusterNonKeyConstraint clusterByConstraint = new ClusterNonKeyConstraint(list);
         return clusterByConstraint;
     }
 
-    private DistributeConstraint getDistributeKeyConstraint(CreateTableContext ctx) {
+    private DistributeNonKeyConstraint getDistributeKeyConstraint(CreateTableContext ctx) {
         IdentifierListContext hashKeys = ctx.hashKeys;
         List<Identifier> identifiers = ParserHelper.visit(this, hashKeys.identifierSeq().ident, Identifier.class);
         Boolean random = ctx.RANDOM() != null;
@@ -416,7 +416,7 @@ public class DorisAstBuilder extends DorisParserBaseVisitor<Node> {
         if (ctx.INTEGER_VALUE() != null) {
             bucket = Integer.parseInt(ctx.INTEGER_VALUE().getText());
         }
-        DistributeConstraint distributeKeyConstraint = new DistributeConstraint(
+        DistributeNonKeyConstraint distributeKeyConstraint = new DistributeNonKeyConstraint(
             identifiers, random, bucket
         );
         return distributeKeyConstraint;

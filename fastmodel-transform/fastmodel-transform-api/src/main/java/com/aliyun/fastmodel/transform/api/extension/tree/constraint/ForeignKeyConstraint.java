@@ -8,6 +8,7 @@ import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.CustomConstraint;
 import com.aliyun.fastmodel.transform.api.extension.visitor.ExtensionAstVisitor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * foreign key constraint
@@ -21,16 +22,26 @@ public class ForeignKeyConstraint extends CustomConstraint {
     public enum MatchAction {
         SIMPLE,
         FULL,
-        PARTIAL
+        PARTIAL;
+
+        public static MatchAction fromValue(String action) {
+            MatchAction[] values = MatchAction.values();
+            for (MatchAction value : values) {
+                if (StringUtils.equals(action, value.name())) {
+                    return value;
+                }
+            }
+            return null;
+        }
     }
 
+    @Getter
     public enum ReferenceAction {
         RESTRICT("RESTRICT"),
         CASCADE("CASCADE"),
         SET_NULL("SET NULL"),
         NO_ACTION("NO ACTION"),
         SET_DEFAULT("SET DEFAULT");
-        @Getter
         private final String value;
 
         ReferenceAction(String value) {this.value = value;}
@@ -42,6 +53,7 @@ public class ForeignKeyConstraint extends CustomConstraint {
     }
 
     private final Identifier indexName;
+
     private final List<Identifier> colNames;
 
     private final QualifiedName referenceTable;

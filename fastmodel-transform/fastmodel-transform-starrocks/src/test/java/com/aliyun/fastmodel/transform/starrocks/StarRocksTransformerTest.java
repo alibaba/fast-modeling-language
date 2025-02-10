@@ -19,13 +19,13 @@ import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.extension.client.constraint.DistributeClientConstraint;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.ListPartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.table.TablePartitionRaw;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.TimeExpressionPartitionProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ListClientPartition;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.TimeExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ArrayClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ListClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ListPartitionProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.TimeExpressionClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.TimeExpressionPartitionProperty;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -415,7 +415,7 @@ public class StarRocksTransformerTest {
             + "   k2 DECIMAL(10,2) DEFAULT \"10.5\",\n"
             + "   v1 CHAR(10) REPLACE,\n"
             + "   v2 INT SUM,\n"
-            + "   INDEX k1_idx (k1) USING BITMAP COMMENT \"xxxxxx\"\n"
+            + "   INDEX k1_idx(k1) USING BITMAP COMMENT \"xxxxxx\"\n"
             + ")\n"
             + "ENGINE=olap\n"
             + "AGGREGATE KEY (k1,k2)\n"
@@ -448,7 +448,7 @@ public class StarRocksTransformerTest {
             + "   k2 DECIMAL(10,2) DEFAULT \"10.5\",\n"
             + "   v1 CHAR(10) REPLACE,\n"
             + "   v2 INT SUM,\n"
-            + "   INDEX k1_idx (k1) USING BITMAP COMMENT \"xxxxxx\"\n"
+            + "   INDEX k1_idx(k1) USING BITMAP COMMENT \"xxxxxx\"\n"
             + ")\n"
             + "ENGINE=olap\n"
             + "AGGREGATE KEY (k1,k2)\n"

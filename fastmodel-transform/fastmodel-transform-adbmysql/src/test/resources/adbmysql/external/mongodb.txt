@@ -1,0 +1,10 @@
+CREATE EXTERNAL TABLE adb_external_demo.person (
+  id int,
+  age int
+) ENGINE = 'MONGODB'
+ TABLE_PROPERTIES ='{
+"mapped_name":"person",
+"location":"mongodb://testuser:****@dds-bp113d414bca8****.mongodb.rds.aliyuncs.com:3717,dds-bp113d414bca8****.mongodb.rds.aliyuncs.com:3717/test_mongodb",
+"username":"testuser",
+"password":"password",
+}';

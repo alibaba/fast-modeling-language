@@ -1,0 +1,6 @@
+CREATE TABLE clustered_test(
+  id int,
+  vj json,
+  CLUSTERED KEY c(id)
+)
+DISTRIBUTED BY HASH(id);

@@ -50,7 +50,34 @@ public enum AdbMysqlPropertyKey implements PropertyKey {
      * table properties
      */
     TABLE_PROPERTIES("TABLE_PROPERTIES", true),
-    ;
+
+    /**
+     * external
+     */
+    EXTERNAL("EXTERNAL", false),
+
+    /**
+     * location
+     * effect when external
+     */
+    LOCATION("LOCATION", false),
+
+    /**
+     * stored by
+     * effect when external
+     */
+    STORED_BY("STORED_BY", false),
+
+    /**
+     * row format serde
+     * effect when external
+     */
+    ROW_FORMAT("ROW_FORMAT", false),
+
+    /**
+     * TBL Properties
+     */
+    TBL_PROPERTIES("TBLPROPERTIES", false);
 
     private final String value;
 

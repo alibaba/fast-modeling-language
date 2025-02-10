@@ -11,7 +11,7 @@ import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.transform.api.client.dto.property.StringProperty;
 import com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangeClientPartition;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.SingleRangePartition;
 import com.aliyun.fastmodel.transform.oceanbase.client.converter.OceanBaseMysqlClientConverter;
 import com.aliyun.fastmodel.transform.oceanbase.client.converter.partition.OceanBasePartitionClientConverter;

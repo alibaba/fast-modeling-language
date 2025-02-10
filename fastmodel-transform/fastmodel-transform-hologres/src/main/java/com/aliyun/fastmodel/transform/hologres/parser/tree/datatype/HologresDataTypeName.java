@@ -80,7 +80,7 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
     /**
      * varchar
      */
-    VARCHAR("VARCHAR", "", Dimension.ONE, SimpleDataTypeName.STRING),
+    VARCHAR("VARCHAR", "CHARACTERVARYING", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
      * serial:<a href="https://help.aliyun.com/document_detail/187391.html">...</a>
@@ -152,7 +152,12 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
     /**
      * uuid
      */
-    UUID("UUID", "", Dimension.ZERO, SimpleDataTypeName.STRING);
+    UUID("UUID", "", Dimension.ZERO, SimpleDataTypeName.STRING),
+
+    /**
+     * REGCLASS
+     */
+    REGCLASS("REGCLASS", "", Dimension.ZERO, SimpleDataTypeName.STRING);
 
     /**
      * value

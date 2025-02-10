@@ -1,0 +1,12 @@
+CREATE TABLE vector (
+  xid bigint not null,
+  cid bigint not null,
+  uid varchar not null,
+  vid varchar not null,
+  wid varchar not null,
+  float_feature array<float>(4),
+  short_feature array<smallint>(4),
+  ANN INDEX idx_short_feature(short_feature),
+  ANN INDEX idx_float_feature(float_feature),
+  PRIMARY KEY (xid, cid, vid)
+) DISTRIBUTED BY HASH(xid);

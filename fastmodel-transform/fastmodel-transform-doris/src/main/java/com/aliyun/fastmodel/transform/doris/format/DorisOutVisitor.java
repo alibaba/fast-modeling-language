@@ -30,11 +30,11 @@ import com.aliyun.fastmodel.core.tree.statement.table.index.TableIndex;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.NonKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupItem;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
@@ -243,7 +243,7 @@ public class DorisOutVisitor extends FastModelVisitor implements DorisAstVisitor
     }
 
     @Override
-    public Boolean visitRollupConstraint(RollupConstraint rollupConstraint, Integer context) {
+    public Boolean visitRollupConstraint(RollupNonKeyConstraint rollupConstraint, Integer context) {
         builder.append("ROLLUP (");
         if (CollectionUtils.isNotEmpty(rollupConstraint.getRollupItemList())) {
             String s = rollupConstraint.getRollupItemList().stream().map(
@@ -552,7 +552,7 @@ public class DorisOutVisitor extends FastModelVisitor implements DorisAstVisitor
     }
 
     @Override
-    public Boolean visitOrderByConstraint(OrderByConstraint orderByConstraint, Integer context) {
+    public Boolean visitOrderByConstraint(OrderByNonKeyConstraint orderByConstraint, Integer context) {
         builder.append("ORDER BY (");
         List<Identifier> colNames = orderByConstraint.getColumns();
         builder.append(colNames.stream().map(this::formatExpression).collect(Collectors.joining(",")));
@@ -561,7 +561,7 @@ public class DorisOutVisitor extends FastModelVisitor implements DorisAstVisitor
     }
 
     @Override
-    public Boolean visitDistributeKeyConstraint(DistributeConstraint distributeKeyConstraint, Integer context) {
+    public Boolean visitDistributeKeyConstraint(DistributeNonKeyConstraint distributeKeyConstraint, Integer context) {
         builder.append("DISTRIBUTED BY ");
         boolean random = BooleanUtils.isTrue(distributeKeyConstraint.getRandom());
         if (random) {

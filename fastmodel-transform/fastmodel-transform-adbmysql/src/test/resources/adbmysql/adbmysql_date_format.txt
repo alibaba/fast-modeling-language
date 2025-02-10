@@ -11,7 +11,7 @@ CREATE TABLE `testdb_t_parameter_bak_1123` (
   `col1` varchar(100) COMMENT '',
   `col2` varchar(100) COMMENT '',
   PRIMARY KEY (`id`,`create_time`)
-) DISTRIBUTE BY HASH(`id`)
+) DISTRIBUTED BY HASH(`id`)
 PARTITION BY VALUE(`date_format(create_time, '%Y%M%d')`)
 LIFECYCLE 10 INDEX_ALL='Y'
 STORAGE_POLICY='HOT' ENGINE='XUANWU'

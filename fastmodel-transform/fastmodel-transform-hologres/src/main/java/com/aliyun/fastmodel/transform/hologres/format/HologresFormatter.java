@@ -20,7 +20,6 @@ import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
-import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresAstVisitor;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.aliyun.fastmodel.transform.api.context.TransformContext.SEMICOLON;

@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.transform.hologres.parser.visitor;
 
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.hologres.format.HologresExpressionVisitor;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

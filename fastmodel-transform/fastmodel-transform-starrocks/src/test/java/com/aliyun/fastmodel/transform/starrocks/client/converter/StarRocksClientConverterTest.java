@@ -7,6 +7,7 @@ import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.enums.DateTimeEnum;
 import com.aliyun.fastmodel.core.tree.expr.literal.IntervalLiteral;
@@ -25,13 +26,13 @@ import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.extension.client.property.column.AggrColumnProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.SingleRangePartitionProperty;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.ArrayClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.BaseClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.LessThanClientPartitionKey;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.MultiRangeClientPartition;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.PartitionClientValue;
-import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.ArrayClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.BaseClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.LessThanClientPartitionKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.MultiRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.PartitionClientValue;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangeClientPartition;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.partition.v1.SingleRangePartitionProperty;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiRangePartition;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.PartitionDesc;
@@ -314,5 +315,11 @@ public class StarRocksClientConverterTest {
             + "   c1 MAP<STRING,STRING> REPLACE NOT NULL\n"
             + ");", transform.getNode());
 
+    }
+
+    @Test
+    public void testDataType() {
+        BaseDataType dataType = starRocksClientConverter.getDataType(Column.builder().name("c1").dataType("varchar(200)").build());
+        assertEquals("VARCHAR(200)", dataType.toString());
     }
 }

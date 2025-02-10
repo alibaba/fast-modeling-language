@@ -806,7 +806,7 @@ public class TableTest extends BaseTest {
             + "(\n"
             + "   a BIGINT,\n"
             + "   b abc,\n"
-            + "   INDEX abc (a)\n"
+            + "   INDEX abc(a)\n"
             + ")");
     }
 

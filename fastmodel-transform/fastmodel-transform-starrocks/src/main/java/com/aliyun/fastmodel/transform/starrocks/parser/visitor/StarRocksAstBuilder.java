@@ -47,10 +47,10 @@ import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.AggregateKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.DuplicateKeyConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByConstraint;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupItem;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
@@ -197,17 +197,17 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
 
         //distribute key constraint
         if (ctx.distributionDesc() != null) {
-            DistributeConstraint distributeKeyConstraint = (DistributeConstraint)visit(ctx.distributionDesc());
+            DistributeNonKeyConstraint distributeKeyConstraint = (DistributeNonKeyConstraint)visit(ctx.distributionDesc());
             constraints.add(distributeKeyConstraint);
         }
         //rollup_index
         if (ctx.rollupDesc() != null) {
-            RollupConstraint rollupConstraint = (RollupConstraint)visit(ctx.rollupDesc());
+            RollupNonKeyConstraint rollupConstraint = (RollupNonKeyConstraint)visit(ctx.rollupDesc());
             constraints.add(rollupConstraint);
         }
         //order by constraint
         if (ctx.orderByDesc() != null) {
-            OrderByConstraint orderByConstraint = (OrderByConstraint)visit(ctx.orderByDesc());
+            OrderByNonKeyConstraint orderByConstraint = (OrderByNonKeyConstraint)visit(ctx.orderByDesc());
             constraints.add(orderByConstraint);
         }
         PropertiesContext properties = ctx.properties();
@@ -438,10 +438,10 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
             bucket = Integer.parseInt(ctx.INTEGER_VALUE().getText());
         }
         if (ctx.RANDOM() != null) {
-            return new DistributeConstraint(true, bucket);
+            return new DistributeNonKeyConstraint(true, bucket);
         }
         if (ctx.identifierList() != null) {
-            return new DistributeConstraint(
+            return new DistributeNonKeyConstraint(
                 ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class),
                 bucket
             );
@@ -471,7 +471,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     @Override
     public Node visitRollupDesc(RollupDescContext ctx) {
         List<RollupItem> rollupItemList = ParserHelper.visit(this, ctx.rollupItem(), RollupItem.class);
-        return new RollupConstraint(rollupItemList);
+        return new RollupNonKeyConstraint(rollupItemList);
     }
 
     @Override
@@ -529,7 +529,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     @Override
     public Node visitOrderByDesc(OrderByDescContext ctx) {
         List<Identifier> identifierList = ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class);
-        return new OrderByConstraint(
+        return new OrderByNonKeyConstraint(
             IdentifierUtil.sysIdentifier(),
             identifierList
         );

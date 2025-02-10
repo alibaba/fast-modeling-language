@@ -1204,9 +1204,25 @@ BLOCK_SIZE:                          'BLOCK_SIZE';
 LIFECYCLE:                           'LIFECYCLE';
 HOT_PARTITION_COUNT:                 'HOT_PARTITION_COUNT';
 DISTRIBUTE:                          'DISTRIBUTE';
+DISTRIBUTED:                         'DISTRIBUTED';
 BROADCAST:                           'BROADCAST';
 INDEX_ALL :                          'INDEX_ALL';
 TABLE_PROPERTIES:                    'TABLE_PROPERTIES';
+CLUSTERED:                           'CLUSTERED';
+ANN :                                'ANN';
+HNSW_PQ :                            'HNSW_PQ';
+SQUARED_L2 :                         'SQUAREDL2';
+EXTERNAL :                           'EXTERNAL';
+TEXTFILE :                           'TEXTFILE';
+ORC :                                'ORC';
+PARQUET :                            'PARQUET';
+RCFIL :                              'RCFIL';
+HUDI :                               'HUDI';
+LOCATION :                           'LOCATION';
+TBLPROPERTIES :                      'TBLPROPERTIES';
+DELIMITED :                          'DELIMITED';
+ANALYZER :                           'ANALYZER';
+
 
 
 // Operators
@@ -1265,6 +1281,7 @@ SINGLE_QUOTE_SYMB:                   '\'';
 DOUBLE_QUOTE_SYMB:                   '"';
 REVERSE_QUOTE_SYMB:                  '`';
 COLON_SYMB:                          ':';
+LAMBDA_IMPLEMENT :                   '->';
 
 fragment QUOTE_SYMB
     : SINGLE_QUOTE_SYMB | DOUBLE_QUOTE_SYMB | REVERSE_QUOTE_SYMB

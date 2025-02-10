@@ -11,15 +11,16 @@ package com.aliyun.fastmodel.transform.hologres.client.converter;
 import java.util.Locale;
 
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ClusterKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.BinLogTTL;
-import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel.BinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.client.property.SegmentKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Desc:
