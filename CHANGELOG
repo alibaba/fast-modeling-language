@@ -197,3 +197,22 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.16
+新功能（new features）
+Core
+• 无
+
+
+Transformer
+• Hologres语法支持Merge关键字
+• Hive重构Visitor
+
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无
