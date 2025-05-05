@@ -206,7 +206,8 @@ Core
 
 Transformer
 • Hologres语法支持Merge关键字
-• Hive重构Visitor
+• AdbMysql语法支持DELIMITER_TOKENIZER关键字
+• Hive重构Visitor，优化properties输出
 
 
 向下兼容（compatibility）
