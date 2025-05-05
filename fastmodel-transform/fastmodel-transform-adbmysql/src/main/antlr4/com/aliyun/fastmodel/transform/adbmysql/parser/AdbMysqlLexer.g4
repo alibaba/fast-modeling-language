@@ -897,6 +897,7 @@ MULTIPOINT:                          'MULTIPOINT';
 MULTIPOLYGON:                        'MULTIPOLYGON';
 POINT:                               'POINT';
 POLYGON:                             'POLYGON';
+DELIMITER_TOKENIZER :                'DELIMITER_TOKENIZER';
 
 
 // Common function names

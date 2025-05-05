@@ -30,6 +30,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.DropPartitionCol;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
+import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -435,6 +436,8 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements AdbMysqlAstV
         Boolean notNull = column.getNotNull();
         if (BooleanUtils.isTrue(notNull)) {
             sb.append(" NOT NULL");
+        } else if (BooleanUtils.isFalse(notNull)) {
+            sb.append(" NULL");
         }
         if (column.getDefaultValue() != null) {
             sb.append(" DEFAULT ").append(formatExpression(column.getDefaultValue()));
@@ -548,6 +551,13 @@ public class AdbMysqlOutVisitor extends FastModelVisitor implements AdbMysqlAstV
             builder.append(foreignKeyConstraint.getReferenceOperator().name());
             builder.append(" ").append(foreignKeyConstraint.getReferenceAction().getValue());
         }
+        return true;
+    }
+
+    @Override
+    public Boolean visitSetTableComment(SetTableComment setTableComment, Integer context) {
+        builder.append("ALTER TABLE ").append(getCode(setTableComment.getQualifiedName()));
+        builder.append(" COMMENT ").append(formatStringLiteral(setTableComment.getComment().getComment()));
         return true;
     }
 }

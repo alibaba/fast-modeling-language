@@ -88,4 +88,19 @@ public class DorisLanguageParserTest {
             + "   FROM (\"2020-01-01\") TO (\"2023-01-01\") INTERVAL 1 DAY\n"
             + ");", transform.getNode());
     }
+
+    @SneakyThrows
+    @Test
+    public void testParseIssue() {
+        //从文件中获取内容
+        String content = IOUtils.resourceToString("/doris/issue.txt", Charset.defaultCharset());
+        CreateTable createTable = dorisLanguageParser.parseNode(content);
+        assertNotNull(createTable);
+    }
+
+    @Test
+    public void testParseCreatTable1() {
+        CreateTable createTable = dorisLanguageParser.parseNode("CREATE TABLE realtime_test (a bigint);");
+        assertNotNull(createTable);
+    }
 }

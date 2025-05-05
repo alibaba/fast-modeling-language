@@ -1,0 +1,1302 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS public.lmtest2343 (
+   id                            BIGINT NOT NULL,
+   f_update                      TEXT,
+   cume_dist                     TEXT,
+   dense_rank                    TEXT,
+   empty                         TEXT,
+   first_value                   TEXT,
+   "grouping"                    TEXT,
+   "groups"                      TEXT,
+   "intersect"                   TEXT,
+   json_table                    TEXT,
+   lag                           TEXT,
+   last_value                    TEXT,
+   "lateral"                     TEXT,
+   lead                          TEXT,
+   nth_value                     TEXT,
+   ntile                         TEXT,
+   "of"                          TEXT,
+   "over"                        TEXT,
+   percent_rank                  TEXT,
+   rank                          TEXT,
+   "recursive"                   TEXT,
+   row_number                    TEXT,
+   "system"                      TEXT,
+   "window"                      TEXT,
+   accessible                    TEXT,
+   account                       TEXT,
+   "action"                      TEXT,
+   "add"                         TEXT,
+   "after"                       TEXT,
+   against                       TEXT,
+   "aggregate"                   TEXT,
+   algorithm                     TEXT,
+   "all"                         TEXT,
+   "alter"                       TEXT,
+   "always"                      TEXT,
+   "analyse"                     TEXT,
+   "and"                         TEXT,
+   "any"                         TEXT,
+   "as"                          TEXT,
+   "asc"                         TEXT,
+   ascii                         TEXT,
+   asensitive                    TEXT,
+   "at"                          TEXT,
+   auto_increment                TEXT,
+   autoextend_size               TEXT,
+   avg                           TEXT,
+   avg_row_length                TEXT,
+   backup                        TEXT,
+   "before"                      TEXT,
+   "begin"                       TEXT,
+   "between"                     TEXT,
+   "bigint"                      TEXT,
+   "binary"                      TEXT,
+   binlog                        TEXT,
+   "bit"                         TEXT,
+   blob                          TEXT,
+   block                         TEXT,
+   bool                          TEXT,
+   "boolean"                     TEXT,
+   "both"                        TEXT,
+   btree                         TEXT,
+   "by"                          TEXT,
+   byte                          TEXT,
+   "cache"                       TEXT,
+   "call"                        TEXT,
+   "cascade"                     TEXT,
+   "cascaded"                    TEXT,
+   "case"                        TEXT,
+   catalog_name                  TEXT,
+   "chain"                       TEXT,
+   change                        TEXT,
+   changed                       TEXT,
+   channel                       TEXT,
+   "char"                        TEXT,
+   "character"                   TEXT,
+   charset                       TEXT,
+   "check"                       TEXT,
+   checksum                      TEXT,
+   cipher                        TEXT,
+   class_origin                  TEXT,
+   client                        TEXT,
+   "close"                       TEXT,
+   "coalesce"                    TEXT,
+   code                          TEXT,
+   "collate"                     TEXT,
+   "collation"                   TEXT,
+   "column"                      TEXT,
+   column_format                 TEXT,
+   column_name                   TEXT,
+   "columns"                     TEXT,
+   "comment"                     TEXT,
+   "commit"                      TEXT,
+   "committed"                   TEXT,
+   compact                       TEXT,
+   completion                    TEXT,
+   compressed                    TEXT,
+   compression                   TEXT,
+   concurrent                    TEXT,
+   condition                     TEXT,
+   "connection"                  TEXT,
+   consistent                    TEXT,
+   "constraint"                  TEXT,
+   constraint_catalog            TEXT,
+   constraint_name               TEXT,
+   constraint_schema             TEXT,
+   contains                      TEXT,
+   context                       TEXT,
+   "continue"                    TEXT,
+   convert                       TEXT,
+   cpu                           TEXT,
+   "create"                      TEXT,
+   "cross"                       TEXT,
+   "cube"                        TEXT,
+   "current"                     TEXT,
+   "current_date"                TEXT,
+   "current_time"                TEXT,
+   "current_timestamp"           TEXT,
+   "current_user"                TEXT,
+   "cursor"                      TEXT,
+   cursor_name                   TEXT,
+   "data"                        TEXT,
+   "database"                    TEXT,
+   databases                     TEXT,
+   datafile                      TEXT,
+   date                          TEXT,
+   datetime                      TEXT,
+   "day"                         TEXT,
+   day_hour                      TEXT,
+   day_microsecond               TEXT,
+   day_minute                    TEXT,
+   day_second                    TEXT,
+   "deallocate"                  TEXT,
+   "dec"                         TEXT,
+   "decimal"                     TEXT,
+   "declare"                     TEXT,
+   "default"                     TEXT,
+   default_auth                  TEXT,
+   "definer"                     TEXT,
+   delay_key_write               TEXT,
+   delayed                       TEXT,
+   "delete"                      TEXT,
+   des_key_file                  TEXT,
+   "desc"                        TEXT,
+   describe                      TEXT,
+   deterministic                 TEXT,
+   "diagnostics"                 TEXT,
+   directory                     TEXT,
+   "disable"                     TEXT,
+   "discard"                     TEXT,
+   disk                          TEXT,
+   "distinct"                    TEXT,
+   distinctrow                   TEXT,
+   div                           TEXT,
+   "do"                          TEXT,
+   "double"                      TEXT,
+   "drop"                        TEXT,
+   dual                          TEXT,
+   dumpfile                      TEXT,
+   duplicate                     TEXT,
+   dynamic                       TEXT,
+   "each"                        TEXT,
+   "else"                        TEXT,
+   elseif                        TEXT,
+   "enable"                      TEXT,
+   enclosed                      TEXT,
+   encryption                    TEXT,
+   "end"                         TEXT,
+   ends                          TEXT,
+   engine                        TEXT,
+   engines                       TEXT,
+   "enum"                        TEXT,
+   "error"                       TEXT,
+   errors                        TEXT,
+   "escape"                      TEXT,
+   escaped                       TEXT,
+   "event"                       TEXT,
+   events                        TEXT,
+   every                         TEXT,
+   exchange                      TEXT,
+   "execute"                     TEXT,
+   "exists"                      TEXT,
+   "exit"                        TEXT,
+   expansion                     TEXT,
+   expire                        TEXT,
+   "explain"                     TEXT,
+   export                        TEXT,
+   extended                      TEXT,
+   extent_size                   TEXT,
+   fast                          TEXT,
+   faults                        TEXT,
+   "fetch"                       TEXT,
+   fields                        TEXT,
+   file                          TEXT,
+   file_block_size               TEXT,
+   "filter"                      TEXT,
+   "first"                       TEXT,
+   fixed                         TEXT,
+   "float"                       TEXT,
+   float4                        TEXT,
+   float8                        TEXT,
+   flush                         TEXT,
+   follows                       TEXT,
+   "for"                         TEXT,
+   "force"                       TEXT,
+   "foreign"                     TEXT,
+   format                        TEXT,
+   found                         TEXT,
+   "from"                        TEXT,
+   "full"                        TEXT,
+   fulltext                      TEXT,
+   "function"                    TEXT,
+   general                       TEXT,
+   "generated"                   TEXT,
+   geometry                      TEXT,
+   geometrycollection            TEXT,
+   "get"                         TEXT,
+   get_format                    TEXT,
+   "global"                      TEXT,
+   "grant"                       TEXT,
+   grants                        TEXT,
+   "group"                       TEXT,
+   group_replication             TEXT,
+   "handler"                     TEXT,
+   hash                          TEXT,
+   "having"                      TEXT,
+   help                          TEXT,
+   high_priority                 TEXT,
+   host                          TEXT,
+   hosts                         TEXT,
+   "hour"                        TEXT,
+   hour_microsecond              TEXT,
+   hour_minute                   TEXT,
+   hour_second                   TEXT,
+   identified                    TEXT,
+   "if"                          TEXT,
+   ignore                        TEXT,
+   ignore_server_ids             TEXT,
+   "import"                      TEXT,
+   "in"                          TEXT,
+   "index"                       TEXT,
+   "indexes"                     TEXT,
+   infile                        TEXT,
+   initial_size                  TEXT,
+   "inner"                       TEXT,
+   "inout"                       TEXT,
+   "insensitive"                 TEXT,
+   "insert"                      TEXT,
+   insert_method                 TEXT,
+   install                       TEXT,
+   instance                      TEXT,
+   "int"                         TEXT,
+   int1                          TEXT,
+   int2                          TEXT,
+   int3                          TEXT,
+   int4                          TEXT,
+   int8                          TEXT,
+   "integer"                     TEXT,
+   "interval"                    TEXT,
+   "into"                        TEXT,
+   "invoker"                     TEXT,
+   io                            TEXT,
+   io_after_gtids                TEXT,
+   io_before_gtids               TEXT,
+   io_thread                     TEXT,
+   ipc                           TEXT,
+   "is"                          TEXT,
+   "isolation"                   TEXT,
+   issuer                        TEXT,
+   iterate                       TEXT,
+   "join"                        TEXT,
+   json                          TEXT,
+   "key"                         TEXT,
+   key_block_size                TEXT,
+   keys                          TEXT,
+   kill                          TEXT,
+   "language"                    TEXT,
+   "last"                        TEXT,
+   "leading"                     TEXT,
+   leave                         TEXT,
+   leaves                        TEXT,
+   "left"                        TEXT,
+   less                          TEXT,
+   "level"                       TEXT,
+   "like"                        TEXT,
+   "limit"                       TEXT,
+   linear                        TEXT,
+   lines                         TEXT,
+   linestring                    TEXT,
+   list                          TEXT,
+   "load"                        TEXT,
+   "local"                       TEXT,
+   "localtime"                   TEXT,
+   "localtimestamp"              TEXT,
+   "lock"                        TEXT,
+   locks                         TEXT,
+   logfile                       TEXT,
+   logs                          TEXT,
+   long                          TEXT,
+   longblob                      TEXT,
+   longtext                      TEXT,
+   "loop"                        TEXT,
+   low_priority                  TEXT,
+   master                        TEXT,
+   master_auto_position          TEXT,
+   master_bind                   TEXT,
+   master_connect_retry          TEXT,
+   master_delay                  TEXT,
+   master_heartbeat_period       TEXT,
+   master_host                   TEXT,
+   master_log_file               TEXT,
+   master_log_pos                TEXT,
+   master_password               TEXT,
+   master_port                   TEXT,
+   master_retry_count            TEXT,
+   master_server_id              TEXT,
+   master_ssl                    TEXT,
+   master_ssl_ca                 TEXT,
+   master_ssl_capath             TEXT,
+   master_ssl_cert               TEXT,
+   master_ssl_cipher             TEXT,
+   master_ssl_crl                TEXT,
+   master_ssl_crlpath            TEXT,
+   master_ssl_key                TEXT,
+   master_ssl_verify_server_cert TEXT,
+   master_tls_version            TEXT,
+   master_user                   TEXT,
+   "match"                       TEXT,
+   max_connections_per_hour      TEXT,
+   max_queries_per_hour          TEXT,
+   max_rows                      TEXT,
+   max_size                      TEXT,
+   max_statement_time            TEXT,
+   max_updates_per_hour          TEXT,
+   max_user_connections          TEXT,
+   "maxvalue"                    TEXT,
+   medium                        TEXT,
+   mediumblob                    TEXT,
+   mediumint                     TEXT,
+   mediumtext                    TEXT,
+   memory                        TEXT,
+   merge                         TEXT,
+   message_text                  TEXT,
+   microsecond                   TEXT,
+   middleint                     TEXT,
+   migrate                       TEXT,
+   min_rows                      TEXT,
+   "minute"                      TEXT,
+   minute_microsecond            TEXT,
+   minute_second                 TEXT,
+   mod                           TEXT,
+   "mode"                        TEXT,
+   modifies                      TEXT,
+   modify                        TEXT,
+   "month"                       TEXT,
+   multilinestring               TEXT,
+   multipoint                    TEXT,
+   multipolygon                  TEXT,
+   mutex                         TEXT,
+   mysql_errno                   TEXT,
+   "name"                        TEXT,
+   "names"                       TEXT,
+   "national"                    TEXT,
+   "natural"                     TEXT,
+   "nchar"                       TEXT,
+   ndb                           TEXT,
+   ndbcluster                    TEXT,
+   never                         TEXT,
+   "new"                         TEXT,
+   "next"                        TEXT,
+   "no"                          TEXT,
+   no_wait                       TEXT,
+   no_write_to_binlog            TEXT,
+   nodegroup                     TEXT,
+   nonblocking                   TEXT,
+   "none"                        TEXT,
+   "not"                         TEXT,
+   number                        TEXT,
+   "numeric"                     TEXT,
+   nvarchar                      TEXT,
+   "offset"                      TEXT,
+   old_password                  TEXT,
+   "on"                          TEXT,
+   one                           TEXT,
+   "only"                        TEXT,
+   "open"                        TEXT,
+   optimize                      TEXT,
+   optimizer_costs               TEXT,
+   "option"                      TEXT,
+   optionally                    TEXT,
+   "options"                     TEXT,
+   "or"                          TEXT,
+   "order"                       TEXT,
+   "out"                         TEXT,
+   "outer"                       TEXT,
+   outfile                       TEXT,
+   "owner"                       TEXT,
+   pack_keys                     TEXT,
+   page                          TEXT,
+   parse_gcol_expr               TEXT,
+   "parser"                      TEXT,
+   "partial"                     TEXT,
+   "partition"                   TEXT,
+   partitioning                  TEXT,
+   partitions                    TEXT,
+   "password"                    TEXT,
+   phase                         TEXT,
+   plugin                        TEXT,
+   plugin_dir                    TEXT,
+   plugins                       TEXT,
+   point                         TEXT,
+   polygon                       TEXT,
+   port                          TEXT,
+   precedes                      TEXT,
+   "precision"                   TEXT,
+   "prepare"                     TEXT,
+   "preserve"                    TEXT,
+   prev                          TEXT,
+   "primary"                     TEXT,
+   "privileges"                  TEXT,
+   "procedure"                   TEXT,
+   processlist                   TEXT,
+   profile                       TEXT,
+   profiles                      TEXT,
+   proxy                         TEXT,
+   purge                         TEXT,
+   quarter                       TEXT,
+   "query"                       TEXT,
+   quick                         TEXT,
+   "range"                       TEXT,
+   "read"                        TEXT,
+   read_only                     TEXT,
+   read_write                    TEXT,
+   reads                         TEXT,
+   "real"                        TEXT,
+   rebuild                       TEXT,
+   recover                       TEXT,
+   redo_buffer_size              TEXT,
+   redofile                      TEXT,
+   redundant                     TEXT,
+   "references"                  TEXT,
+   regexp                        TEXT,
+   relay                         TEXT,
+   relay_log_file                TEXT,
+   relay_log_pos                 TEXT,
+   relay_thread                  TEXT,
+   relaylog                      TEXT,
+   "release"                     TEXT,
+   reload                        TEXT,
+   remove                        TEXT,
+   "rename"                      TEXT,
+   reorganize                    TEXT,
+   repair                        TEXT,
+   repeat                        TEXT,
+   "repeatable"                  TEXT,
+   "replace"                     TEXT,
+   replicate_do_db               TEXT,
+   replicate_do_table            TEXT,
+   replicate_ignore_db           TEXT,
+   replicate_ignore_table        TEXT,
+   replicate_rewrite_db          TEXT,
+   replicate_wild_do_table       TEXT,
+   replicate_wild_ignore_table   TEXT,
+   replication                   TEXT,
+   require                       TEXT,
+   "reset"                       TEXT,
+   resignal                      TEXT,
+   restore                       TEXT,
+   "restrict"                    TEXT,
+   resume                        TEXT,
+   "return"                      TEXT,
+   returned_sqlstate             TEXT,
+   "returns"                     TEXT,
+   "reverse"                     TEXT,
+   "revoke"                      TEXT,
+   "right"                       TEXT,
+   rlike                         TEXT,
+   "rollback"                    TEXT,
+   "rollup"                      TEXT,
+   rotate                        TEXT,
+   "routine"                     TEXT,
+   "row"                         TEXT,
+   row_count                     TEXT,
+   row_format                    TEXT,
+   "rows"                        TEXT,
+   rtree                         TEXT,
+   "savepoint"                   TEXT,
+   schedule                      TEXT,
+   "schema"                      TEXT,
+   schema_name                   TEXT,
+   "schemas"                     TEXT,
+   "second"                      TEXT,
+   second_microsecond            TEXT,
+   "security"                    TEXT,
+   "select"                      TEXT,
+   sensitive                     TEXT,
+   separator                     TEXT,
+   serial                        TEXT,
+   "serializable"                TEXT,
+   "server"                      TEXT,
+   "session"                     TEXT,
+   "set"                         TEXT,
+   "share"                       TEXT,
+   "show"                        TEXT,
+   shutdown                      TEXT,
+   signal                        TEXT,
+   signed                        TEXT,
+   "simple"                      TEXT,
+   slave                         TEXT,
+   slow                          TEXT,
+   "smallint"                    TEXT,
+   "snapshot"                    TEXT,
+   socket                        TEXT,
+   "some"                        TEXT,
+   soname                        TEXT,
+   sounds                        TEXT,
+   source                        TEXT,
+   spatial                       TEXT,
+   specific                      TEXT,
+   "sql"                         TEXT,
+   sql_after_gtids               TEXT,
+   sql_after_mts_gaps            TEXT,
+   sql_before_gtids              TEXT,
+   sql_big_result                TEXT,
+   sql_buffer_result             TEXT,
+   sql_cache                     TEXT,
+   sql_calc_found_rows           TEXT,
+   sql_no_cache                  TEXT,
+   sql_small_result              TEXT,
+   sql_thread                    TEXT,
+   sql_tsi_day                   TEXT,
+   sql_tsi_hour                  TEXT,
+   sql_tsi_minute                TEXT,
+   sql_tsi_month                 TEXT,
+   sql_tsi_quarter               TEXT,
+   sql_tsi_second                TEXT,
+   sql_tsi_week                  TEXT,
+   sql_tsi_year                  TEXT,
+   sqlexception                  TEXT,
+   "sqlstate"                    TEXT,
+   sqlwarning                    TEXT,
+   ssl                           TEXT,
+   "stacked"                     TEXT,
+   "start"                       TEXT,
+   starting                      TEXT,
+   starts                        TEXT,
+   stats_auto_recalc             TEXT,
+   stats_persistent              TEXT,
+   stats_sample_pages            TEXT,
+   status                        TEXT,
+   stop                          TEXT,
+   "storage"                     TEXT,
+   "stored"                      TEXT,
+   straight_join                 TEXT,
+   string                        TEXT,
+   subclass_origin               TEXT,
+   subject                       TEXT,
+   subpartition                  TEXT,
+   subpartitions                 TEXT,
+   super                         TEXT,
+   suspend                       TEXT,
+   swaps                         TEXT,
+   switches                      TEXT,
+   "table"                       TEXT,
+   table_checksum                TEXT,
+   table_name                    TEXT,
+   "tables"                      TEXT,
+   "tablespace"                  TEXT,
+   "temporary"                   TEXT,
+   temptable                     TEXT,
+   terminated                    TEXT,
+   "text"                        TEXT,
+   than                          TEXT,
+   "then"                        TEXT,
+   "time"                        TEXT,
+   "timestamp"                   TEXT,
+   timestampadd                  TEXT,
+   timestampdiff                 TEXT,
+   tinyblob                      TEXT,
+   tinyint                       TEXT,
+   tinytext                      TEXT,
+   "to"                          TEXT,
+   "trailing"                    TEXT,
+   "transaction"                 TEXT,
+   "trigger"                     TEXT,
+   triggers                      TEXT,
+   "truncate"                    TEXT,
+   "type"                        TEXT,
+   "types"                       TEXT,
+   "uncommitted"                 TEXT,
+   undefined                     TEXT,
+   undo                          TEXT,
+   undo_buffer_size              TEXT,
+   undofile                      TEXT,
+   unicode                       TEXT,
+   uninstall                     TEXT,
+   "union"                       TEXT,
+   "unique"                      TEXT,
+   "unknown"                     TEXT,
+   unlock                        TEXT,
+   unsigned                      TEXT,
+   "until"                       TEXT,
+   "update"                      TEXT,
+   upgrade                       TEXT,
+   usage                         TEXT,
+   use                           TEXT,
+   use_frm                       TEXT,
+   "user"                        TEXT,
+   user_resources                TEXT,
+   "using"                       TEXT,
+   utc_date                      TEXT,
+   utc_time                      TEXT,
+   utc_timestamp                 TEXT,
+   validation                    TEXT,
+   "value"                       TEXT,
+   "values"                      TEXT,
+   varbinary                     TEXT,
+   "varchar"                     TEXT,
+   varcharacter                  TEXT,
+   variables                     TEXT,
+   "varying"                     TEXT,
+   "view"                        TEXT,
+   virtual                       TEXT,
+   wait                          TEXT,
+   warnings                      TEXT,
+   week                          TEXT,
+   weight_string                 TEXT,
+   "when"                        TEXT,
+   "where"                       TEXT,
+   "while"                       TEXT,
+   "with"                        TEXT,
+   "without"                     TEXT,
+   "work"                        TEXT,
+   "wrapper"                     TEXT,
+   "write"                       TEXT,
+   x509                          TEXT,
+   xa                            TEXT,
+   xid                           TEXT,
+   "xml"                         TEXT,
+   xor                           TEXT,
+   "year"                        TEXT,
+   year_month                    TEXT,
+   zerofill                      TEXT,
+   "false"                       TEXT,
+   "true"                        TEXT,
+   "_src_datasource_"            TEXT NOT NULL,
+   "_src_database_"              TEXT NOT NULL,
+   "_src_table_"                 TEXT NOT NULL,
+   PRIMARY KEY(id,"_src_datasource_","_src_database_","_src_table_")
+);
+CALL SET_TABLE_PROPERTY('public.lmtest234', 'time_to_live_in_seconds', '3153600000');
+CALL SET_TABLE_PROPERTY('public.lmtest234', 'orientation', 'column');
+CALL SET_TABLE_PROPERTY('public.lmtest234', 'binlog.level', 'none');COMMENT ON TABLE public.lmtest234 IS '';
+COMMENT ON COLUMN public.lmtest234.id IS '主键';
+COMMENT ON COLUMN public.lmtest234.f_update IS 'update测试使用字段';
+COMMENT ON COLUMN public.lmtest234.cume_dist IS '';
+COMMENT ON COLUMN public.lmtest234.dense_rank IS '';
+COMMENT ON COLUMN public.lmtest234.empty IS '';
+COMMENT ON COLUMN public.lmtest234.first_value IS '';
+COMMENT ON COLUMN public.lmtest234."grouping" IS '';
+COMMENT ON COLUMN public.lmtest234."groups" IS '';
+COMMENT ON COLUMN public.lmtest234."intersect" IS '';
+COMMENT ON COLUMN public.lmtest234.json_table IS '';
+COMMENT ON COLUMN public.lmtest234.lag IS '';
+COMMENT ON COLUMN public.lmtest234.last_value IS '';
+COMMENT ON COLUMN public.lmtest234."lateral" IS '';
+COMMENT ON COLUMN public.lmtest234.lead IS '';
+COMMENT ON COLUMN public.lmtest234.nth_value IS '';
+COMMENT ON COLUMN public.lmtest234.ntile IS '';
+COMMENT ON COLUMN public.lmtest234."of" IS '';
+COMMENT ON COLUMN public.lmtest234."over" IS '';
+COMMENT ON COLUMN public.lmtest234.percent_rank IS '';
+COMMENT ON COLUMN public.lmtest234.rank IS '';
+COMMENT ON COLUMN public.lmtest234."recursive" IS '';
+COMMENT ON COLUMN public.lmtest234.row_number IS '';
+COMMENT ON COLUMN public.lmtest234."system" IS '';
+COMMENT ON COLUMN public.lmtest234."window" IS '';
+COMMENT ON COLUMN public.lmtest234.accessible IS '';
+COMMENT ON COLUMN public.lmtest234.account IS '';
+COMMENT ON COLUMN public.lmtest234."action" IS '';
+COMMENT ON COLUMN public.lmtest234."add" IS '';
+COMMENT ON COLUMN public.lmtest234."after" IS '';
+COMMENT ON COLUMN public.lmtest234.against IS '';
+COMMENT ON COLUMN public.lmtest234."aggregate" IS '';
+COMMENT ON COLUMN public.lmtest234.algorithm IS '';
+COMMENT ON COLUMN public.lmtest234."all" IS '';
+COMMENT ON COLUMN public.lmtest234."alter" IS '';
+COMMENT ON COLUMN public.lmtest234."always" IS '';
+COMMENT ON COLUMN public.lmtest234."analyse" IS '';
+COMMENT ON COLUMN public.lmtest234."and" IS '';
+COMMENT ON COLUMN public.lmtest234."any" IS '';
+COMMENT ON COLUMN public.lmtest234."as" IS '';
+COMMENT ON COLUMN public.lmtest234."asc" IS '';
+COMMENT ON COLUMN public.lmtest234.ascii IS '';
+COMMENT ON COLUMN public.lmtest234.asensitive IS '';
+COMMENT ON COLUMN public.lmtest234."at" IS '';
+COMMENT ON COLUMN public.lmtest234.auto_increment IS '';
+COMMENT ON COLUMN public.lmtest234.autoextend_size IS '';
+COMMENT ON COLUMN public.lmtest234.avg IS '';
+COMMENT ON COLUMN public.lmtest234.avg_row_length IS '';
+COMMENT ON COLUMN public.lmtest234.backup IS '';
+COMMENT ON COLUMN public.lmtest234."before" IS '';
+COMMENT ON COLUMN public.lmtest234."begin" IS '';
+COMMENT ON COLUMN public.lmtest234."between" IS '';
+COMMENT ON COLUMN public.lmtest234."bigint" IS '';
+COMMENT ON COLUMN public.lmtest234."binary" IS '';
+COMMENT ON COLUMN public.lmtest234.binlog IS '';
+COMMENT ON COLUMN public.lmtest234."bit" IS '';
+COMMENT ON COLUMN public.lmtest234.blob IS '';
+COMMENT ON COLUMN public.lmtest234.block IS '';
+COMMENT ON COLUMN public.lmtest234.bool IS '';
+COMMENT ON COLUMN public.lmtest234."boolean" IS '';
+COMMENT ON COLUMN public.lmtest234."both" IS '';
+COMMENT ON COLUMN public.lmtest234.btree IS '';
+COMMENT ON COLUMN public.lmtest234."by" IS '';
+COMMENT ON COLUMN public.lmtest234.byte IS '';
+COMMENT ON COLUMN public.lmtest234."cache" IS '';
+COMMENT ON COLUMN public.lmtest234."call" IS '';
+COMMENT ON COLUMN public.lmtest234."cascade" IS '';
+COMMENT ON COLUMN public.lmtest234."cascaded" IS '';
+COMMENT ON COLUMN public.lmtest234."case" IS '';
+COMMENT ON COLUMN public.lmtest234.catalog_name IS '';
+COMMENT ON COLUMN public.lmtest234."chain" IS '';
+COMMENT ON COLUMN public.lmtest234.change IS '';
+COMMENT ON COLUMN public.lmtest234.changed IS '';
+COMMENT ON COLUMN public.lmtest234.channel IS '';
+COMMENT ON COLUMN public.lmtest234."char" IS '';
+COMMENT ON COLUMN public.lmtest234."character" IS '';
+COMMENT ON COLUMN public.lmtest234.charset IS '';
+COMMENT ON COLUMN public.lmtest234."check" IS '';
+COMMENT ON COLUMN public.lmtest234.checksum IS '';
+COMMENT ON COLUMN public.lmtest234.cipher IS '';
+COMMENT ON COLUMN public.lmtest234.class_origin IS '';
+COMMENT ON COLUMN public.lmtest234.client IS '';
+COMMENT ON COLUMN public.lmtest234."close" IS '';
+COMMENT ON COLUMN public.lmtest234."coalesce" IS '';
+COMMENT ON COLUMN public.lmtest234.code IS '';
+COMMENT ON COLUMN public.lmtest234."collate" IS '';
+COMMENT ON COLUMN public.lmtest234."collation" IS '';
+COMMENT ON COLUMN public.lmtest234."column" IS '';
+COMMENT ON COLUMN public.lmtest234.column_format IS '';
+COMMENT ON COLUMN public.lmtest234.column_name IS '';
+COMMENT ON COLUMN public.lmtest234."columns" IS '';
+COMMENT ON COLUMN public.lmtest234."comment" IS '';
+COMMENT ON COLUMN public.lmtest234."commit" IS '';
+COMMENT ON COLUMN public.lmtest234."committed" IS '';
+COMMENT ON COLUMN public.lmtest234.compact IS '';
+COMMENT ON COLUMN public.lmtest234.completion IS '';
+COMMENT ON COLUMN public.lmtest234.compressed IS '';
+COMMENT ON COLUMN public.lmtest234.compression IS '';
+COMMENT ON COLUMN public.lmtest234.concurrent IS '';
+COMMENT ON COLUMN public.lmtest234.condition IS '';
+COMMENT ON COLUMN public.lmtest234."connection" IS '';
+COMMENT ON COLUMN public.lmtest234.consistent IS '';
+COMMENT ON COLUMN public.lmtest234."constraint" IS '';
+COMMENT ON COLUMN public.lmtest234.constraint_catalog IS '';
+COMMENT ON COLUMN public.lmtest234.constraint_name IS '';
+COMMENT ON COLUMN public.lmtest234.constraint_schema IS '';
+COMMENT ON COLUMN public.lmtest234.contains IS '';
+COMMENT ON COLUMN public.lmtest234.context IS '';
+COMMENT ON COLUMN public.lmtest234."continue" IS '';
+COMMENT ON COLUMN public.lmtest234.convert IS '';
+COMMENT ON COLUMN public.lmtest234.cpu IS '';
+COMMENT ON COLUMN public.lmtest234."create" IS '';
+COMMENT ON COLUMN public.lmtest234."cross" IS '';
+COMMENT ON COLUMN public.lmtest234."cube" IS '';
+COMMENT ON COLUMN public.lmtest234."current" IS '';
+COMMENT ON COLUMN public.lmtest234."current_date" IS '';
+COMMENT ON COLUMN public.lmtest234."current_time" IS '';
+COMMENT ON COLUMN public.lmtest234."current_timestamp" IS '';
+COMMENT ON COLUMN public.lmtest234."current_user" IS '';
+COMMENT ON COLUMN public.lmtest234."cursor" IS '';
+COMMENT ON COLUMN public.lmtest234.cursor_name IS '';
+COMMENT ON COLUMN public.lmtest234."data" IS '';
+COMMENT ON COLUMN public.lmtest234."database" IS '';
+COMMENT ON COLUMN public.lmtest234.databases IS '';
+COMMENT ON COLUMN public.lmtest234.datafile IS '';
+COMMENT ON COLUMN public.lmtest234.date IS '';
+COMMENT ON COLUMN public.lmtest234.datetime IS '';
+COMMENT ON COLUMN public.lmtest234."day" IS '';
+COMMENT ON COLUMN public.lmtest234.day_hour IS '';
+COMMENT ON COLUMN public.lmtest234.day_microsecond IS '';
+COMMENT ON COLUMN public.lmtest234.day_minute IS '';
+COMMENT ON COLUMN public.lmtest234.day_second IS '';
+COMMENT ON COLUMN public.lmtest234."deallocate" IS '';
+COMMENT ON COLUMN public.lmtest234."dec" IS '';
+COMMENT ON COLUMN public.lmtest234."decimal" IS '';
+COMMENT ON COLUMN public.lmtest234."declare" IS '';
+COMMENT ON COLUMN public.lmtest234."default" IS '';
+COMMENT ON COLUMN public.lmtest234.default_auth IS '';
+COMMENT ON COLUMN public.lmtest234."definer" IS '';
+COMMENT ON COLUMN public.lmtest234.delay_key_write IS '';
+COMMENT ON COLUMN public.lmtest234.delayed IS '';
+COMMENT ON COLUMN public.lmtest234."delete" IS '';
+COMMENT ON COLUMN public.lmtest234.des_key_file IS '';
+COMMENT ON COLUMN public.lmtest234."desc" IS '';
+COMMENT ON COLUMN public.lmtest234.describe IS '';
+COMMENT ON COLUMN public.lmtest234.deterministic IS '';
+COMMENT ON COLUMN public.lmtest234."diagnostics" IS '';
+COMMENT ON COLUMN public.lmtest234.directory IS '';
+COMMENT ON COLUMN public.lmtest234."disable" IS '';
+COMMENT ON COLUMN public.lmtest234."discard" IS '';
+COMMENT ON COLUMN public.lmtest234.disk IS '';
+COMMENT ON COLUMN public.lmtest234."distinct" IS '';
+COMMENT ON COLUMN public.lmtest234.distinctrow IS '';
+COMMENT ON COLUMN public.lmtest234.div IS '';
+COMMENT ON COLUMN public.lmtest234."do" IS '';
+COMMENT ON COLUMN public.lmtest234."double" IS '';
+COMMENT ON COLUMN public.lmtest234."drop" IS '';
+COMMENT ON COLUMN public.lmtest234.dual IS '';
+COMMENT ON COLUMN public.lmtest234.dumpfile IS '';
+COMMENT ON COLUMN public.lmtest234.duplicate IS '';
+COMMENT ON COLUMN public.lmtest234.dynamic IS '';
+COMMENT ON COLUMN public.lmtest234."each" IS '';
+COMMENT ON COLUMN public.lmtest234."else" IS '';
+COMMENT ON COLUMN public.lmtest234.elseif IS '';
+COMMENT ON COLUMN public.lmtest234."enable" IS '';
+COMMENT ON COLUMN public.lmtest234.enclosed IS '';
+COMMENT ON COLUMN public.lmtest234.encryption IS '';
+COMMENT ON COLUMN public.lmtest234."end" IS '';
+COMMENT ON COLUMN public.lmtest234.ends IS '';
+COMMENT ON COLUMN public.lmtest234.engine IS '';
+COMMENT ON COLUMN public.lmtest234.engines IS '';
+COMMENT ON COLUMN public.lmtest234."enum" IS '';
+COMMENT ON COLUMN public.lmtest234."error" IS '';
+COMMENT ON COLUMN public.lmtest234.errors IS '';
+COMMENT ON COLUMN public.lmtest234."escape" IS '';
+COMMENT ON COLUMN public.lmtest234.escaped IS '';
+COMMENT ON COLUMN public.lmtest234."event" IS '';
+COMMENT ON COLUMN public.lmtest234.events IS '';
+COMMENT ON COLUMN public.lmtest234.every IS '';
+COMMENT ON COLUMN public.lmtest234.exchange IS '';
+COMMENT ON COLUMN public.lmtest234."execute" IS '';
+COMMENT ON COLUMN public.lmtest234."exists" IS '';
+COMMENT ON COLUMN public.lmtest234."exit" IS '';
+COMMENT ON COLUMN public.lmtest234.expansion IS '';
+COMMENT ON COLUMN public.lmtest234.expire IS '';
+COMMENT ON COLUMN public.lmtest234."explain" IS '';
+COMMENT ON COLUMN public.lmtest234.export IS '';
+COMMENT ON COLUMN public.lmtest234.extended IS '';
+COMMENT ON COLUMN public.lmtest234.extent_size IS '';
+COMMENT ON COLUMN public.lmtest234.fast IS '';
+COMMENT ON COLUMN public.lmtest234.faults IS '';
+COMMENT ON COLUMN public.lmtest234."fetch" IS '';
+COMMENT ON COLUMN public.lmtest234.fields IS '';
+COMMENT ON COLUMN public.lmtest234.file IS '';
+COMMENT ON COLUMN public.lmtest234.file_block_size IS '';
+COMMENT ON COLUMN public.lmtest234."filter" IS '';
+COMMENT ON COLUMN public.lmtest234."first" IS '';
+COMMENT ON COLUMN public.lmtest234.fixed IS '';
+COMMENT ON COLUMN public.lmtest234."float" IS '';
+COMMENT ON COLUMN public.lmtest234.float4 IS '';
+COMMENT ON COLUMN public.lmtest234.float8 IS '';
+COMMENT ON COLUMN public.lmtest234.flush IS '';
+COMMENT ON COLUMN public.lmtest234.follows IS '';
+COMMENT ON COLUMN public.lmtest234."for" IS '';
+COMMENT ON COLUMN public.lmtest234."force" IS '';
+COMMENT ON COLUMN public.lmtest234."foreign" IS '';
+COMMENT ON COLUMN public.lmtest234.format IS '';
+COMMENT ON COLUMN public.lmtest234.found IS '';
+COMMENT ON COLUMN public.lmtest234."from" IS '';
+COMMENT ON COLUMN public.lmtest234."full" IS '';
+COMMENT ON COLUMN public.lmtest234.fulltext IS '';
+COMMENT ON COLUMN public.lmtest234."function" IS '';
+COMMENT ON COLUMN public.lmtest234.general IS '';
+COMMENT ON COLUMN public.lmtest234."generated" IS '';
+COMMENT ON COLUMN public.lmtest234.geometry IS '';
+COMMENT ON COLUMN public.lmtest234.geometrycollection IS '';
+COMMENT ON COLUMN public.lmtest234."get" IS '';
+COMMENT ON COLUMN public.lmtest234.get_format IS '';
+COMMENT ON COLUMN public.lmtest234."global" IS '';
+COMMENT ON COLUMN public.lmtest234."grant" IS '';
+COMMENT ON COLUMN public.lmtest234.grants IS '';
+COMMENT ON COLUMN public.lmtest234."group" IS '';
+COMMENT ON COLUMN public.lmtest234.group_replication IS '';
+COMMENT ON COLUMN public.lmtest234."handler" IS '';
+COMMENT ON COLUMN public.lmtest234.hash IS '';
+COMMENT ON COLUMN public.lmtest234."having" IS '';
+COMMENT ON COLUMN public.lmtest234.help IS '';
+COMMENT ON COLUMN public.lmtest234.high_priority IS '';
+COMMENT ON COLUMN public.lmtest234.host IS '';
+COMMENT ON COLUMN public.lmtest234.hosts IS '';
+COMMENT ON COLUMN public.lmtest234."hour" IS '';
+COMMENT ON COLUMN public.lmtest234.hour_microsecond IS '';
+COMMENT ON COLUMN public.lmtest234.hour_minute IS '';
+COMMENT ON COLUMN public.lmtest234.hour_second IS '';
+COMMENT ON COLUMN public.lmtest234.identified IS '';
+COMMENT ON COLUMN public.lmtest234."if" IS '';
+COMMENT ON COLUMN public.lmtest234.ignore IS '';
+COMMENT ON COLUMN public.lmtest234.ignore_server_ids IS '';
+COMMENT ON COLUMN public.lmtest234."import" IS '';
+COMMENT ON COLUMN public.lmtest234."in" IS '';
+COMMENT ON COLUMN public.lmtest234."index" IS '';
+COMMENT ON COLUMN public.lmtest234."indexes" IS '';
+COMMENT ON COLUMN public.lmtest234.infile IS '';
+COMMENT ON COLUMN public.lmtest234.initial_size IS '';
+COMMENT ON COLUMN public.lmtest234."inner" IS '';
+COMMENT ON COLUMN public.lmtest234."inout" IS '';
+COMMENT ON COLUMN public.lmtest234."insensitive" IS '';
+COMMENT ON COLUMN public.lmtest234."insert" IS '';
+COMMENT ON COLUMN public.lmtest234.insert_method IS '';
+COMMENT ON COLUMN public.lmtest234.install IS '';
+COMMENT ON COLUMN public.lmtest234.instance IS '';
+COMMENT ON COLUMN public.lmtest234."int" IS '';
+COMMENT ON COLUMN public.lmtest234.int1 IS '';
+COMMENT ON COLUMN public.lmtest234.int2 IS '';
+COMMENT ON COLUMN public.lmtest234.int3 IS '';
+COMMENT ON COLUMN public.lmtest234.int4 IS '';
+COMMENT ON COLUMN public.lmtest234.int8 IS '';
+COMMENT ON COLUMN public.lmtest234."integer" IS '';
+COMMENT ON COLUMN public.lmtest234."interval" IS '';
+COMMENT ON COLUMN public.lmtest234."into" IS '';
+COMMENT ON COLUMN public.lmtest234."invoker" IS '';
+COMMENT ON COLUMN public.lmtest234.io IS '';
+COMMENT ON COLUMN public.lmtest234.io_after_gtids IS '';
+COMMENT ON COLUMN public.lmtest234.io_before_gtids IS '';
+COMMENT ON COLUMN public.lmtest234.io_thread IS '';
+COMMENT ON COLUMN public.lmtest234.ipc IS '';
+COMMENT ON COLUMN public.lmtest234."is" IS '';
+COMMENT ON COLUMN public.lmtest234."isolation" IS '';
+COMMENT ON COLUMN public.lmtest234.issuer IS '';
+COMMENT ON COLUMN public.lmtest234.iterate IS '';
+COMMENT ON COLUMN public.lmtest234."join" IS '';
+COMMENT ON COLUMN public.lmtest234.json IS '';
+COMMENT ON COLUMN public.lmtest234."key" IS '';
+COMMENT ON COLUMN public.lmtest234.key_block_size IS '';
+COMMENT ON COLUMN public.lmtest234.keys IS '';
+COMMENT ON COLUMN public.lmtest234.kill IS '';
+COMMENT ON COLUMN public.lmtest234."language" IS '';
+COMMENT ON COLUMN public.lmtest234."last" IS '';
+COMMENT ON COLUMN public.lmtest234."leading" IS '';
+COMMENT ON COLUMN public.lmtest234.leave IS '';
+COMMENT ON COLUMN public.lmtest234.leaves IS '';
+COMMENT ON COLUMN public.lmtest234."left" IS '';
+COMMENT ON COLUMN public.lmtest234.less IS '';
+COMMENT ON COLUMN public.lmtest234."level" IS '';
+COMMENT ON COLUMN public.lmtest234."like" IS '';
+COMMENT ON COLUMN public.lmtest234."limit" IS '';
+COMMENT ON COLUMN public.lmtest234.linear IS '';
+COMMENT ON COLUMN public.lmtest234.lines IS '';
+COMMENT ON COLUMN public.lmtest234.linestring IS '';
+COMMENT ON COLUMN public.lmtest234.list IS '';
+COMMENT ON COLUMN public.lmtest234."load" IS '';
+COMMENT ON COLUMN public.lmtest234."local" IS '';
+COMMENT ON COLUMN public.lmtest234."localtime" IS '';
+COMMENT ON COLUMN public.lmtest234."localtimestamp" IS '';
+COMMENT ON COLUMN public.lmtest234."lock" IS '';
+COMMENT ON COLUMN public.lmtest234.locks IS '';
+COMMENT ON COLUMN public.lmtest234.logfile IS '';
+COMMENT ON COLUMN public.lmtest234.logs IS '';
+COMMENT ON COLUMN public.lmtest234.long IS '';
+COMMENT ON COLUMN public.lmtest234.longblob IS '';
+COMMENT ON COLUMN public.lmtest234.longtext IS '';
+COMMENT ON COLUMN public.lmtest234."loop" IS '';
+COMMENT ON COLUMN public.lmtest234.low_priority IS '';
+COMMENT ON COLUMN public.lmtest234.master IS '';
+COMMENT ON COLUMN public.lmtest234.master_auto_position IS '';
+COMMENT ON COLUMN public.lmtest234.master_bind IS '';
+COMMENT ON COLUMN public.lmtest234.master_connect_retry IS '';
+COMMENT ON COLUMN public.lmtest234.master_delay IS '';
+COMMENT ON COLUMN public.lmtest234.master_heartbeat_period IS '';
+COMMENT ON COLUMN public.lmtest234.master_host IS '';
+COMMENT ON COLUMN public.lmtest234.master_log_file IS '';
+COMMENT ON COLUMN public.lmtest234.master_log_pos IS '';
+COMMENT ON COLUMN public.lmtest234.master_password IS '';
+COMMENT ON COLUMN public.lmtest234.master_port IS '';
+COMMENT ON COLUMN public.lmtest234.master_retry_count IS '';
+COMMENT ON COLUMN public.lmtest234.master_server_id IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_ca IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_capath IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_cert IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_cipher IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_crl IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_crlpath IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_key IS '';
+COMMENT ON COLUMN public.lmtest234.master_ssl_verify_server_cert IS '';
+COMMENT ON COLUMN public.lmtest234.master_tls_version IS '';
+COMMENT ON COLUMN public.lmtest234.master_user IS '';
+COMMENT ON COLUMN public.lmtest234."match" IS '';
+COMMENT ON COLUMN public.lmtest234.max_connections_per_hour IS '';
+COMMENT ON COLUMN public.lmtest234.max_queries_per_hour IS '';
+COMMENT ON COLUMN public.lmtest234.max_rows IS '';
+COMMENT ON COLUMN public.lmtest234.max_size IS '';
+COMMENT ON COLUMN public.lmtest234.max_statement_time IS '';
+COMMENT ON COLUMN public.lmtest234.max_updates_per_hour IS '';
+COMMENT ON COLUMN public.lmtest234.max_user_connections IS '';
+COMMENT ON COLUMN public.lmtest234."maxvalue" IS '';
+COMMENT ON COLUMN public.lmtest234.medium IS '';
+COMMENT ON COLUMN public.lmtest234.mediumblob IS '';
+COMMENT ON COLUMN public.lmtest234.mediumint IS '';
+COMMENT ON COLUMN public.lmtest234.mediumtext IS '';
+COMMENT ON COLUMN public.lmtest234.memory IS '';
+COMMENT ON COLUMN public.lmtest234.merge IS '';
+COMMENT ON COLUMN public.lmtest234.message_text IS '';
+COMMENT ON COLUMN public.lmtest234.microsecond IS '';
+COMMENT ON COLUMN public.lmtest234.middleint IS '';
+COMMENT ON COLUMN public.lmtest234.migrate IS '';
+COMMENT ON COLUMN public.lmtest234.min_rows IS '';
+COMMENT ON COLUMN public.lmtest234."minute" IS '';
+COMMENT ON COLUMN public.lmtest234.minute_microsecond IS '';
+COMMENT ON COLUMN public.lmtest234.minute_second IS '';
+COMMENT ON COLUMN public.lmtest234.mod IS '';
+COMMENT ON COLUMN public.lmtest234."mode" IS '';
+COMMENT ON COLUMN public.lmtest234.modifies IS '';
+COMMENT ON COLUMN public.lmtest234.modify IS '';
+COMMENT ON COLUMN public.lmtest234."month" IS '';
+COMMENT ON COLUMN public.lmtest234.multilinestring IS '';
+COMMENT ON COLUMN public.lmtest234.multipoint IS '';
+COMMENT ON COLUMN public.lmtest234.multipolygon IS '';
+COMMENT ON COLUMN public.lmtest234.mutex IS '';
+COMMENT ON COLUMN public.lmtest234.mysql_errno IS '';
+COMMENT ON COLUMN public.lmtest234."name" IS '';
+COMMENT ON COLUMN public.lmtest234."names" IS '';
+COMMENT ON COLUMN public.lmtest234."national" IS '';
+COMMENT ON COLUMN public.lmtest234."natural" IS '';
+COMMENT ON COLUMN public.lmtest234."nchar" IS '';
+COMMENT ON COLUMN public.lmtest234.ndb IS '';
+COMMENT ON COLUMN public.lmtest234.ndbcluster IS '';
+COMMENT ON COLUMN public.lmtest234.never IS '';
+COMMENT ON COLUMN public.lmtest234."new" IS '';
+COMMENT ON COLUMN public.lmtest234."next" IS '';
+COMMENT ON COLUMN public.lmtest234."no" IS '';
+COMMENT ON COLUMN public.lmtest234.no_wait IS '';
+COMMENT ON COLUMN public.lmtest234.no_write_to_binlog IS '';
+COMMENT ON COLUMN public.lmtest234.nodegroup IS '';
+COMMENT ON COLUMN public.lmtest234.nonblocking IS '';
+COMMENT ON COLUMN public.lmtest234."none" IS '';
+COMMENT ON COLUMN public.lmtest234."not" IS '';
+COMMENT ON COLUMN public.lmtest234.number IS '';
+COMMENT ON COLUMN public.lmtest234."numeric" IS '';
+COMMENT ON COLUMN public.lmtest234.nvarchar IS '';
+COMMENT ON COLUMN public.lmtest234."offset" IS '';
+COMMENT ON COLUMN public.lmtest234.old_password IS '';
+COMMENT ON COLUMN public.lmtest234."on" IS '';
+COMMENT ON COLUMN public.lmtest234.one IS '';
+COMMENT ON COLUMN public.lmtest234."only" IS '';
+COMMENT ON COLUMN public.lmtest234."open" IS '';
+COMMENT ON COLUMN public.lmtest234.optimize IS '';
+COMMENT ON COLUMN public.lmtest234.optimizer_costs IS '';
+COMMENT ON COLUMN public.lmtest234."option" IS '';
+COMMENT ON COLUMN public.lmtest234.optionally IS '';
+COMMENT ON COLUMN public.lmtest234."options" IS '';
+COMMENT ON COLUMN public.lmtest234."or" IS '';
+COMMENT ON COLUMN public.lmtest234."order" IS '';
+COMMENT ON COLUMN public.lmtest234."out" IS '';
+COMMENT ON COLUMN public.lmtest234."outer" IS '';
+COMMENT ON COLUMN public.lmtest234.outfile IS '';
+COMMENT ON COLUMN public.lmtest234."owner" IS '';
+COMMENT ON COLUMN public.lmtest234.pack_keys IS '';
+COMMENT ON COLUMN public.lmtest234.page IS '';
+COMMENT ON COLUMN public.lmtest234.parse_gcol_expr IS '';
+COMMENT ON COLUMN public.lmtest234."parser" IS '';
+COMMENT ON COLUMN public.lmtest234."partial" IS '';
+COMMENT ON COLUMN public.lmtest234."partition" IS '';
+COMMENT ON COLUMN public.lmtest234.partitioning IS '';
+COMMENT ON COLUMN public.lmtest234.partitions IS '';
+COMMENT ON COLUMN public.lmtest234."password" IS '';
+COMMENT ON COLUMN public.lmtest234.phase IS '';
+COMMENT ON COLUMN public.lmtest234.plugin IS '';
+COMMENT ON COLUMN public.lmtest234.plugin_dir IS '';
+COMMENT ON COLUMN public.lmtest234.plugins IS '';
+COMMENT ON COLUMN public.lmtest234.point IS '';
+COMMENT ON COLUMN public.lmtest234.polygon IS '';
+COMMENT ON COLUMN public.lmtest234.port IS '';
+COMMENT ON COLUMN public.lmtest234.precedes IS '';
+COMMENT ON COLUMN public.lmtest234."precision" IS '';
+COMMENT ON COLUMN public.lmtest234."prepare" IS '';
+COMMENT ON COLUMN public.lmtest234."preserve" IS '';
+COMMENT ON COLUMN public.lmtest234.prev IS '';
+COMMENT ON COLUMN public.lmtest234."primary" IS '';
+COMMENT ON COLUMN public.lmtest234."privileges" IS '';
+COMMENT ON COLUMN public.lmtest234."procedure" IS '';
+COMMENT ON COLUMN public.lmtest234.processlist IS '';
+COMMENT ON COLUMN public.lmtest234.profile IS '';
+COMMENT ON COLUMN public.lmtest234.profiles IS '';
+COMMENT ON COLUMN public.lmtest234.proxy IS '';
+COMMENT ON COLUMN public.lmtest234.purge IS '';
+COMMENT ON COLUMN public.lmtest234.quarter IS '';
+COMMENT ON COLUMN public.lmtest234."query" IS '';
+COMMENT ON COLUMN public.lmtest234.quick IS '';
+COMMENT ON COLUMN public.lmtest234."range" IS '';
+COMMENT ON COLUMN public.lmtest234."read" IS '';
+COMMENT ON COLUMN public.lmtest234.read_only IS '';
+COMMENT ON COLUMN public.lmtest234.read_write IS '';
+COMMENT ON COLUMN public.lmtest234.reads IS '';
+COMMENT ON COLUMN public.lmtest234."real" IS '';
+COMMENT ON COLUMN public.lmtest234.rebuild IS '';
+COMMENT ON COLUMN public.lmtest234.recover IS '';
+COMMENT ON COLUMN public.lmtest234.redo_buffer_size IS '';
+COMMENT ON COLUMN public.lmtest234.redofile IS '';
+COMMENT ON COLUMN public.lmtest234.redundant IS '';
+COMMENT ON COLUMN public.lmtest234."references" IS '';
+COMMENT ON COLUMN public.lmtest234.regexp IS '';
+COMMENT ON COLUMN public.lmtest234.relay IS '';
+COMMENT ON COLUMN public.lmtest234.relay_log_file IS '';
+COMMENT ON COLUMN public.lmtest234.relay_log_pos IS '';
+COMMENT ON COLUMN public.lmtest234.relay_thread IS '';
+COMMENT ON COLUMN public.lmtest234.relaylog IS '';
+COMMENT ON COLUMN public.lmtest234."release" IS '';
+COMMENT ON COLUMN public.lmtest234.reload IS '';
+COMMENT ON COLUMN public.lmtest234.remove IS '';
+COMMENT ON COLUMN public.lmtest234."rename" IS '';
+COMMENT ON COLUMN public.lmtest234.reorganize IS '';
+COMMENT ON COLUMN public.lmtest234.repair IS '';
+COMMENT ON COLUMN public.lmtest234.repeat IS '';
+COMMENT ON COLUMN public.lmtest234."repeatable" IS '';
+COMMENT ON COLUMN public.lmtest234."replace" IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_do_db IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_do_table IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_ignore_db IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_ignore_table IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_rewrite_db IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_wild_do_table IS '';
+COMMENT ON COLUMN public.lmtest234.replicate_wild_ignore_table IS '';
+COMMENT ON COLUMN public.lmtest234.replication IS '';
+COMMENT ON COLUMN public.lmtest234.require IS '';
+COMMENT ON COLUMN public.lmtest234."reset" IS '';
+COMMENT ON COLUMN public.lmtest234.resignal IS '';
+COMMENT ON COLUMN public.lmtest234.restore IS '';
+COMMENT ON COLUMN public.lmtest234."restrict" IS '';
+COMMENT ON COLUMN public.lmtest234.resume IS '';
+COMMENT ON COLUMN public.lmtest234."return" IS '';
+COMMENT ON COLUMN public.lmtest234.returned_sqlstate IS '';
+COMMENT ON COLUMN public.lmtest234."returns" IS '';
+COMMENT ON COLUMN public.lmtest234."reverse" IS '';
+COMMENT ON COLUMN public.lmtest234."revoke" IS '';
+COMMENT ON COLUMN public.lmtest234."right" IS '';
+COMMENT ON COLUMN public.lmtest234.rlike IS '';
+COMMENT ON COLUMN public.lmtest234."rollback" IS '';
+COMMENT ON COLUMN public.lmtest234."rollup" IS '';
+COMMENT ON COLUMN public.lmtest234.rotate IS '';
+COMMENT ON COLUMN public.lmtest234."routine" IS '';
+COMMENT ON COLUMN public.lmtest234."row" IS '';
+COMMENT ON COLUMN public.lmtest234.row_count IS '';
+COMMENT ON COLUMN public.lmtest234.row_format IS '';
+COMMENT ON COLUMN public.lmtest234."rows" IS '';
+COMMENT ON COLUMN public.lmtest234.rtree IS '';
+COMMENT ON COLUMN public.lmtest234."savepoint" IS '';
+COMMENT ON COLUMN public.lmtest234.schedule IS '';
+COMMENT ON COLUMN public.lmtest234."schema" IS '';
+COMMENT ON COLUMN public.lmtest234.schema_name IS '';
+COMMENT ON COLUMN public.lmtest234."schemas" IS '';
+COMMENT ON COLUMN public.lmtest234."second" IS '';
+COMMENT ON COLUMN public.lmtest234.second_microsecond IS '';
+COMMENT ON COLUMN public.lmtest234."security" IS '';
+COMMENT ON COLUMN public.lmtest234."select" IS '';
+COMMENT ON COLUMN public.lmtest234.sensitive IS '';
+COMMENT ON COLUMN public.lmtest234.separator IS '';
+COMMENT ON COLUMN public.lmtest234.serial IS '';
+COMMENT ON COLUMN public.lmtest234."serializable" IS '';
+COMMENT ON COLUMN public.lmtest234."server" IS '';
+COMMENT ON COLUMN public.lmtest234."session" IS '';
+COMMENT ON COLUMN public.lmtest234."set" IS '';
+COMMENT ON COLUMN public.lmtest234."share" IS '';
+COMMENT ON COLUMN public.lmtest234."show" IS '';
+COMMENT ON COLUMN public.lmtest234.shutdown IS '';
+COMMENT ON COLUMN public.lmtest234.signal IS '';
+COMMENT ON COLUMN public.lmtest234.signed IS '';
+COMMENT ON COLUMN public.lmtest234."simple" IS '';
+COMMENT ON COLUMN public.lmtest234.slave IS '';
+COMMENT ON COLUMN public.lmtest234.slow IS '';
+COMMENT ON COLUMN public.lmtest234."smallint" IS '';
+COMMENT ON COLUMN public.lmtest234."snapshot" IS '';
+COMMENT ON COLUMN public.lmtest234.socket IS '';
+COMMENT ON COLUMN public.lmtest234."some" IS '';
+COMMENT ON COLUMN public.lmtest234.soname IS '';
+COMMENT ON COLUMN public.lmtest234.sounds IS '';
+COMMENT ON COLUMN public.lmtest234.source IS '';
+COMMENT ON COLUMN public.lmtest234.spatial IS '';
+COMMENT ON COLUMN public.lmtest234.specific IS '';
+COMMENT ON COLUMN public.lmtest234."sql" IS '';
+COMMENT ON COLUMN public.lmtest234.sql_after_gtids IS '';
+COMMENT ON COLUMN public.lmtest234.sql_after_mts_gaps IS '';
+COMMENT ON COLUMN public.lmtest234.sql_before_gtids IS '';
+COMMENT ON COLUMN public.lmtest234.sql_big_result IS '';
+COMMENT ON COLUMN public.lmtest234.sql_buffer_result IS '';
+COMMENT ON COLUMN public.lmtest234.sql_cache IS '';
+COMMENT ON COLUMN public.lmtest234.sql_calc_found_rows IS '';
+COMMENT ON COLUMN public.lmtest234.sql_no_cache IS '';
+COMMENT ON COLUMN public.lmtest234.sql_small_result IS '';
+COMMENT ON COLUMN public.lmtest234.sql_thread IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_day IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_hour IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_minute IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_month IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_quarter IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_second IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_week IS '';
+COMMENT ON COLUMN public.lmtest234.sql_tsi_year IS '';
+COMMENT ON COLUMN public.lmtest234.sqlexception IS '';
+COMMENT ON COLUMN public.lmtest234."sqlstate" IS '';
+COMMENT ON COLUMN public.lmtest234.sqlwarning IS '';
+COMMENT ON COLUMN public.lmtest234.ssl IS '';
+COMMENT ON COLUMN public.lmtest234."stacked" IS '';
+COMMENT ON COLUMN public.lmtest234."start" IS '';
+COMMENT ON COLUMN public.lmtest234.starting IS '';
+COMMENT ON COLUMN public.lmtest234.starts IS '';
+COMMENT ON COLUMN public.lmtest234.stats_auto_recalc IS '';
+COMMENT ON COLUMN public.lmtest234.stats_persistent IS '';
+COMMENT ON COLUMN public.lmtest234.stats_sample_pages IS '';
+COMMENT ON COLUMN public.lmtest234.status IS '';
+COMMENT ON COLUMN public.lmtest234.stop IS '';
+COMMENT ON COLUMN public.lmtest234."storage" IS '';
+COMMENT ON COLUMN public.lmtest234."stored" IS '';
+COMMENT ON COLUMN public.lmtest234.straight_join IS '';
+COMMENT ON COLUMN public.lmtest234.string IS '';
+COMMENT ON COLUMN public.lmtest234.subclass_origin IS '';
+COMMENT ON COLUMN public.lmtest234.subject IS '';
+COMMENT ON COLUMN public.lmtest234.subpartition IS '';
+COMMENT ON COLUMN public.lmtest234.subpartitions IS '';
+COMMENT ON COLUMN public.lmtest234.super IS '';
+COMMENT ON COLUMN public.lmtest234.suspend IS '';
+COMMENT ON COLUMN public.lmtest234.swaps IS '';
+COMMENT ON COLUMN public.lmtest234.switches IS '';
+COMMENT ON COLUMN public.lmtest234."table" IS '';
+COMMENT ON COLUMN public.lmtest234.table_checksum IS '';
+COMMENT ON COLUMN public.lmtest234.table_name IS '';
+COMMENT ON COLUMN public.lmtest234."tables" IS '';
+COMMENT ON COLUMN public.lmtest234."tablespace" IS '';
+COMMENT ON COLUMN public.lmtest234."temporary" IS '';
+COMMENT ON COLUMN public.lmtest234.temptable IS '';
+COMMENT ON COLUMN public.lmtest234.terminated IS '';
+COMMENT ON COLUMN public.lmtest234."text" IS '';
+COMMENT ON COLUMN public.lmtest234.than IS '';
+COMMENT ON COLUMN public.lmtest234."then" IS '';
+COMMENT ON COLUMN public.lmtest234."time" IS '';
+COMMENT ON COLUMN public.lmtest234."timestamp" IS '';
+COMMENT ON COLUMN public.lmtest234.timestampadd IS '';
+COMMENT ON COLUMN public.lmtest234.timestampdiff IS '';
+COMMENT ON COLUMN public.lmtest234.tinyblob IS '';
+COMMENT ON COLUMN public.lmtest234.tinyint IS '';
+COMMENT ON COLUMN public.lmtest234.tinytext IS '';
+COMMENT ON COLUMN public.lmtest234."to" IS '';
+COMMENT ON COLUMN public.lmtest234."trailing" IS '';
+COMMENT ON COLUMN public.lmtest234."transaction" IS '';
+COMMENT ON COLUMN public.lmtest234."trigger" IS '';
+COMMENT ON COLUMN public.lmtest234.triggers IS '';
+COMMENT ON COLUMN public.lmtest234."truncate" IS '';
+COMMENT ON COLUMN public.lmtest234."type" IS '';
+COMMENT ON COLUMN public.lmtest234."types" IS '';
+COMMENT ON COLUMN public.lmtest234."uncommitted" IS '';
+COMMENT ON COLUMN public.lmtest234.undefined IS '';
+COMMENT ON COLUMN public.lmtest234.undo IS '';
+COMMENT ON COLUMN public.lmtest234.undo_buffer_size IS '';
+COMMENT ON COLUMN public.lmtest234.undofile IS '';
+COMMENT ON COLUMN public.lmtest234.unicode IS '';
+COMMENT ON COLUMN public.lmtest234.uninstall IS '';
+COMMENT ON COLUMN public.lmtest234."union" IS '';
+COMMENT ON COLUMN public.lmtest234."unique" IS '';
+COMMENT ON COLUMN public.lmtest234."unknown" IS '';
+COMMENT ON COLUMN public.lmtest234.unlock IS '';
+COMMENT ON COLUMN public.lmtest234.unsigned IS '';
+COMMENT ON COLUMN public.lmtest234."until" IS '';
+COMMENT ON COLUMN public.lmtest234."update" IS '';
+COMMENT ON COLUMN public.lmtest234.upgrade IS '';
+COMMENT ON COLUMN public.lmtest234.usage IS '';
+COMMENT ON COLUMN public.lmtest234.use IS '';
+COMMENT ON COLUMN public.lmtest234.use_frm IS '';
+COMMENT ON COLUMN public.lmtest234."user" IS '';
+COMMENT ON COLUMN public.lmtest234.user_resources IS '';
+COMMENT ON COLUMN public.lmtest234."using" IS '';
+COMMENT ON COLUMN public.lmtest234.utc_date IS '';
+COMMENT ON COLUMN public.lmtest234.utc_time IS '';
+COMMENT ON COLUMN public.lmtest234.utc_timestamp IS '';
+COMMENT ON COLUMN public.lmtest234.validation IS '';
+COMMENT ON COLUMN public.lmtest234."value" IS '';
+COMMENT ON COLUMN public.lmtest234."values" IS '';
+COMMENT ON COLUMN public.lmtest234.varbinary IS '';
+COMMENT ON COLUMN public.lmtest234."varchar" IS '';
+COMMENT ON COLUMN public.lmtest234.varcharacter IS '';
+COMMENT ON COLUMN public.lmtest234.variables IS '';
+COMMENT ON COLUMN public.lmtest234."varying" IS '';
+COMMENT ON COLUMN public.lmtest234."view" IS '';
+COMMENT ON COLUMN public.lmtest234.virtual IS '';
+COMMENT ON COLUMN public.lmtest234.wait IS '';
+COMMENT ON COLUMN public.lmtest234.warnings IS '';
+COMMENT ON COLUMN public.lmtest234.week IS '';
+COMMENT ON COLUMN public.lmtest234.weight_string IS '';
+COMMENT ON COLUMN public.lmtest234."when" IS '';
+COMMENT ON COLUMN public.lmtest234."where" IS '';
+COMMENT ON COLUMN public.lmtest234."while" IS '';
+COMMENT ON COLUMN public.lmtest234."with" IS '';
+COMMENT ON COLUMN public.lmtest234."without" IS '';
+COMMENT ON COLUMN public.lmtest234."work" IS '';
+COMMENT ON COLUMN public.lmtest234."wrapper" IS '';
+COMMENT ON COLUMN public.lmtest234."write" IS '';
+COMMENT ON COLUMN public.lmtest234.x509 IS '';
+COMMENT ON COLUMN public.lmtest234.xa IS '';
+COMMENT ON COLUMN public.lmtest234.xid IS '';
+COMMENT ON COLUMN public.lmtest234."xml" IS '';
+COMMENT ON COLUMN public.lmtest234.xor IS '';
+COMMENT ON COLUMN public.lmtest234."year" IS '';
+COMMENT ON COLUMN public.lmtest234.year_month IS '';
+COMMENT ON COLUMN public.lmtest234.zerofill IS '';
+COMMENT ON COLUMN public.lmtest234."false" IS '';
+COMMENT ON COLUMN public.lmtest234."true" IS '';
+COMMENT ON COLUMN public.lmtest234."_src_datasource_" IS 'system column to mark row from which source datasource';
+COMMENT ON COLUMN public.lmtest234."_src_database_" IS 'system column to mark row from which source database';
+COMMENT ON COLUMN public.lmtest234."_src_table_" IS 'system column to mark row from which source table';
+COMMIT;

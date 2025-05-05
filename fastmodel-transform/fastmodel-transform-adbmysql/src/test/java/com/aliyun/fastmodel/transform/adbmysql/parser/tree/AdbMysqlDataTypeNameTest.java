@@ -17,6 +17,8 @@
 package com.aliyun.fastmodel.transform.adbmysql.parser.tree;
 
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
+import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
+import com.aliyun.fastmodel.transform.adbmysql.parser.tree.datatype.AdbMysqlPointDataType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -33,5 +35,11 @@ public class AdbMysqlDataTypeNameTest {
     public void getByValue() {
         IDataTypeName binary = AdbMysqlDataTypeName.getByValue("binary");
         assertEquals(AdbMysqlDataTypeName.BINARY, binary);
+    }
+
+    @Test
+    public void testGetPoint() {
+        AdbMysqlPointDataType address = new AdbMysqlPointDataType(new StringLiteral(","));
+        assertEquals("POINT DELIMITER_TOKENIZER ','", address.toString());
     }
 }

@@ -4639,6 +4639,7 @@ unreserved_keyword
     | YEAR_P
     | YES_P
     | ZONE
+    | MERGE
     ;
 
 col_name_keyword

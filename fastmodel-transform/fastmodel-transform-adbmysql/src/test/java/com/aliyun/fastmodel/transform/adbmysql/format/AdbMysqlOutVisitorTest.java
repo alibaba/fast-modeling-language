@@ -3,6 +3,7 @@ package com.aliyun.fastmodel.transform.adbmysql.format;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
@@ -13,6 +14,7 @@ import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
+import com.aliyun.fastmodel.core.tree.statement.table.SetTableComment;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.transform.adbmysql.context.AdbMysqlTransformContext;
@@ -118,5 +120,19 @@ public class AdbMysqlOutVisitorTest {
             + "BLOCK_SIZE=10\n"
             + "STORAGE_POLICY='MIXED'\n"
             + "HOT_PARTITION_COUNT=10");
+    }
+
+    @Test
+    public void testSetTableComment() {
+        SetTableComment tableComment = new SetTableComment(
+            QualifiedName.of("a.b"),
+            new Comment("test")
+        );
+        AdbMysqlOutVisitor adbMysqlOutVisitor = new AdbMysqlOutVisitor(
+            AdbMysqlTransformContext.builder().build()
+        );
+        adbMysqlOutVisitor.visitSetTableComment(tableComment, 0);
+        String s = adbMysqlOutVisitor.getBuilder().toString();
+        assertEquals("ALTER TABLE a.b COMMENT 'test'", s);
     }
 }

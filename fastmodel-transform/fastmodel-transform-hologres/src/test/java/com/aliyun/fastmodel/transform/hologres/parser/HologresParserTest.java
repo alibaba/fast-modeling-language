@@ -240,4 +240,12 @@ public class HologresParserTest {
         assertEquals(8, properties.size());
     }
 
+    @Test
+    @SneakyThrows
+    public void testMerge() {
+        String txt = IOUtils.resourceToString("/hologres/merge.txt", Charset.defaultCharset());
+        CompositeStatement createTable = (CompositeStatement)hologresParser2.parseNode(txt, ReverseContext.builder().merge(true).build());
+        List<BaseStatement> statements = createTable.getStatements();
+        assertEquals(654, statements.size());
+    }
 }

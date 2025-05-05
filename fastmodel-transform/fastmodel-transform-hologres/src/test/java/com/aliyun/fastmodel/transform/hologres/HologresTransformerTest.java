@@ -753,6 +753,26 @@ public class HologresTransformerTest {
         assertEquals(result, generator);
     }
 
+    @Test
+    @SneakyThrows
+    public void testReverseKeyword() {
+        String name = "/hologres/keyword.txt";
+        String v = IOUtils.resourceToString(name, Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(v);
+        String generator = generator(dialectNode);
+        assertEquals("BEGIN;\n"
+            + "CREATE TABLE tbl (\n"
+            + "   id            BIGINT NOT NULL,\n"
+            + "   \"name\"        TEXT NOT NULL,\n"
+            + "   age           BIGINT NOT NULL,\n"
+            + "   \"class\"       TEXT NOT NULL,\n"
+            + "   reg_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,\n"
+            + "   PRIMARY KEY(id,age)\n"
+            + ");\n"
+            + "\n"
+            + "COMMIT;", generator);
+    }
+
     @Test(expected = MergeException.class)
     @SneakyThrows
     public void testParseReverse() {

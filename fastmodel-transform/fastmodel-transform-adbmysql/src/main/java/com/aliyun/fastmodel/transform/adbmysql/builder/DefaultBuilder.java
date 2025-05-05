@@ -16,6 +16,9 @@ import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName.Constants;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.google.auto.service.AutoService;
+import org.apache.commons.lang3.StringUtils;
+
+import static com.aliyun.fastmodel.transform.api.context.TransformContext.SEMICOLON;
 
 /**
  * 默认的builder实现
@@ -32,6 +35,9 @@ public class DefaultBuilder implements StatementBuilder<AdbMysqlTransformContext
         AdbMysqlOutVisitor mysqlVisitor = new AdbMysqlOutVisitor(context);
         Boolean process = mysqlVisitor.process(source, 0);
         String result = mysqlVisitor.getBuilder().toString();
+        if (context.isAppendSemicolon() && !StringUtils.endsWith(result, SEMICOLON)) {
+            result = result + SEMICOLON;
+        }
         return new DialectNode(result, process);
     }
 }

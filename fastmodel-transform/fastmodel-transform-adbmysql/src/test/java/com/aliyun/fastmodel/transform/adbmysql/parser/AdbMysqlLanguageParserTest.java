@@ -224,7 +224,7 @@ public class AdbMysqlLanguageParserTest {
 
     @Test
     @SneakyThrows
-    public void testExternalMongondbTable() {
+    public void testExternalMongodbTable() {
         String sql = IOUtils.resourceToString("/adbmysql/external/mongodb.txt", Charset.defaultCharset());
         CreateTable createTable = adbMysqlLanguageParser.parseNode(sql);
         List<Property> properties = createTable.getProperties();

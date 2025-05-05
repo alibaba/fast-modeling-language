@@ -44,9 +44,9 @@ import static org.junit.Assert.assertEquals;
  * @author panguanjing
  * @date 2021/7/26
  */
-public class HiveVisitorTest {
+public class HiveOutVisitorTest {
 
-    HiveVisitor hiveVisitor = new HiveVisitor(HiveTransformContext.builder().build());
+    HiveOutVisitor hiveVisitor = new HiveOutVisitor(HiveTransformContext.builder().build());
 
     @Test
     public void testInsertOverwrite() {
@@ -128,13 +128,13 @@ public class HiveVisitorTest {
             .database("d1")
             .schema("s1")
             .build();
-        HiveVisitor hiveVisitor = new HiveVisitor(context);
+        HiveOutVisitor hiveVisitor = new HiveOutVisitor(context);
         String test = hiveVisitor.getCode(QualifiedName.of("test"));
         assertEquals(test, "d1.s1.test");
         context = HiveTransformContext.builder()
             .schema("s1")
             .build();
-        hiveVisitor = new HiveVisitor(context);
+        hiveVisitor = new HiveOutVisitor(context);
         test = hiveVisitor.getCode(QualifiedName.of("test"));
         assertEquals(test, "s1.test");
 

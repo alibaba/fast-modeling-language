@@ -33,7 +33,7 @@ import static com.aliyun.fastmodel.transform.api.context.TransformContext.SEMICO
 public final class HiveFormatter {
 
     public static DialectNode format(BaseStatement source, HiveTransformContext context) {
-        HiveVisitor hiveVisitor = new HiveVisitor(context);
+        HiveOutVisitor hiveVisitor = new HiveOutVisitor(context);
         Boolean process = hiveVisitor.process(source, 0);
         Boolean append = context.isAppendSemicolon();
         String result = hiveVisitor.getBuilder().toString();

@@ -25,6 +25,7 @@ import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.LambdaExpression;
 import com.aliyun.fastmodel.transform.adbmysql.parser.tree.AdbMysqlDataTypeName;
+import com.aliyun.fastmodel.transform.adbmysql.parser.tree.datatype.AdbMysqlPointDataType;
 import com.aliyun.fastmodel.transform.adbmysql.parser.visitor.AdbMysqlAstVisitor;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import org.apache.commons.collections.CollectionUtils;
@@ -61,6 +62,17 @@ public class AdbMysqlExpressionVisitor extends DefaultExpressionVisitor implemen
             }
         }
         return result.toString();
+    }
+
+    @Override
+    public String visitAdbMysqlPointDataType(AdbMysqlPointDataType adbMysqlPointDataType, Void context) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("POINT");
+        if (adbMysqlPointDataType.getDelimiterTokenizer() != null) {
+            builder.append(" DELIMITER_TOKENIZER ");
+            builder.append(formatStringLiteral(adbMysqlPointDataType.getDelimiterTokenizer().getValue()));
+        }
+        return builder.toString();
     }
 
     //lambdaParameter LAMBDA_IMPLEMENT expressionAtom

@@ -487,7 +487,7 @@ tableOption
     | TRANSACTIONAL '='? ('0' | '1')                                                #tableOptionTransactional
     | UNION '='? '(' tables ')'                                                     #tableOptionUnion
     | BLOCK_SIZE '=' decimalLiteral                                                 #tableOptionBlockSize
-    | STORAGE_POLICY '=' STRING_LITERAL                                             #tableOpitonStoragePolicy
+    | STORAGE_POLICY '=' STRING_LITERAL                                             #tableOptionStoragePolicy
     | INDEX_ALL '=' STRING_LITERAL                                                  #tableOptionIndexAll
     | HOT_PARTITION_COUNT '=' decimalLiteral                                        #tableOptionHotPartitionCount
     | TABLE_PROPERTIES '=' STRING_LITERAL                                           #tableOptionTableProperties
@@ -2297,8 +2297,8 @@ dataType
       (charSet charsetName)?                                        #collectionDataType
     | typeName=(
         GEOMETRYCOLLECTION | GEOMCOLLECTION | LINESTRING | MULTILINESTRING
-        | MULTIPOINT | MULTIPOLYGON | POINT | POLYGON | JSON | GEOMETRY
-      )  (SRID decimalLiteral)?                                    #spatialDataType
+        | MULTIPOINT | MULTIPOLYGON | POINT| POLYGON | JSON | GEOMETRY
+      )  (SRID decimalLiteral)? (DELIMITER_TOKENIZER  stringLiteral)?                                   #spatialDataType
     | typeName=LONG VARCHAR?
       BINARY?
       (charSet charsetName)?
@@ -2803,7 +2803,7 @@ keywordsCanBeId
     | UNDO_BUFFER_SIZE | UNINSTALL | UNKNOWN | UNTIL | UPGRADE | USA | USER | USE_FRM | USER_RESOURCES
     | VALIDATION | VALUE | VAR_POP | VAR_SAMP | VARIABLES | VARIANCE | VERSION_TOKEN_ADMIN | VIEW | VIRTUAL
     | WAIT | WARNINGS | WITHOUT | WORK | WRAPPER | X509 | XA | XA_RECOVER_ADMIN | XML | MAP | CLUSTERED | ANN | HNSW_PQ | EXTERNAL | NAME
-    | LOCATION | TBLPROPERTIES | DELIMITED | ANALYZER | FULLTEXT | BROADCAST | DISTRIBUTED | DISTRIBUTE
+    | LOCATION | TBLPROPERTIES | DELIMITED | ANALYZER | FULLTEXT | BROADCAST | DISTRIBUTED | DISTRIBUTE | DELIMITER_TOKENIZER
     ;
 
 functionNameBase

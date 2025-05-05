@@ -1,0 +1,9 @@
+CREATE TABLE tbl
+(
+    id             BIGINT NOT NULL
+    ,name          TEXT NOT NULL
+    ,age           BIGINT NOT NULL
+    ,class         TEXT NOT NULL
+    ,reg_timestamp TIMESTAMP WITH TIME ZONE NOT NULL
+    ,PRIMARY KEY (id,age)
+);

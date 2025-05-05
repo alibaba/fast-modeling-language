@@ -70,6 +70,7 @@ public class AdbMysqlGeneratorTest extends BaseAdbMysqlTest {
         DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
             .config(TableConfig.builder()
                 .dialectMeta(DialectMeta.DEFAULT_ADB_MYSQL)
+                .appendSemicolon(false)
                 .build())
             .after(table)
             .build();

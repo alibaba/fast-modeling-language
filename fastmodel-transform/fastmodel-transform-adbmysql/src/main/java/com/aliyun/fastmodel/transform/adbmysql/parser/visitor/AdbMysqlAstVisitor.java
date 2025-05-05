@@ -16,6 +16,7 @@
 
 package com.aliyun.fastmodel.transform.adbmysql.parser.visitor;
 
+import com.aliyun.fastmodel.transform.adbmysql.parser.tree.datatype.AdbMysqlPointDataType;
 import com.aliyun.fastmodel.transform.api.extension.visitor.ExtensionAstVisitor;
 
 /**
@@ -26,4 +27,14 @@ import com.aliyun.fastmodel.transform.api.extension.visitor.ExtensionAstVisitor;
  */
 public interface AdbMysqlAstVisitor<R, C> extends ExtensionAstVisitor<R, C> {
 
+    /**
+     * visit adb mysql point data type
+     *
+     * @param adbMysqlPointDataType adbMysqlPointDataType
+     * @param context               context
+     * @return
+     */
+    default R visitAdbMysqlPointDataType(AdbMysqlPointDataType adbMysqlPointDataType, C context) {
+        return visitDataType(adbMysqlPointDataType, context);
+    }
 }

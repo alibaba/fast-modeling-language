@@ -88,7 +88,6 @@ import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.StringDataT
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.StringLiteralContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableAttributeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableNameContext;
-import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOpitonStoragePolicyContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionBlockSizeContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionCommentContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionContext;
@@ -97,6 +96,7 @@ import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOption
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionIndexAllContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionLocationContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionRowFormatTerminatedByContext;
+import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionStoragePolicyContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionStoredAsContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionTablePropertiesContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.TableOptionTblPropertiesContext;
@@ -105,6 +105,8 @@ import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.UidContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.UniqueKeyColumnConstraintContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParser.UniqueKeyTableConstraintContext;
 import com.aliyun.fastmodel.transform.adbmysql.parser.AdbMysqlParserBaseVisitor;
+import com.aliyun.fastmodel.transform.adbmysql.parser.tree.AdbMysqlDataTypeName;
+import com.aliyun.fastmodel.transform.adbmysql.parser.tree.datatype.AdbMysqlPointDataType;
 import com.aliyun.fastmodel.transform.adbmysql.parser.tree.index.IndexOptionName;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.ClusteredKeyConstraint;
@@ -220,7 +222,7 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
     }
 
     @Override
-    public Node visitTableOpitonStoragePolicy(TableOpitonStoragePolicyContext ctx) {
+    public Node visitTableOptionStoragePolicy(TableOptionStoragePolicyContext ctx) {
         return new Property(AdbMysqlPropertyKey.STORAGE_POLICY.getValue(), StripUtils.strip(ctx.STRING_LITERAL().getText()));
     }
 
@@ -493,6 +495,14 @@ public class AdbMysqlAstBuilder extends AdbMysqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitSpatialDataType(SpatialDataTypeContext ctx) {
+        String text = ctx.typeName.getText();
+        if (StringUtils.equalsIgnoreCase(text, AdbMysqlDataTypeName.POINT.getValue())) {
+            if (ctx.DELIMITER_TOKENIZER() != null) {
+                StringLiteral stringLiteral = (StringLiteral)visit(ctx.stringLiteral());
+                return new AdbMysqlPointDataType(stringLiteral);
+            }
+            return new AdbMysqlPointDataType(null);
+        }
         return new GenericDataType(new Identifier(ctx.typeName.getText()));
     }
 

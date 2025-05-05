@@ -150,7 +150,7 @@ public class HiveCodeGeneratorExternalTest {
                 "INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\n" +
                 "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
                 "LOCATION 'hdfs://master-1-1.c-aac6b952af7280c8.cn-shanghai.emr.aliyuncs.com:9000/user/hive/warehouse/test_ziliang_v1'\n" +
-                "TBLPROPERTIES ('bucketing_version'='2','transient_lastDdlTime'='1698806349','hive.row_format_serde'='org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe','hive.stored_input_format'='org.apache.hadoop.mapred.TextInputFormat','hive.stored_output_format'='org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat','hive.location'='hdfs://master-1-1.c-aac6b952af7280c8.cn-shanghai.emr.aliyuncs.com:9000/user/hive/warehouse/test_ziliang_v1');");
+                "TBLPROPERTIES ('bucketing_version'='2','transient_lastDdlTime'='1698806349');");
     }
 
     @Test
@@ -225,14 +225,7 @@ public class HiveCodeGeneratorExternalTest {
                 "INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\n" +
                 "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
                 "LOCATION 'oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'\n" +
-                "TBLPROPERTIES ('transient_lastDdlTime'='1495603307','hive.table_external'='true'," +
-                "'hive.row_format_serde'='org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'," +
-                "'hive.serde_props.field.delim'='\\t','hive.serde_props.line.delim'='\\n'," +
-                "'hive.serde_props.serialization.format'='\\t'," +
-                "'hive.stored_input_format'='org.apache.hadoop.mapred.TextInputFormat'," +
-                "'hive.stored_output_format'='org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'," +
-                "'hive.location'='oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'," +
-                "'hive.table_external'='true');");
+                "TBLPROPERTIES ('transient_lastDdlTime'='1495603307','hive.serde_props.field.delim'='\\t','hive.serde_props.line.delim'='\\n','hive.serde_props.serialization.format'='\\t');");
     }
 
     @Test
@@ -298,11 +291,7 @@ public class HiveCodeGeneratorExternalTest {
                 "INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'\n" +
                 "OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'\n" +
                 "LOCATION 'oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'\n" +
-                "TBLPROPERTIES ('transient_lastDdlTime'='1495603307','hive.table_external'='true'," +
-                "'hive.fields_terminated'=',','hive.stored_input_format'='org.apache.hadoop.mapred.TextInputFormat'," +
-                "'hive.stored_output_format'='org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'," +
-                "'hive.location'='oss://{AccessKeyId}:{AccessKeySecret}@{bucket}.{endpoint}/hive/oss_share_feedback'," +
-                "'hive.table_external'='true');");
+                "TBLPROPERTIES ('transient_lastDdlTime'='1495603307');");
     }
 
     @Test
