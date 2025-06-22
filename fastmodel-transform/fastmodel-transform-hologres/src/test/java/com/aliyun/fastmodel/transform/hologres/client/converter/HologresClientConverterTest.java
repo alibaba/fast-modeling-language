@@ -19,7 +19,9 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
@@ -361,4 +363,59 @@ public class HologresClientConverterTest {
         BaseDataType dataType = hologresClientConverter.getDataType(c);
         assertEquals("DECIMAL(38,10)", dataType.toString());
     }
+
+    @Test
+    public void testToBigintWithDefaultFunction() {
+        Column c = Column.builder().name("c1")
+            .dataType("BIGINT")
+            .defaultValue("nextval('aaaa.all_type_2_c15_seq'::REGCLASS)")
+            .build();
+        BaseDataType dataType = hologresClientConverter.getDataType(c);
+        assertEquals("BIGINT", dataType.toString());
+
+        //BaseExpression baseExpression = hologresClientConverter.toDefaultValueExpression(dataType, c.getDefaultValue());
+        //assertTrue(baseExpression instanceof FunctionCall);
+        //assertEquals(((FunctionCall)baseExpression).getFuncName(), "nextval('aaaa.all_type_2_c15_seq'::REGCLASS)");
+    }
+
+    @Test
+    public void testToBigintWithDefaultLong1() {
+        Column c = Column.builder().name("c1")
+            .dataType("BIGINT")
+            .defaultValue("1234567")
+            .build();
+        BaseDataType dataType = hologresClientConverter.getDataType(c);
+        assertEquals("BIGINT", dataType.toString());
+
+        BaseExpression baseExpression = hologresClientConverter.toDefaultValueExpression(dataType, c.getDefaultValue());
+        assertTrue(baseExpression instanceof LongLiteral);
+        assertEquals(((LongLiteral)baseExpression).getValue(), Long.valueOf(1234567L));
+    }
+
+    @Test
+    public void testToBigintWithDefaultLong2() {
+        Column c = Column.builder().name("c1")
+            .dataType("BIGINT")
+            .defaultValue("-1234567")
+            .build();
+        BaseDataType dataType = hologresClientConverter.getDataType(c);
+        assertEquals("BIGINT", dataType.toString());
+
+        BaseExpression baseExpression = hologresClientConverter.toDefaultValueExpression(dataType, c.getDefaultValue());
+        assertTrue(baseExpression instanceof LongLiteral);
+        assertEquals(((LongLiteral)baseExpression).getValue(), Long.valueOf(-1234567L));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToBigintWithDefaultLong3() {
+        Column c = Column.builder().name("c1")
+            .dataType("BIGINT")
+            .defaultValue("-1234567.123")
+            .build();
+        BaseDataType dataType = hologresClientConverter.getDataType(c);
+        assertEquals("BIGINT", dataType.toString());
+
+        hologresClientConverter.toDefaultValueExpression(dataType, c.getDefaultValue());
+    }
+
 }

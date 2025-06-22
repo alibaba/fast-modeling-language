@@ -70,11 +70,9 @@ public class AdbPostgreSQLTransformerTest {
             .build();
         TransformContext context = AdbPostgreSQLTransformContext.builder().build();
         DialectNode transform = transformer.transform(source, context);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE abc (\n"
+        assertEquals("CREATE TABLE abc (\n"
             + "   c1 BIGINT\n"
-            + ");\n"
-            + "COMMIT;", transform.getNode());
+            + ");", transform.getNode());
     }
 
     @Test
@@ -83,16 +81,15 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/basic.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String generator = generator(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE baby.rank (\n"
+        assertEquals("CREATE TABLE baby.rank (\n"
             + "   id     INTEGER,\n"
             + "   rank   INTEGER,\n"
             + "   year   SMALLINT,\n"
             + "   gender CHAR(1),\n"
             + "   count  INTEGER\n"
             + ")\n"
-            + "DISTRIBUTED BY (rank,gender,year);\n"
-            + "COMMIT;", generator);
+            + "DISTRIBUTED BY (rank,gender,year)\n"
+            + ";", generator);
     }
 
     @Test
@@ -101,12 +98,10 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/default.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String generator = generator(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE distributors (\n"
+        assertEquals("CREATE TABLE distributors (\n"
             + "   did  INTEGER PRIMARY KEY DEFAULT nextval('serial'),\n"
             + "   name VARCHAR(40) NOT NULL CHECK (name <> '')\n"
-            + ");\n"
-            + "COMMIT;", generator);
+            + ");", generator);
     }
 
     @Test
@@ -115,16 +110,14 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/films.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String generator = generator(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE films (\n"
+        assertEquals("CREATE TABLE films (\n"
             + "   code      CHAR(5) PRIMARY KEY,\n"
             + "   title     VARCHAR(40) NOT NULL,\n"
             + "   did       INTEGER NOT NULL,\n"
             + "   date_prod DATE,\n"
             + "   kind      VARCHAR(10),\n"
             + "   len       INTERVAL HOUR TO MINUTE\n"
-            + ");\n"
-            + "COMMIT;", generator);
+            + ");", generator);
     }
 
     @Test
@@ -133,8 +126,7 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/partition_by.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String generator = generator(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE sales (\n"
+        assertEquals("CREATE TABLE sales (\n"
             + "   id     INTEGER,\n"
             + "   year   INTEGER,\n"
             + "   qtr    INTEGER,\n"
@@ -145,8 +137,7 @@ public class AdbPostgreSQLTransformerTest {
             + "DISTRIBUTED BY (id)\n"
             + "PARTITION BY LIST (code)\n"
             + "(PARTITION sales VALUES ('S')\n"
-            + ",PARTITION returns VALUES ('R'));\n"
-            + "COMMIT;", generator);
+            + ",PARTITION returns VALUES ('R'));", generator);
     }
 
     @SneakyThrows
@@ -155,8 +146,7 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/partition_by.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String table = generatorWithoutTable(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE sales (\n"
+        assertEquals("CREATE TABLE sales (\n"
             + "   id     INTEGER,\n"
             + "   year   INTEGER,\n"
             + "   qtr    INTEGER,\n"
@@ -167,8 +157,7 @@ public class AdbPostgreSQLTransformerTest {
             + "DISTRIBUTED BY (id)\n"
             + "PARTITION BY LIST (code)\n"
             + "(PARTITION sales VALUES ('S')\n"
-            + ",PARTITION returns VALUES ('R'));\n"
-            + "COMMIT;", table);
+            + ",PARTITION returns VALUES ('R'));", table);
     }
 
     @SneakyThrows
@@ -177,8 +166,7 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/sub_partition_by.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String table = generatorWithoutTable(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE sales (\n"
+        assertEquals("CREATE TABLE sales (\n"
             + "   id     INTEGER,\n"
             + "   year   INTEGER,\n"
             + "   qtr    INTEGER,\n"
@@ -191,8 +179,7 @@ public class AdbPostgreSQLTransformerTest {
             + "SUBPARTITION BY RANGE (c_rank)\n"
             + "SUBPARTITION BY LIST (region)\n"
             + "(PARTITION sales VALUES ('S')\n"
-            + ",PARTITION returns VALUES ('R'));\n"
-            + "COMMIT;", table);
+            + ",PARTITION returns VALUES ('R'));", table);
     }
 
     @SneakyThrows
@@ -201,8 +188,7 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/sub_partition_by.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String table = generator(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE sales (\n"
+        assertEquals("CREATE TABLE sales (\n"
             + "   id     INTEGER,\n"
             + "   year   INTEGER,\n"
             + "   qtr    INTEGER,\n"
@@ -215,8 +201,7 @@ public class AdbPostgreSQLTransformerTest {
             + "SUBPARTITION BY RANGE (c_rank)\n"
             + "SUBPARTITION BY LIST (region)\n"
             + "(PARTITION sales VALUES ('S')\n"
-            + ",PARTITION returns VALUES ('R'));\n"
-            + "COMMIT;", table);
+            + ",PARTITION returns VALUES ('R'));", table);
     }
 
     @SneakyThrows
@@ -225,8 +210,7 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/sub_partition_with_template.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String table = generatorWithoutTable(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE sales (\n"
+        assertEquals("CREATE TABLE sales (\n"
             + "   id     INTEGER,\n"
             + "   year   INTEGER,\n"
             + "   qtr    INTEGER,\n"
@@ -241,8 +225,7 @@ public class AdbPostgreSQLTransformerTest {
             + "SUBPARTITION BY LIST (region) SUBPARTITION TEMPLATE (SUBPARTITION usa VALUES ('usa'),SUBPARTITION europe VALUES ('europe'),"
             + "SUBPARTITION asia VALUES ('asia'),DEFAULT SUBPARTITION other_regions)\n"
             + "(START (2009)END (2011)EVERY (1)\n"
-            + ",DEFAULT PARTITION outlying_years);\n"
-            + "COMMIT;", table);
+            + ",DEFAULT PARTITION outlying_years);", table);
     }
 
     @SneakyThrows
@@ -251,8 +234,7 @@ public class AdbPostgreSQLTransformerTest {
         String sql = IOUtils.resourceToString("/adbpostgresql/sub_partition_with_template.txt", Charset.defaultCharset());
         DialectNode dialectNode = new DialectNode(sql);
         String table = generator(dialectNode);
-        assertEquals("BEGIN;\n"
-            + "CREATE TABLE sales (\n"
+        assertEquals("CREATE TABLE sales (\n"
             + "   id     INTEGER,\n"
             + "   year   INTEGER,\n"
             + "   qtr    INTEGER,\n"
@@ -267,8 +249,7 @@ public class AdbPostgreSQLTransformerTest {
             + "SUBPARTITION BY LIST (region) SUBPARTITION TEMPLATE (SUBPARTITION usa VALUES ('usa'),SUBPARTITION europe VALUES ('europe'),"
             + "SUBPARTITION asia VALUES ('asia'),DEFAULT SUBPARTITION other_regions)\n"
             + "(START (2009)END (2011)EVERY (1)\n"
-            + ",DEFAULT PARTITION outlying_years);\n"
-            + "COMMIT;", table);
+            + ",DEFAULT PARTITION outlying_years);", table);
     }
 
     private String generatorWithoutTable(DialectNode dialectNode) {

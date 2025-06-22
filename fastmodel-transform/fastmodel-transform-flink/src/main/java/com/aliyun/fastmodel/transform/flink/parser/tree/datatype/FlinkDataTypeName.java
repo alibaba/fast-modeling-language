@@ -64,6 +64,8 @@ public enum FlinkDataTypeName implements ISimpleDataTypeName {
 
     DECIMAL("DECIMAL", Dimension.TWO, SimpleDataTypeName.NUMBER),
 
+    INT("INT", Dimension.ONE, SimpleDataTypeName.NUMBER)
+
     ;
 
 

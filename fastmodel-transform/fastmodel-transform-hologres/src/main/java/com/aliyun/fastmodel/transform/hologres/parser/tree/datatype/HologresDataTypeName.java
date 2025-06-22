@@ -70,7 +70,7 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
     /**
      * timestamp
      */
-    TIMESTAMP("TIMESTAMP", "", Dimension.ZERO, SimpleDataTypeName.DATE),
+    TIMESTAMP("TIMESTAMP", "TIMESTAMP WITHOUT TIME ZONE", Dimension.ZERO, SimpleDataTypeName.DATE),
 
     /**
      * char
@@ -78,9 +78,14 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
     CHAR("CHAR", "BPCHAR", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
+     * character
+     */
+    CHARACTER("CHARACTER", "", Dimension.ONE, SimpleDataTypeName.STRING),
+
+    /**
      * varchar
      */
-    VARCHAR("VARCHAR", "CHARACTERVARYING", Dimension.ONE, SimpleDataTypeName.STRING),
+    VARCHAR("VARCHAR", "CHARACTER VARYING", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
      * serial:<a href="https://help.aliyun.com/document_detail/187391.html">...</a>
@@ -123,11 +128,11 @@ public enum HologresDataTypeName implements ISimpleDataTypeName {
     /**
      * timez
      */
-    TIMETZ("TIMETZ", "", Dimension.ZERO, SimpleDataTypeName.DATE),
+    TIMETZ("TIMETZ", "TIME WITH TIME ZONE", Dimension.ZERO, SimpleDataTypeName.DATE),
     /**
      * time
      */
-    TIME("TIME", "", Dimension.ZERO, SimpleDataTypeName.DATE),
+    TIME("TIME", "TIME WITHOUT TIME ZONE", Dimension.ZERO, SimpleDataTypeName.DATE),
     /**
      * inet
      */

@@ -46,10 +46,10 @@ public class StringJoinUtilTest {
         assertEquals(join.toString(), "b.c");
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void testJoinOne() {
         QualifiedName join = StringJoinUtil.join("a", null, "");
-        assertEquals(join.toString(), "a");
+        assertEquals(join.toString(), "");
     }
 
     @Test

@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.aliyun.fastmodel.compare.impl.helper.ComparePair;
 import com.aliyun.fastmodel.compare.CompareStrategy;
+import com.aliyun.fastmodel.compare.impl.helper.ComparePair;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
@@ -82,7 +82,7 @@ public class CompositeCompareNodeTest {
                 statements
             ), CompareStrategy.INCREMENTAL);
         String collect = baseStatementList.stream().map(BaseStatement::toString).collect(Collectors.joining(";\n"));
-        assertEquals(collect, "ALTER TABLE a DROP COLUMN c1");
+        assertEquals(collect, "DROP TABLE IF EXISTS a");
     }
 
     @Test

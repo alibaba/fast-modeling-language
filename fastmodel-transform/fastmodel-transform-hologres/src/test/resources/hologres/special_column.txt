@@ -1,0 +1,9 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS public.test_col_tb1_1630 (
+   id        BIGINT PRIMARY KEY,
+   "123_col"   TEXT NOT NULL
+);
+CALL SET_TABLE_PROPERTY('public.test_col_tb1_1630', 'time_to_live_in_seconds', '3153600000');
+CALL SET_TABLE_PROPERTY('public.test_col_tb1_1630', 'orientation', 'column');
+CALL SET_TABLE_PROPERTY('public.test_col_tb1_1630', 'binlog.level', 'none');
+COMMIT;

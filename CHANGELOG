@@ -217,3 +217,25 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.17
+新功能（new features）
+Core
+• FML对比优化。
+
+
+Transformer
+• 新增AdbPostgreSQL属性配置，支持分区键replicated属性
+• 新增Flink的INT数据类型
+• 优化Hologres的特殊列名显示
+• 支持PostgreSQL属性配置
+
+
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无

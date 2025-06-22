@@ -300,8 +300,14 @@ public class AdbPostgreSQLAstBuilder extends AdbPostgreSQLParserBaseVisitor<Node
 
     @Override
     public Node visitOpttabledistribute(OpttabledistributeContext ctx) {
-        List<Identifier> columns = ParserHelper.visit(this, ctx.opt_column_list().columnlist().columnElem(), Identifier.class);
-        return new DistributeNonKeyConstraint(columns, null);
+        if(ctx.RANDOMLY() != null) {
+            return new DistributeNonKeyConstraint(null, true, null, null);
+        } else if (ctx.REPLICATED() != null) {
+            return new DistributeNonKeyConstraint(null, null, true, null);
+        } else {
+            List<Identifier> columns = ParserHelper.visit(this, ctx.opt_column_list().columnlist().columnElem(), Identifier.class);
+            return new DistributeNonKeyConstraint(columns, null);
+        }
     }
 
     @Override

@@ -41,7 +41,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class CreateTableCompareNode extends BaseCompareNode<CreateTable> {
 
-    private List<TableElementCompare> tableElementCompareList;
+    private final List<TableElementCompare> tableElementCompareList;
 
     public CreateTableCompareNode() {
         tableElementCompareList = ImmutableList.of(
@@ -67,6 +67,12 @@ public class CreateTableCompareNode extends BaseCompareNode<CreateTable> {
     public List<BaseStatement> compareResult(CreateTable before, CreateTable after, CompareStrategy strategy) {
         ImmutableList.Builder<BaseStatement> builder = ImmutableList.builder();
         if (after == null) {
+            DropTable dropTable = new DropTable(before.getQualifiedName(), true);
+            builder.add(dropTable);
+            return builder.build();
+        }
+        //如果before不为空和before的列不为空，after的列为空，那么也生成删除逻辑
+        if (before != null && !before.isColumnEmpty() && after.isColumnEmpty()) {
             DropTable dropTable = new DropTable(before.getQualifiedName(), true);
             builder.add(dropTable);
             return builder.build();

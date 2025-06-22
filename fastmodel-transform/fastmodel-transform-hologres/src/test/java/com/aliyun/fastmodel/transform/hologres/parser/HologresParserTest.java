@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Comment;
+import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
@@ -25,7 +26,17 @@ import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.SetColComment;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
+import com.aliyun.fastmodel.transform.api.client.CodeGenerator;
+import com.aliyun.fastmodel.transform.api.client.dto.request.DdlGeneratorModelRequest;
+import com.aliyun.fastmodel.transform.api.client.dto.result.DdlGeneratorResult;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
+import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
+import com.aliyun.fastmodel.transform.api.context.TransformContext;
+import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
+import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.hologres.HologresTransformer;
+import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresArrayDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeNameExpression;
@@ -60,6 +71,112 @@ public class HologresParserTest {
         ColumnDefinition columnDefinition = createTable.getColumnDefines().get(0);
         assertEquals(columnDefinition.getDataType().getTypeName(), HologresDataTypeName.TEXT);
         assertEquals(createTable.getConstraintStatements().size(), 1);
+    }
+
+    @Test
+    public void parseNode2() {
+        String sql = "BEGIN;\n"
+            + "\n"
+            + "/*\n"
+            + "DROP DEFAULT aaaa.all_type.c14;\n"
+            + "DROP DEFAULT aaaa.all_type.c13;\n"
+            + "\n"
+            + "DROP TABLE aaaa.all_type;\n"
+            + "*/\n"
+            + "\n"
+            + "-- Type: TABLE ; Name: all_type; Owner: 1107550004253538\n"
+            + "\n"
+            + "CREATE TABLE aaaa.all_type (\n"
+            + "    c1 text,\n"
+            + "    c2 bigint,\n"
+            + "    c3 boolean,\n"
+            + "    c4 real,\n"
+            + "    c5 double precision,\n"
+            + "    c7 timestamp with time zone,\n"
+            + "    c8 numeric(10,2),\n"
+            + "    c9 date,\n"
+            + "    c10 timestamp without time zone,\n"
+            + "    c11 character(1),\n"
+            + "    c12 character varying,\n"
+            + "    c13 integer NOT NULL default nextval('aaaa.all_type_c13_seq'::regclass),\n"
+            + "    c14 bigint NOT NULL default nextval('aaaa.all_type_c14_seq'::regclass),\n"
+            + "    c15 smallint,\n"
+            + "    c16 json,\n"
+            + "    c17 jsonb,\n"
+            + "    c18 bytea,\n"
+            + "    c19 roaringbitmap,\n"
+            + "    c20 bit(1),\n"
+            + "    c21 time with time zone,\n"
+            + "    c22 time without time zone,\n"
+            + "    c23 inet,\n"
+            + "    c24 money,\n"
+            + "    c25 interval,\n"
+            + "    c26 oid,\n"
+            + "    c27 uuid\n"
+            + ")with (\n"
+            + "orientation = 'column',\n"
+            + "storage_format = 'orc',\n"
+            + "bitmap_columns = 'c1,c6,c11,c12',\n"
+            + "dictionary_encoding_columns = 'c1:auto,c6:auto,c11:auto,c12:auto',\n"
+            + "table_group = 'dw01_tg_default',\n"
+            + "table_storage_mode = 'any',\n"
+            + "time_to_live_in_seconds = '3153600000'\n"
+            + ");\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "COMMENT ON TABLE aaaa.all_type IS 'table comment';\n"
+            + "ALTER TABLE aaaa.all_type OWNER TO \"1107550004253538\";\n"
+            + "COMMENT ON COLUMN aaaa.all_type.c1 IS 'id';\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "COMMIT;";
+        CompositeStatement compositeStatement = hologresParser2.parseNode(sql);
+        assertEquals(5, compositeStatement.getStatements().size());
+        CreateTable createTable = (CreateTable)compositeStatement.getStatements().get(1);
+        ColumnDefinition columnDefinition = createTable.getColumnDefines().get(0);
+        assertEquals(columnDefinition.getDataType().getTypeName(), HologresDataTypeName.TEXT);
+
+        DialectNode dialectNode = new DialectNode(sql);
+        HologresTransformer transformer = new HologresTransformer();
+        ReverseContext build = ReverseContext.builder().merge(true).build();
+        Node reverse = transformer.reverse(dialectNode, build);
+        assertNotNull(reverse);
+
+        TransformContext transformContext = HologresTransformContext.builder().build();
+        TableConfig config = TableConfig.builder().dialectMeta(DialectMeta.getHologres()).build();
+        DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
+            .after(transformer.transformTable(reverse, transformContext))
+            .config(config)
+            .build();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        DdlGeneratorResult generate = codeGenerator.generate(request);
+        List<DialectNode> dialectNodes = generate.getDialectNodes();
+        assertNotNull(dialectNodes);
+    }
+
+    @Test
+    public void parseNode3() {
+        CompositeStatement compositeStatement = hologresParser2.parseNode(
+            "BEGIN;"
+                + "CREATE TABLE public.user_info ("
+                + "    id integer NOT NULL default nextval('user_info_id_seq'::regclass),"
+                + "    username character varying(50) NOT NULL default custom_function('xxxx'),"
+                + "    password character varying(50) NOT NULL,"
+                + "    email character varying(100) NOT NULL,"
+                + "    created_at timestamp with time zone NOT NULL default CURRENT_TIMESTAMP    ,"
+                + "PRIMARY KEY (id))"
+                + "with (orientation = 'column',storage_format = 'orc',bitmap_columns = 'username,password,email',dictionary_encoding_columns = "
+                + "'username:auto,password:auto,email:auto',distribution_key = 'id',segment_key = 'created_at',table_group = 'holo_db_tg_default',"
+                + "table_storage_mode = 'any',time_to_live_in_seconds = '3153600000');"
+                + "COMMENT ON TABLE public.user_info IS NULL;"
+                + "ALTER TABLE public.user_info OWNER TO holo_db_developer;"
+                + "END;");
+        assertEquals(3, compositeStatement.getStatements().size());
+        CreateTable createTable = (CreateTable)compositeStatement.getStatements().get(1);
+        ColumnDefinition columnDefinition = createTable.getColumnDefines().get(0);
+        assertEquals(columnDefinition.getDataType().getTypeName(), HologresDataTypeName.INTEGER);
     }
 
     @Test
@@ -247,5 +364,12 @@ public class HologresParserTest {
         CompositeStatement createTable = (CompositeStatement)hologresParser2.parseNode(txt, ReverseContext.builder().merge(true).build());
         List<BaseStatement> statements = createTable.getStatements();
         assertEquals(654, statements.size());
+    }
+
+    @Test
+    public void testParseExpressionWithNextValue() {
+        String code = "nextval('aaaa.all_type_c13_seq'::regclass)";
+        BaseExpression expr = hologresParser2.parseExpression(code);
+        assertEquals("com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall", expr.getClass().getName());
     }
 }

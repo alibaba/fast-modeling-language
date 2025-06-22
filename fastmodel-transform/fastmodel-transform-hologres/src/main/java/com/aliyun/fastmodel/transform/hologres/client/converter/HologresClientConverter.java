@@ -14,9 +14,11 @@ import java.util.Optional;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName.Dimension;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
+import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
@@ -37,6 +39,7 @@ import com.aliyun.fastmodel.transform.hologres.parser.tree.expr.WithDataTypeName
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  * 将ddl 转为 fml模型对象
@@ -186,7 +189,7 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
         if (StringUtils.equalsIgnoreCase(HologresDataTypeName.TIMESTAMPTZ.getValue(), type)) {
             return new TimestampLiteral(defaultValue);
         }
-        BaseExpression baseExpression = super.getBaseExpression(baseDataType, defaultValue);
+        BaseExpression baseExpression = getBaseExpression(baseDataType, defaultValue);
         if (baseExpression != null) {
             return baseExpression;
         }
@@ -200,6 +203,44 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
             String strip = StringLiteralUtil.strip(defaultValue);
             return new StringLiteral(strip);
         }
+    }
+
+    @Override
+    protected BaseExpression getBaseExpression(BaseDataType baseDataType, String defaultValue) {
+        IDataTypeName typeName = baseDataType.getTypeName();
+        String type = typeName.getValue();
+        String value = defaultValue;
+
+        // 需要个性化处理的，如果是BIGINT，有可能建表的时候类型是BIGSERIAL，但是show出来却是个BIGINT，然后default value是个函数
+        if (StringUtils.equalsIgnoreCase(DataTypeEnums.BIGINT.getValue(), type)) {
+            if (isBigintValue(value)) {
+                // 正常的数字类型
+                return new LongLiteral(value);
+            } else {
+                // 按照函数处理
+                return null;
+                //return new StringLiteral(value);
+            }
+        }
+        return super.getBaseExpression(baseDataType, defaultValue);
+    }
+
+    private boolean isBigintValue(String value) {
+        if (StringUtils.isBlank(value)) {
+            return false;
+        }
+
+        // 是否是数字
+        if (!NumberUtils.isCreatable(value)) {
+            return false;
+        }
+
+        // 不能包含小数
+        if (value.contains(".")) {
+            throw new IllegalArgumentException("bigint value must not contain decimal");
+        }
+
+        return true;
     }
 
 }

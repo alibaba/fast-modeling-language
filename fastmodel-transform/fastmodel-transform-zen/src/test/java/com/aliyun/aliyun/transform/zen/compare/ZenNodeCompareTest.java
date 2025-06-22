@@ -79,7 +79,7 @@ public class ZenNodeCompareTest {
         DialectNode before = new DialectNode("user_id\nuser+name");
         List<BaseStatement> diff = zenNodeCompare.compare(before, after,
             CompareContext.builder().qualifiedName(QualifiedName.of("dim_sho")).build());
-        assertEquals(diff.size(), 3);
+        assertEquals(diff.size(), 1);
 
     }
 }

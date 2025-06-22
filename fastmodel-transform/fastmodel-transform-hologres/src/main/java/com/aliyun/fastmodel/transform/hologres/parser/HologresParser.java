@@ -52,7 +52,7 @@ public class HologresParser implements LanguageParser<Node, ReverseContext> {
         fastModelGrammarParser.addErrorListener(LISTENER);
         ParserRuleContext tree;
         try {
-            fastModelGrammarParser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+            fastModelGrammarParser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
             tree = function.apply(fastModelGrammarParser);
         } catch (Throwable e) {
             commonTokenStream.seek(0);
@@ -69,6 +69,7 @@ public class HologresParser implements LanguageParser<Node, ReverseContext> {
 
     @Override
     public <T> T parseExpression(String code) throws ParseException {
-        return (T)getNode(code, ReverseContext.builder().build(), HologreSQLParser::b_expr);
+        ReverseContext context = ReverseContext.builder().build();
+        return (T)getNode(code, context, HologreSQLParser::b_expr);
     }
 }

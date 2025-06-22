@@ -773,6 +773,24 @@ public class HologresTransformerTest {
             + "COMMIT;", generator);
     }
 
+    @Test
+    @SneakyThrows
+    public void testReverseSpecialColumn() {
+        String name = "/hologres/special_column.txt";
+        String v = IOUtils.resourceToString(name, Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(v);
+        String generator = generator(dialectNode);
+        assertEquals("BEGIN;\n"
+            + "CREATE TABLE IF NOT EXISTS test_col_tb1_1630 (\n"
+            + "   id        BIGINT PRIMARY KEY,\n"
+            + "   \"123_col\" TEXT NOT NULL\n"
+            + ");\n"
+            + "CALL SET_TABLE_PROPERTY('test_col_tb1_1630', 'time_to_live_in_seconds', '3153600000');\n"
+            + "CALL SET_TABLE_PROPERTY('test_col_tb1_1630', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('test_col_tb1_1630', 'binlog.level', 'none');\n"
+            + "COMMIT;", generator);
+    }
+
     @Test(expected = MergeException.class)
     @SneakyThrows
     public void testParseReverse() {

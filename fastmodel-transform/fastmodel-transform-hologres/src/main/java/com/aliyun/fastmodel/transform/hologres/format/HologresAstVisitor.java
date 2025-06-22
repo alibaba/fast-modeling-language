@@ -56,7 +56,6 @@ import com.aliyun.fastmodel.transform.hologres.parser.tree.CommitWork;
 import com.aliyun.fastmodel.transform.hologres.parser.tree.datatype.HologresDataTypeName;
 import com.aliyun.fastmodel.transform.hologres.parser.util.BuilderUtil;
 import com.aliyun.fastmodel.transform.hologres.parser.util.HologresPropertyUtil;
-import com.aliyun.fastmodel.transform.hologres.parser.util.HologresReservedWordUtil;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresVisitor;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -385,21 +384,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     @Override
     protected String formatColName(Identifier colName, Integer size) {
-        String value = StringUtils.isNotBlank(colName.getOrigin()) ?
-            StripUtils.strip(colName.getOrigin()) : colName.getValue();
-        if (!colName.isDelimited()) {
-            boolean reservedKeyWord = HologresReservedWordUtil.isReservedKeyWord(value);
-            //如果node是关键字，那么进行转义处理
-            if (reservedKeyWord) {
-                value = StripUtils.addDoubleStrip(value);
-            } else if (context.isCaseSensitive()) {
-                //如果是不忽略大小写，那么统一加上双引号
-                value = StripUtils.addDoubleStrip(value);
-            }
-        } else {
-            String strip = StripUtils.strip(value);
-            value = StripUtils.addDoubleStrip(strip);
-        }
+        String value = new HologresExpressionVisitor(context).visitIdentifier(colName, null);
         return StringUtils.rightPad(value, size);
     }
 

@@ -7,6 +7,7 @@ import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
+import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -16,6 +17,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.NonKeyC
 import com.aliyun.fastmodel.transform.postgresql.context.PostgreSQLTransformContext;
 import com.aliyun.fastmodel.transform.postgresql.parser.visitor.PostgreSQLExpressionVisitor;
 import com.aliyun.fastmodel.transform.postgresql.parser.visitor.PostgreSQLVisitor;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import static java.util.stream.Collectors.joining;
@@ -50,6 +52,7 @@ public class PostgreSQLOutVisitor extends FastModelVisitor implements PostgreSQL
             }
             builder.append("\n").append(")");
         }
+        appendWithClause(node);
         if (!node.isConstraintEmpty()) {
             List<BaseConstraint> baseConstraints = node.getConstraintStatements().stream()
                 .filter(c -> c instanceof NonKeyConstraint).collect(Collectors.toList());
@@ -112,7 +115,7 @@ public class PostgreSQLOutVisitor extends FastModelVisitor implements PostgreSQL
             .append(expression);
     }
 
-    private void appendConstraint(CreateTable node, Integer indent) {
+    protected void appendConstraint(CreateTable node, Integer indent) {
         for (BaseConstraint next : node.getConstraintStatements()) {
             if (next instanceof NonKeyConstraint) {
                 continue;
@@ -120,6 +123,19 @@ public class PostgreSQLOutVisitor extends FastModelVisitor implements PostgreSQL
             builder.append(",\n");
             process(next, indent + 1);
         }
+    }
+
+    protected void appendWithClause(CreateTable node) {
+        if (CollectionUtils.isEmpty(node.getProperties())) {
+            return;
+        }
+        if (!isEndNewLine(builder.toString())) {
+            builder.append(StringUtils.LF);
+        }
+        builder.append("WITH ( ");
+        String properties = node.getProperties().stream().map(p -> String.format("%s = %s", p.getName(), p.getValue())).collect(joining(","));
+        builder.append(properties);
+        builder.append(" )");
     }
 
     @Override
@@ -134,7 +150,33 @@ public class PostgreSQLOutVisitor extends FastModelVisitor implements PostgreSQL
     }
 
     @Override
+    public Boolean visitAddCols(AddCols addCols, Integer indent) {
+        builder.append("ALTER TABLE ").append(getCode(addCols.getQualifiedName()));
+        String columnList = addCols.getColumnDefineList().stream()
+            .map(element -> " ADD COLUMN " + appendNameAndType(element, 0)).collect(joining(","));
+        builder.append(columnList).append(";");
+        for (ColumnDefinition columnDefinition : addCols.getColumnDefineList()) {
+            if (columnDefinition.getCommentValue() != null) {
+                builder.append("\n");
+                builder.append(
+                    commentColumn(getCode(addCols.getQualifiedName()),
+                        formatColName(columnDefinition.getColName(), 0),
+                        columnDefinition.getCommentValue()));
+            }
+        }
+        return true;
+    }
+
+    @Override
     protected String formatExpression(BaseExpression baseExpression) {
         return new PostgreSQLExpressionVisitor(PostgreSQLTransformContext.builder().build()).process(baseExpression);
+    }
+
+    private String commentColumn(String code, String column, String comment) {
+        String format = "COMMENT ON COLUMN %s.%s IS %s;";
+        if (comment == null) {
+            return StringUtils.EMPTY;
+        }
+        return String.format(format, code, column, formatStringLiteral(comment));
     }
 }

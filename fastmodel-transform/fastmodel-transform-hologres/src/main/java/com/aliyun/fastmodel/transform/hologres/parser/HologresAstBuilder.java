@@ -92,6 +92,7 @@ import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Dynamic_t
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.FconstContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Func_applicationContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Func_arg_listContext;
+import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Func_exprContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Func_nameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Generic_option_elemContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.GenerictypeContext;
@@ -698,8 +699,8 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
     public Node visitB_expr(HologreSQLParser.B_exprContext ctx) {
         if (ctx.c_expr() != null && ctx.c_expr() instanceof C_expr_exprContext) {
             C_expr_exprContext exprExprContext = (C_expr_exprContext)ctx.c_expr();
-            if (exprExprContext.func_expr() != null && exprExprContext.func_expr().func_application() != null) {
-                return visit(exprExprContext.func_expr().func_application());
+            if (exprExprContext.func_expr() != null) {
+                return visit(exprExprContext.func_expr());
             }
         }
         if (ctx.typename() != null) {
@@ -821,7 +822,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
         if (opt_type_modifiersContext != null && opt_type_modifiersContext.expr_list() != null) {
             list = getDataTypeParameters(opt_type_modifiersContext.expr_list().a_expr());
         }
-        String text = ctx.type_function_name().getText();
+        String text = ParserHelper.getOrigin(ctx.type_function_name());
         return new HologresGenericDataType(
             text,
             list
@@ -881,7 +882,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
             typeParameter = new NumericParameter(longLiteral.getValue().toString());
         }
         return new HologresGenericDataType(
-            ctx.character_c().getText(),
+            ParserHelper.getOrigin(ctx.character_c()),
             typeParameter == null ? Collections.emptyList() : Lists.newArrayList(typeParameter)
         );
     }
@@ -901,14 +902,15 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
             );
         }
         boolean without = ctx.opt_timezone().WITHOUT() != null;
-        if (without) {
-            throw new UnsupportedOperationException("unsupported without zone dataType");
-        } else {
-            return new HologresGenericDataType(
-                HologresDataTypeName.TIMESTAMPTZ.getValue(),
-                arguments
-            );
+        if (ctx.TIME() != null) {
+            HologresDataTypeName dataTypeName = without ? HologresDataTypeName.TIME : HologresDataTypeName.TIMETZ;
+            return new HologresGenericDataType(dataTypeName.getValue(), arguments);
         }
+        if (ctx.TIMESTAMP() != null) {
+            HologresDataTypeName dataTypeName = without ? HologresDataTypeName.TIMESTAMP : HologresDataTypeName.TIMESTAMPTZ;
+            return new HologresGenericDataType(dataTypeName.getValue(), arguments);
+        }
+        throw new UnsupportedOperationException("unsupported dataType of " + name);
     }
 
     @Override
@@ -1028,4 +1030,41 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
         return options;
     }
 
+    /**
+     * func_application
+     * : func_name OPEN_PAREN (
+     * func_arg_list (COMMA VARIADIC func_arg_expr)? opt_sort_clause
+     * | VARIADIC func_arg_expr opt_sort_clause
+     * | (ALL | DISTINCT) func_arg_list opt_sort_clause
+     * | STAR
+     * |
+     * ) CLOSE_PAREN
+     * ;
+     *
+     * @param ctx the parse tree
+     * @return Node
+     */
+    @Override
+    public Node visitFunc_expr(Func_exprContext ctx) {
+        Func_applicationContext funcApplicationContext = ctx.func_application();
+        if (funcApplicationContext == null) {
+            return null;
+        }
+        List<BaseExpression> argument = Lists.newArrayList();
+        if (funcApplicationContext.STAR() != null) {
+            return new FunctionCall(
+                (QualifiedName)visit(funcApplicationContext.func_name()),
+                funcApplicationContext.DISTINCT() != null,
+                argument
+            );
+        }
+        if (funcApplicationContext.func_arg_list() != null) {
+            argument = ParserHelper.visit(this, funcApplicationContext.func_arg_list().func_arg_expr(), BaseExpression.class);
+        }
+        return new FunctionCall(
+            (QualifiedName)visit(funcApplicationContext.func_name()),
+            funcApplicationContext.DISTINCT() != null,
+            argument
+        );
+    }
 }

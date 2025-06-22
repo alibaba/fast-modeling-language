@@ -32,6 +32,31 @@ public class HologresDataTypeNameTest {
     public void getAlias() {
         HologresDataTypeName timestamptz = HologresDataTypeName.TIMESTAMPTZ;
         assertEquals(timestamptz.getAlias(), "TIMESTAMPTZ");
+
+        HologresDataTypeName type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMESTAMP WITH TIME ZONE");
+        assertEquals(type, HologresDataTypeName.TIMESTAMPTZ);
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMESTAMPTZ");
+        assertEquals(type, HologresDataTypeName.TIMESTAMPTZ);
+
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMESTAMP WITH TIME ZONE".toLowerCase());
+        assertEquals(type, HologresDataTypeName.TIMESTAMPTZ);
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMESTAMPTZ".toLowerCase());
+        assertEquals(type, HologresDataTypeName.TIMESTAMPTZ);
+
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMESTAMP WITHOUT TIME ZONE");
+        assertEquals(type, HologresDataTypeName.TIMESTAMP);
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMESTAMP");
+        assertEquals(type, HologresDataTypeName.TIMESTAMP);
+
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIME WITH TIME ZONE");
+        assertEquals(type, HologresDataTypeName.TIMETZ);
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIMETZ");
+        assertEquals(type, HologresDataTypeName.TIMETZ);
+
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIME WITHOUT TIME ZONE");
+        assertEquals(type, HologresDataTypeName.TIME);
+        type = (HologresDataTypeName)HologresDataTypeName.getByValue("TIME");
+        assertEquals(type, HologresDataTypeName.TIME);
     }
 
     @Test
@@ -97,5 +122,21 @@ public class HologresDataTypeNameTest {
     public void testGetBigSerial() {
         IDataTypeName dataTypeName = HologresDataTypeName.getByValue("Bigserial");
         assertNotNull(dataTypeName);
+    }
+
+    @Test
+    public void testCharacter() {
+        String value = "CHARACTER";
+        IDataTypeName dataTypeName = HologresDataTypeName.getByValue(value);
+        assertEquals(dataTypeName, HologresDataTypeName.CHARACTER);
+
+        dataTypeName = HologresDataTypeName.getByValue(value.toLowerCase());
+        assertEquals(dataTypeName, HologresDataTypeName.CHARACTER);
+    }
+
+    @Test
+    public void testGetByVARYING() {
+        IDataTypeName dataTypeName = HologresDataTypeName.getByValue("character varying");
+        assertEquals(dataTypeName, HologresDataTypeName.VARCHAR);
     }
 }

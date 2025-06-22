@@ -674,6 +674,7 @@ createstmt
 
 opttabledistribute
     : DISTRIBUTED BY opt_column_list
+    | DISTRIBUTED (RANDOMLY | REPLICATED)
     |
     ;
 opttemp

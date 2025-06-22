@@ -37,9 +37,19 @@ public class DistributeNonKeyConstraint extends NonKeyConstraint {
 
     private final Boolean random;
 
+    private final Boolean replicated;
+
     private final Integer bucket;
 
     public static final String TYPE = "DISTRIBUTE";
+
+    public DistributeNonKeyConstraint(List<Identifier> columns, Boolean random, Boolean replicated,Integer bucket) {
+        super(IdentifierUtil.sysIdentifier(), true, TYPE);
+        this.columns = columns;
+        this.random = random;
+        this.replicated = replicated;
+        this.bucket = bucket;
+    }
 
     public DistributeNonKeyConstraint(List<Identifier> columns, Integer bucket) {
         this(columns, false, bucket);
@@ -50,6 +60,7 @@ public class DistributeNonKeyConstraint extends NonKeyConstraint {
         this.columns = columns;
         this.random = random;
         this.bucket = bucket;
+        this.replicated = false;
     }
 
     public DistributeNonKeyConstraint(boolean random, Integer bucket) {

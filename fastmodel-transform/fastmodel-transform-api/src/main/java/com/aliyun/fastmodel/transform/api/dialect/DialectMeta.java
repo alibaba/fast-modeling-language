@@ -64,6 +64,11 @@ public class DialectMeta {
     public static final DialectMeta DEFAULT_ADB_MYSQL = createDefault(DialectName.ADB_MYSQL);
 
     /**
+     * adb pg
+     */
+    public static final DialectMeta DEFAULT_ADB_PG = createDefault(DialectName.ADB_PG);
+
+    /**
      * 引擎的名字，唯一标示，大小写不敏感
      */
     private final IDialectName dialectName;

@@ -29,9 +29,6 @@ public class StringJoinUtil {
     /**
      * 一个支持join的工具类，请确保第三个参数arg不能为空
      *
-     * @param first  第一个
-     * @param second 第二个
-     * @param arg    实际的参数
      * @return {@link QualifiedName}
      * @throws AssertionError 如果arg是空
      */
@@ -39,8 +36,9 @@ public class StringJoinUtil {
         if (args == null || args.length == 0) {
             return null;
         }
-        if (StringUtils.isBlank(args[args.length - 1])) {
-            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(args[args.length - 1]));
+        String arg = args[args.length - 1];
+        if (arg != null && StringUtils.isBlank(arg)) {
+            ArrayList<Identifier> originalParts = Lists.newArrayList(new Identifier(arg));
             return QualifiedName.of(originalParts);
         }
         List<Identifier> identifiers = Arrays.stream(args)
