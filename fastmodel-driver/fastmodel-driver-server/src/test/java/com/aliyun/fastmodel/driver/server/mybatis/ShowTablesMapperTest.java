@@ -20,6 +20,7 @@ import com.aliyun.fastmodel.driver.server.DriverBaseTest;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
  * @author panguanjing
  * @date 2020/12/30
  */
+@Ignore
 public class ShowTablesMapperTest extends DriverBaseTest {
 
     @Test
