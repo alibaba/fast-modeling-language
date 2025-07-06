@@ -1,7 +1,4 @@
-
-
-
-> > 语言： [中文](https://github.com/alibaba/fast-modeling-language/blob/main/README_zh_CN.md) | English
+>> 语言： [中文](https://github.com/alibaba/fast-modeling-language/blob/main/README_zh_CN.md) | English
 
 # Fast Modeling Language[![Java CI with Maven](https://github.com/alibaba/fast-modeling-language/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/alibaba/fast-modeling-language/actions/workflows/maven.yml)
 

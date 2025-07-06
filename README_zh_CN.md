@@ -1,6 +1,6 @@
 > 语言： 中文| [English](https://github.com/alibaba/fast-modeling-language/blob/main/README.md)
 
-# Fast Modeling Language
+# Fast Modeling Language[![Java CI with Maven](https://github.com/alibaba/fast-modeling-language/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/alibaba/fast-modeling-language/actions/workflows/maven.yml)
 
 FML（Fast Modeling Language）是一种类似SQL的语言，专为维度建模而设计。它旨在实现快速建模，遵循"Kimball维度建模技术理论"和"阿里巴巴OneData理论"。FML从SQL中继承了许多特性。例如，在创建模型时，FML研究并参考了标准的DDL语法，并在此基础上进行了扩展。在设计模型时，您不再需要关注不同种类大数据引擎的具体规则。FML转换器将把您的模型转换为SQL语法，可以直接被特定类型的引擎读取。
 
