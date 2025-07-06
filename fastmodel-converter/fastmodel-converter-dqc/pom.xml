@@ -43,17 +43,11 @@
             <artifactId>auto-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.groboutils</groupId>
-            <artifactId>groboutils-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.aliyun.fastmodel</groupId>
             <artifactId>fastmodel-parser</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.aliyun.fastmodel</groupId>
             <artifactId>fastmodel-core</artifactId>

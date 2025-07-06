@@ -205,13 +205,6 @@
             </dependency>
 
             <dependency>
-                <groupId>net.sourceforge.groboutils</groupId>
-                <artifactId>groboutils-core</artifactId>
-                <version>5</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
                 <groupId>io.javalin</groupId>
                 <artifactId>javalin</artifactId>
                 <version>3.13.10</version>
