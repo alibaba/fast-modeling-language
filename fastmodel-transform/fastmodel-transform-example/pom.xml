@@ -101,11 +101,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.aliyun.fastmodel</groupId>
             <artifactId>fastmodel-transform-zen</artifactId>
             <version>${project.parent.version}</version>
