@@ -27,7 +27,10 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
-        maven-version: '3.6.3'
+    - name: Set up specific Maven version
+      uses: azure/setup-maven@v1
+      with:
+        maven-version: '3.8.6'
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
