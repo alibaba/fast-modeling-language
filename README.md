@@ -1,6 +1,10 @@
-> 语言： [中文](https://github.com/alibaba/fast-modeling-language/blob/main/README_zh_CN.md) | English
 
-# Fast Modeling Language
+
+
+> > 语言： [中文](https://github.com/alibaba/fast-modeling-language/blob/main/README_zh_CN.md) | English
+
+# Fast Modeling Language[![Java CI with Maven](https://github.com/alibaba/fast-modeling-language/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/alibaba/fast-modeling-language/actions/workflows/maven.yml)
+
 
 FML(Fast Modeling Language) is a SQL-like language designed for Dimensional Modeling. It is an attempt for fast modeling follows the “Kimball
 Dimensional Modeling Techniques Theory” and the “Alibaba’s OneData Theory.“ FML inherits many features from the SQL. For example, the FML studied and
