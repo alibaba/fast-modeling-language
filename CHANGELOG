@@ -47,28 +47,6 @@ Transformer
 无
 
 
-## 0.5.19-jdk11-preview5
-新功能（new features）
-Transformer
-• MaxCompute转换器支持Append Table语法
-
-功能优化（enhancement）
-Core
-• 优化语法错误处理并提供更详细的错误信息上下文
-• 增加基于table.txt的反向表测试用例
-
-BugFix（bug fix）
-• 修复MysqlDataTypeName中DOUBLE类型的维度定义
-
-向下兼容（compatibility）
-• 暂无
-
-过期功能（deprecations）
-无
-安全漏洞修复（vulnerability）
-无
-
-
 ## 0.5.9
 新功能（new features）
 Core
@@ -253,6 +231,29 @@ Transformer
 • 支持PostgreSQL属性配置
 
 
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+安全漏洞修复（vulnerability）
+无
+
+## 0.5.18
+新功能（new features）
+Core
+• 无
+
+Transformer
+• 新增MySQL客户端转换器和数据类型支持
+• 增强ADBPG转换器功能和测试
+• 增强Doris转换器功能和测试
+• 增强Flink转换器功能和测试
+• 增强Hologres转换器功能和测试
+• 增强OceanBase转换器功能和测试
+• 增强PostgreSQL转换器功能和测试
+• 增强Spark转换器功能和测试
 
 向下兼容（compatibility）
 • 暂无
