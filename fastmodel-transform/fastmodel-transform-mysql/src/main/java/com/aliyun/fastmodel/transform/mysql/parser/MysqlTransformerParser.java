@@ -16,21 +16,18 @@
 
 package com.aliyun.fastmodel.transform.mysql.parser;
 
+import com.aliyun.fastmodel.common.parser.ParserHelper;
 import com.aliyun.fastmodel.common.parser.ThrowingErrorListener;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
-import com.aliyun.fastmodel.parser.lexer.CaseChangingCharStream;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.google.auto.service.AutoService;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CodePointCharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.atn.PredictionMode;
 
 /**
- * oracle Parser
+ * mysql Parser
  *
  * @author panguanjing
  * @date 2021/7/24
@@ -47,25 +44,26 @@ public class MysqlTransformerParser implements LanguageParser<Node, ReverseConte
 
     @Override
     public Node parseNode(String text, ReverseContext context) throws ParseException {
-        CodePointCharStream charStream = CharStreams.fromString(text);
-        CaseChangingCharStream caseChangingCharStream = new CaseChangingCharStream(charStream, true);
-        MySqlLexer lexer = new MySqlLexer(caseChangingCharStream);
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(LISTENER);
-        CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
-        MySqlParser fastModelGrammarParser = new MySqlParser(commonTokenStream);
-        fastModelGrammarParser.removeErrorListeners();
-        fastModelGrammarParser.addErrorListener(LISTENER);
-        ParserRuleContext tree;
-        try {
-            fastModelGrammarParser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-            tree = fastModelGrammarParser.root();
-        } catch (Throwable e) {
-            commonTokenStream.seek(0);
-            fastModelGrammarParser.getInterpreter().setPredictionMode(PredictionMode.LL);
-            tree = fastModelGrammarParser.root();
-        }
-        return tree.accept(new MysqlAstBuilder(context));
+        ParserRuleContext parserRuleContext = ParserHelper.getNode(text, charStream -> new MySqlLexer(charStream),
+            tokenStream -> new MySqlParser(tokenStream),
+            parser -> {
+                MySqlParser mySqlParser = (MySqlParser)parser;
+                return mySqlParser.root();
+            }
+        );
+        return parserRuleContext.accept(new MysqlAstBuilder(context));
+    }
+
+    @Override
+    public BaseDataType parseDataType(String text, ReverseContext context) throws ParseException {
+        ParserRuleContext parserRuleContext = ParserHelper.getNode(text, charStream -> new MySqlLexer(charStream),
+            tokenStream -> new MySqlParser(tokenStream),
+            parser -> {
+                MySqlParser mySqlParser = (MySqlParser)parser;
+                return mySqlParser.dataType();
+            }
+        );
+        return (BaseDataType)parserRuleContext.accept(new MysqlAstBuilder(context));
     }
 
 }

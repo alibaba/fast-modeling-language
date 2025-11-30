@@ -98,7 +98,7 @@ public class HologresCodeGeneratorSqlTest {
             + "CREATE TABLE IF NOT EXISTS \"a\" (\n"
             + "   \"c1.abc\" DOUBLE PRECISION NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
+            + "CALL SET_TABLE_PROPERTY('\"a\"', 'time_to_live_in_seconds', '1000');\n"
             + "COMMENT ON COLUMN \"a\".\"c1.abc\" IS 'comment';\n"
             + "COMMIT;");
     }
@@ -133,7 +133,7 @@ public class HologresCodeGeneratorSqlTest {
             + "CREATE TABLE IF NOT EXISTS \"a\" (\n"
             + "   \"c1.abc\" DOUBLE PRECISION NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
+            + "CALL SET_TABLE_PROPERTY('\"a\"', 'time_to_live_in_seconds', '1000');\n"
             + "COMMENT ON COLUMN \"a\".\"c1.abc\" IS 'comment';\n"
             + "COMMIT;");
     }
@@ -168,7 +168,7 @@ public class HologresCodeGeneratorSqlTest {
             + "CREATE TABLE IF NOT EXISTS \"a\" (\n"
             + "   \"c1.abc\" BIGSERIAL NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('a', 'time_to_live_in_seconds', '1000');\n"
+            + "CALL SET_TABLE_PROPERTY('\"a\"', 'time_to_live_in_seconds', '1000');\n"
             + "COMMENT ON COLUMN \"a\".\"c1.abc\" IS 'comment';\n"
             + "COMMIT;");
     }

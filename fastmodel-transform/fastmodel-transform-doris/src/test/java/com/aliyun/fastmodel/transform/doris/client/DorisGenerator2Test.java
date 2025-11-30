@@ -268,6 +268,40 @@ public class DorisGenerator2Test {
     }
 
     @Test
+    public void testGeneratorSupportDistributeAuto() {
+        DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
+        List<Column> columns = Lists.newArrayList();
+        columns.add(Column.builder()
+            .dataType("int")
+            .name("c1")
+            .nullable(true)
+            .build());
+
+        DistributeClientConstraint distributeClientConstraint = new DistributeClientConstraint();
+        distributeClientConstraint.setColumns(Lists.newArrayList("c1"));
+        distributeClientConstraint.setAuto(true);
+        List<Constraint> list = Lists.newArrayList(distributeClientConstraint);
+
+        Table after = Table.builder()
+            .name("abc")
+            .columns(columns)
+            .comment("comment")
+            .constraints(list)
+            .build();
+        request.setAfter(after);
+        DdlGeneratorResult generate = getDdlGeneratorResult(request);
+        List<DialectNode> dialectNodes = generate.getDialectNodes().stream()
+            .filter(DialectNode::getExecutable)
+            .collect(Collectors.toList());
+        assertEquals("CREATE TABLE IF NOT EXISTS abc\n"
+            + "(\n"
+            + "   c1 INT NULL\n"
+            + ")\n"
+            + "COMMENT \"comment\"\n"
+            + "DISTRIBUTED BY HASH(c1) BUCKETS AUTO;", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining("\n")));
+    }
+
+    @Test
     public void testGeneratorSingleRangePartitionProperty() {
         DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
         List<Column> columns = Lists.newArrayList();
@@ -301,7 +335,6 @@ public class DorisGenerator2Test {
         PartitionClientValue p3 = PartitionClientValue.builder()
             .maxValue(true)
             .build();
-        ;
         partitionValues.add(Lists.newArrayList(p2, p3));
         ArrayClientPartitionKey partitionKey = ArrayClientPartitionKey.builder()
             .partitionValue(partitionValues)
@@ -756,8 +789,8 @@ public class DorisGenerator2Test {
             .build());
         List<Constraint> constraints = Lists.newArrayList();
         ArrayList<String> strings = Lists.newArrayList("c1", "c2");
-        Constraint constraint = Constraint.builder().
-            columns(strings)
+        Constraint constraint = Constraint.builder()
+            .columns(strings)
             .type(ExtensionClientConstraintType.AGGREGATE_KEY)
             .build();
         constraints.add(constraint);

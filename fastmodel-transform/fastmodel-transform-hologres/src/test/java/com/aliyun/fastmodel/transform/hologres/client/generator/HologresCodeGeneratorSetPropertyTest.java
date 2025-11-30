@@ -22,10 +22,10 @@ import com.aliyun.fastmodel.transform.api.client.generator.DefaultCodeGenerator;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ClusterKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ColumnOrder;
 import com.aliyun.fastmodel.transform.hologres.client.converter.HologresPropertyConverter;
 import com.aliyun.fastmodel.transform.hologres.client.property.BinLogTTL;
-import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
-import com.aliyun.fastmodel.transform.hologres.client.property.ColumnOrder;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.client.property.EnableBinLogLevel.BinLogLevel;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
@@ -93,7 +93,7 @@ public class HologresCodeGeneratorSetPropertyTest {
             .build();
         DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
             .after(table)
-            .config(TableConfig.builder().dialectMeta(DialectMeta.DEFAULT_HOLO).caseSensitive(true).build())
+            .config(TableConfig.builder().dialectMeta(DialectMeta.DEFAULT_HOLO).caseSensitive(false).build())
             .build();
         DdlGeneratorResult generate = codeGenerator.generate(request);
         String node = generate.getDialectNodes().get(0).getNode();
@@ -130,11 +130,11 @@ public class HologresCodeGeneratorSetPropertyTest {
         DdlGeneratorResult generate = codeGenerator.generate(request);
         String node = generate.getDialectNodes().get(0).getNode();
         assertEquals("BEGIN;\n"
-            + "CREATE TABLE IF NOT EXISTS t1 (\n"
+            + "CREATE TABLE IF NOT EXISTS \"t1\" (\n"
             + "   \"int\"    INTEGER NOT NULL,\n"
             + "   \"double\" BIGINT NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('t1', 'clustering_key', '\"int\",\"double\"');\n"
+            + "CALL SET_TABLE_PROPERTY('\"t1\"', 'clustering_key', '\"int\",\"double\"');\n"
             + "COMMIT;", node);
     }
 

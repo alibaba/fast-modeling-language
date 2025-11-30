@@ -13,7 +13,6 @@ import com.aliyun.fastmodel.transform.api.client.dto.request.DdlGeneratorSqlRequ
 import com.aliyun.fastmodel.transform.api.client.dto.request.DdlReverseSqlRequest;
 import com.aliyun.fastmodel.transform.api.client.dto.result.DdlGeneratorResult;
 import com.aliyun.fastmodel.transform.api.client.dto.result.DdlTableResult;
-import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 
 /**
  * 客户端的请求

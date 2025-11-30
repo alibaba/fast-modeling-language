@@ -71,7 +71,7 @@ public class BaseTransformerTest {
         RefObject left = new RefObject(QualifiedName.of("table"), null, new Comment("comment"));
         RefObject right = new RefObject(QualifiedName.of("table1"), null, new Comment("comment"));
 
-        RefRelation refRelation = new RefRelation(QualifiedName.of("relName"), left, right,
+        RefRelation refRelation = new RefRelation(QualifiedName.of("relname"), left, right,
             RefDirection.LEFT_DIRECTION_RIGHT);
 
         CompositeStatement compositeStatement = new CompositeStatement(Lists.newArrayList(source, refRelation, target));

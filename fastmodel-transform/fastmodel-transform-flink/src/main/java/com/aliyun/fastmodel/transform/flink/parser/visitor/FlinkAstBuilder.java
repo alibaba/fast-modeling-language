@@ -172,6 +172,12 @@ public class FlinkAstBuilder extends FlinkSqlParserBaseVisitor<Node> {
                 getOrigin(ctx),
                 ctx.KW_ARRAY().getText(),
                 ImmutableList.of(new TypeParameter((BaseDataType) visit(ctx.lengthOneTypeDimension().columnType()))));
+        } else if (ctx.KW_MULTISET() != null) {
+            return new FlinkGenericDataType(
+                getLocation(ctx),
+                getOrigin(ctx),
+                ctx.KW_MULTISET().getText(),
+                ImmutableList.of(new TypeParameter((BaseDataType)visit(ctx.lengthOneTypeDimension().columnType()))));
         } else if (ctx.KW_MAP() != null) {
             return new FlinkGenericDataType(
                 getLocation(ctx),

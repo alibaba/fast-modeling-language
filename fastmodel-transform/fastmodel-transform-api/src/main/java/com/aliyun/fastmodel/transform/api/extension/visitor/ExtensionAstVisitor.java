@@ -15,6 +15,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupI
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.LogicalPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.RangePartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiItemListPartition;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.desc.MultiRangePartition;
@@ -467,5 +468,15 @@ public interface ExtensionAstVisitor<R, C> extends IAstVisitor<R, C> {
      */
     default R visitHashPartitionElement(HashPartitionElement hashPartitionElement, C context) {
         return visitNode(hashPartitionElement, context);
+    }
+
+    /**
+     * visit logicalPartitionedBy
+     * @param logicalPartitionedBy
+     * @param context
+     * @return
+     */
+    default R visitLogicPartitionedBy(LogicalPartitionedBy logicalPartitionedBy, C context) {
+        return visitNode(logicalPartitionedBy, context);
     }
 }

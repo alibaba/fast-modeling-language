@@ -18,6 +18,7 @@ package com.aliyun.fastmodel.transform.mysql.parser;
 
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.statement.script.RefRelation;
 import com.aliyun.fastmodel.core.tree.statement.table.AddConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
@@ -49,11 +50,6 @@ public class MysqlTransformerParserTest {
             + "(\n"
             + "   b BIGINT COMMENT 'comment'\n"
             + ")");
-    }
-
-    public void testParserEmptyColumn() {
-        Node node = mysqlTransformerParser.parseNode("create table a");
-        assertEquals(node.toString(), "CREATE TABLE a");
     }
 
     @Test
@@ -110,5 +106,37 @@ public class MysqlTransformerParserTest {
         Node node = mysqlTransformerParser.parseNode("SELECT * from abc;\n"
             + " --abc");
         assertNotNull(node);
+    }
+
+    @Test
+    public void testParseDataType() throws ParseException {
+        // 测试简单数据类型
+        BaseDataType dataType = mysqlTransformerParser.parseDataType("BIGINT", null);
+        assertNotNull(dataType);
+        assertEquals("BIGINT", dataType.toString());
+
+        // 测试带参数的数据类型
+        BaseDataType varcharType = mysqlTransformerParser.parseDataType("VARCHAR(255)", null);
+        assertNotNull(varcharType);
+        assertEquals("VARCHAR(255)", varcharType.toString());
+
+        // 测试带两个参数的数据类型
+        BaseDataType decimalType = mysqlTransformerParser.parseDataType("DECIMAL(10,2)", null);
+        assertNotNull(decimalType);
+        assertEquals("DECIMAL(10,2)", decimalType.toString());
+    }
+
+    @Test
+    public void testParseDataTypeError() throws ParseException {
+        // 测试无效的数据类型
+        assertNull(mysqlTransformerParser.parseDataType("INVALID_TYPE", null));
+    }
+
+    @Test
+    public void testParseNodeWithDefaultContext() throws ParseException {
+        // 测试使用默认上下文的parseNode方法
+        Node node = mysqlTransformerParser.parseNode("CREATE TABLE test (id BIGINT)");
+        assertNotNull(node);
+        assertTrue(node instanceof CreateTable);
     }
 }

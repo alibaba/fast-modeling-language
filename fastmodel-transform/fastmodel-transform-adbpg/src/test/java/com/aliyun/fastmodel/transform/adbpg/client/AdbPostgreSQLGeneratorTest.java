@@ -32,7 +32,6 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-
 /**
  * @author 云异
  * @date 2025/2/18
@@ -51,7 +50,7 @@ public class AdbPostgreSQLGeneratorTest {
             .name("test")
             .columns(
                 Lists.newArrayList(Column.builder().name("id").dataType("INT").build(),
-                    Column.builder().name("name").dataType("VARCHAR").comment("haha").build())
+                    Column.builder().name("name").dataType("CHARACTER VARYING(10)").comment("haha").build())
             ).build();
         TableConfig tableConfig = TableConfig.builder()
             .dialectMeta(DialectMeta.DEFAULT_ADB_PG)
@@ -64,7 +63,7 @@ public class AdbPostgreSQLGeneratorTest {
             .build();
         DdlGeneratorResult generate = codeGenerator.generate(request);
         List<DialectNode> dialectNodes = generate.getDialectNodes();
-        assertEquals("ALTER TABLE test ADD COLUMN name VARCHAR;\n"
+        assertEquals("ALTER TABLE test ADD COLUMN name VARCHAR(10);\n"
             + "COMMENT ON COLUMN test.name IS 'haha';", dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining(",\n")));
     }
 

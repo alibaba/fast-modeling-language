@@ -212,7 +212,13 @@ public enum HologresPropertyKey implements PropertyKey {
     /**
      * 是否动态表
      */
-    DYNAMIC("dynamic", false);
+    DYNAMIC("dynamic", false),
+
+    /**
+     * 是否为逻辑分区
+     */
+    LOGIC_PARTITIONED_BY("logic_partitioned_by", false),
+    ;
 
     /**
      * 具体的值

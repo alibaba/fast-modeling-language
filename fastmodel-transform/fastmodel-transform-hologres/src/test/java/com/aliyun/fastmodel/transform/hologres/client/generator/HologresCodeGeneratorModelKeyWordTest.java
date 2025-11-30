@@ -76,7 +76,7 @@ public class HologresCodeGeneratorModelKeyWordTest {
                 + "   \"__key__\" INTEGER NOT NULL,\n"
                 + "   PRIMARY KEY(\"__key__\")\n"
                 + ");\n"
-                + "CALL SET_TABLE_PROPERTY('__a__', 'time_to_live_in_seconds', '1000');\n"
+                + "CALL SET_TABLE_PROPERTY('\"__a__\"', 'time_to_live_in_seconds', '1000');\n"
                 + "COMMENT ON COLUMN \"__a__\".\"__key__\" IS 'comment';\n"
                 + "COMMIT;", constraint);
     }

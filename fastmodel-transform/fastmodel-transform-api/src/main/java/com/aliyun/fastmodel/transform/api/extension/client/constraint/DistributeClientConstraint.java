@@ -19,6 +19,11 @@ public class DistributeClientConstraint extends Constraint {
     private Boolean random;
 
     /**
+     * 是否auto
+     */
+    private Boolean auto;
+
+    /**
      * bucket
      */
     private Integer bucket;

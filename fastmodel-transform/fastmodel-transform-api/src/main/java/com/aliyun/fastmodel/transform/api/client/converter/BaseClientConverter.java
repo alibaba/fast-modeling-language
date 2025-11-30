@@ -195,14 +195,14 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
     /**
      * 将node转为Table
      *
-     * @param table
+     * @param node
      * @param context
      * @return
      */
     @Override
-    public Table convertToTable(Node table, T context) {
-        Preconditions.checkArgument(table instanceof CreateTable, "unsupported convert to table:" + table.getClass());
-        CreateTable createTable = (CreateTable)table;
+    public Table convertToTable(Node node, T context) {
+        Preconditions.checkArgument(node instanceof CreateTable, "unsupported convert to node:" + node.getClass());
+        CreateTable createTable = (CreateTable)node;
         Boolean external = isExternal(createTable);
         Boolean dynamic = isDynamic(createTable);
         String catalog = toCatalog(createTable, context);
@@ -652,7 +652,15 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
                 c -> StringUtils.equalsIgnoreCase(c.getConstraintType().getCode(),
                     OutlineConstraintType.PRIMARY_KEY.getCode()));
         }
-        if (!hasPrimaryOutConstraint) {
+        if (hasPrimaryOutConstraint) {
+            // 去掉column的primary只保留一个
+            columns.forEach(column -> {
+                if (BooleanUtils.isTrue(column.isPrimaryKey())) {
+                    column.setPrimaryKey(false);
+                    column.setNullable(false);
+                }
+            });
+        } else {
             BaseConstraint primaryConstraintByColumns = setPrimaryConstraintColumns(columns);
             if (primaryConstraintByColumns == null) {
                 return constraintList;

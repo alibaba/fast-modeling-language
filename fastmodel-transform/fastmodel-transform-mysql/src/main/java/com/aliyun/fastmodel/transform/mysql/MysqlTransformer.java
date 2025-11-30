@@ -17,9 +17,13 @@
 package com.aliyun.fastmodel.transform.mysql;
 
 import com.aliyun.fastmodel.core.tree.BaseStatement;
+import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.builder.BuilderFactory;
 import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
+import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
+import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.Dialect;
@@ -27,6 +31,7 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.dialect.IVersion;
+import com.aliyun.fastmodel.transform.mysql.client.converter.MysqlClientConverter;
 import com.aliyun.fastmodel.transform.mysql.context.MysqlTransformContext;
 import com.aliyun.fastmodel.transform.mysql.parser.MysqlTransformerParser;
 import com.google.auto.service.AutoService;
@@ -44,6 +49,8 @@ public class MysqlTransformer implements Transformer<BaseStatement> {
 
     MysqlTransformerParser mysqlTransformerParser = new MysqlTransformerParser();
 
+    private final MysqlClientConverter mysqlClientConverter = new MysqlClientConverter();
+
     @Override
     public DialectNode transform(BaseStatement source, TransformContext context) {
         DialectMeta dialectMeta = new DialectMeta(DialectName.MYSQL, IVersion.getDefault());
@@ -59,5 +66,20 @@ public class MysqlTransformer implements Transformer<BaseStatement> {
     @Override
     public BaseStatement reverse(DialectNode dialectNode, ReverseContext context) {
         return (BaseStatement)mysqlTransformerParser.parseNode(dialectNode.getNode(), context);
+    }
+
+    @Override
+    public Node reverseTable(Table table, ReverseContext context) {
+        return mysqlClientConverter.convertToNode(table, TableConfig.builder().build());
+    }
+
+    @Override
+    public Table transformTable(Node table, TransformContext context) {
+        return mysqlClientConverter.convertToTable(table, new MysqlTransformContext(context));
+    }
+
+    @Override
+    public BaseClientProperty create(String name, String value) {
+        return mysqlClientConverter.getPropertyConverter().create(name, value);
     }
 }

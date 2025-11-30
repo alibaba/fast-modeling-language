@@ -43,31 +43,31 @@ public class FlinkTransformerTest {
     @Test
     public void testReverse() throws Exception {
         DialectNode dialectNode = new DialectNode("CREATE TABLE catalog.database.MyTable (\n" +
-                "  `user_id` BIGINT COMMENT '23',\n" +
-                "  `name` STRING NOT NULL,\n" +
-                "  `age` VARCHAR(4) NOT NULL,\n" +
-                "  `time` TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
-                "  `test` DECIMAL(20,4),\n" +
-                "  `array` ARRAY<STRING>,\n" +
-                "  `map` MAP<STRING,BIGINT>,\n" +
-                "  `row` ROW<a STRING, b BIGINT>,\n" +
-                "  `raw` RAW('a','b'),\n" +
-                "  `timestamp` TIMESTAMP_LTZ(3) METADATA FROM `row`,  -- use column name as metadata key\n" +
-                "  `cost` AS age * test,\n" +
-                "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
-                "   PRIMARY KEY (user_id, name) NOT ENFORCED \n" +
-                ")\n" +
-                "PARTITIONED BY (user_id, name)\n" +
-                "WITH (\n" +
-                "  'connector' = 'kafka',\n" +
-                "  'test' = 'true'\n" +
-                ");");
+            "  `user_id` BIGINT COMMENT '23',\n" +
+            "  `name` STRING NOT NULL,\n" +
+            "  `age` VARCHAR(4) NOT NULL,\n" +
+            "  `time` TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
+            "  `test` DECIMAL(20,4),\n" +
+            "  `array` ARRAY<STRING>,\n" +
+            "  `map` MAP<STRING,BIGINT>,\n" +
+            "  `row` ROW<a STRING, b BIGINT>,\n" +
+            "  `raw` RAW('a','b'),\n" +
+            "  `timestamp` TIMESTAMP_LTZ(3) METADATA FROM `row`,  -- use column name as metadata key\n" +
+            "  `cost` AS age * test,\n" +
+            "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
+            "   PRIMARY KEY (user_id, name) NOT ENFORCED \n" +
+            ")\n" +
+            "PARTITIONED BY (user_id, name)\n" +
+            "WITH (\n" +
+            "  'connector' = 'kafka',\n" +
+            "  'test' = 'true'\n" +
+            ");");
         ReverseContext context = ReverseContext.builder().merge(true).build();
         BaseStatement reverse = flinkTransformer.reverse(dialectNode, context);
         assertTrue(reverse instanceof CreateTable);
-        CreateTable createTable = (CreateTable) reverse;
+        CreateTable createTable = (CreateTable)reverse;
         assertEquals(3, createTable.getQualifiedName().getParts().size());
-        assertEquals("catalog.database.mytable", createTable.getQualifiedName().toString());
+        assertEquals("catalog.database.MyTable", createTable.getQualifiedName().toString());
         assertEquals(11, createTable.getColumnDefines().size());
         ColumnDefinition userId = createTable.getColumnDefines().get(0);
         assertEquals("user_id", userId.getColName().getValue());
@@ -149,23 +149,23 @@ public class FlinkTransformerTest {
 
         DialectNode result = flinkTransformer.transform(createTable, new TransformContext(null));
         Assert.assertEquals("CREATE TABLE `catalog`.`database`.MyTable\n" +
-                "(\n" +
-                "   user_id   BIGINT COMMENT '23',\n" +
-                "   name      STRING NOT NULL,\n" +
-                "   age       VARCHAR(4) NOT NULL,\n" +
-                "   `time`    TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
-                "   test      DECIMAL(20,4),\n" +
-                "   `array`   ARRAY<STRING>,\n" +
-                "   `map`     MAP<STRING,BIGINT>,\n" +
-                "   `row`     ROW<a STRING,b BIGINT>,\n" +
-                "   `raw`     RAW('a','b'),\n" +
-                "   `timestamp` TIMESTAMP_LTZ(3) METADATA FROM row,\n" +
-                "   cost      AS age * test,\n" +
-                "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
-                "   PRIMARY KEY(user_id,name)\n" +
-                ")\n" +
-                "PARTITIONED BY (user_id, name)\n" +
-                "WITH ('connector'='kafka','test'='true');", result.getNode());
+            "(\n" +
+            "   user_id   BIGINT COMMENT '23',\n" +
+            "   name      STRING NOT NULL,\n" +
+            "   age       VARCHAR(4) NOT NULL,\n" +
+            "   `time`    TIMESTAMP(4) WITH LOCAL TIME ZONE,\n" +
+            "   test      DECIMAL(20,4),\n" +
+            "   `array`   ARRAY<STRING>,\n" +
+            "   `map`     MAP<STRING,BIGINT>,\n" +
+            "   `row`     ROW<a STRING,b BIGINT>,\n" +
+            "   `raw`     RAW('a','b'),\n" +
+            "   `timestamp` TIMESTAMP_LTZ(3) METADATA FROM row,\n" +
+            "   cost      AS age * test,\n" +
+            "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
+            "   PRIMARY KEY(user_id,name)\n" +
+            ")\n" +
+            "PARTITIONED BY (user_id, name)\n" +
+            "WITH ('connector'='kafka','test'='true');", result.getNode());
     }
 
     @Test
@@ -196,7 +196,7 @@ public class FlinkTransformerTest {
         Table table = flinkTransformer.transformTable(createTable, new TransformContext(null));
         assertEquals("catalog", table.getCatalog());
         assertEquals("database", table.getDatabase());
-        assertEquals("mytable", table.getName());
+        assertEquals("MyTable", table.getName());
         assertEquals(11, table.getColumns().size());
         Column userId = table.getColumns().get(0);
         assertEquals("user_id", userId.getName());
@@ -254,7 +254,6 @@ public class FlinkTransformerTest {
         assertEquals("true", table.getProperties().get(1).getValue());
     }
 
-
     @Test
     public void testReverseTable() throws Exception {
         DialectNode dialectNode = new DialectNode("CREATE TABLE catalog.database.MyTable (\n" +
@@ -269,6 +268,7 @@ public class FlinkTransformerTest {
             "  `raw` RAW('a','b'),\n" +
             "  `timestamp` TIMESTAMP_LTZ(3) METADATA FROM `row`,  -- use column name as metadata key\n" +
             "  `cost` AS age * test,\n" +
+            "  `age22` MULTISET<STRING> NOT NULL,\n" +
             "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
             "   PRIMARY KEY (user_id, name) NOT ENFORCED \n" +
             ")\n" +
@@ -283,10 +283,10 @@ public class FlinkTransformerTest {
 
         Node result = flinkTransformer.reverseTable(table, null);
         assertTrue(result instanceof CreateTable);
-        CreateTable createTable = (CreateTable) result;
+        CreateTable createTable = (CreateTable)result;
         assertEquals(3, createTable.getQualifiedName().getParts().size());
-        assertEquals("catalog.database.mytable", createTable.getQualifiedName().toString());
-        assertEquals(11, createTable.getColumnDefines().size());
+        assertEquals("catalog.database.MyTable", createTable.getQualifiedName().toString());
+        assertEquals(12, createTable.getColumnDefines().size());
         ColumnDefinition userId = createTable.getColumnDefines().get(0);
         assertEquals("user_id", userId.getColName().getValue());
         assertEquals("BIGINT", userId.getDataType().toString());
@@ -320,6 +320,9 @@ public class FlinkTransformerTest {
         assertEquals("true", cost.getColumnProperties().get(1).getValue());
         assertEquals("computed_column_expression", cost.getColumnProperties().get(2).getName());
         assertEquals("age * test", cost.getColumnProperties().get(2).getValue());
+
+        ColumnDefinition age22 = createTable.getColumnDefines().get(11);
+        assertEquals("MULTISET<STRING>", age22.getDataType().toString());
 
         assertEquals(2, createTable.getConstraintStatements().size());
         PrimaryConstraint primaryConstraint = (PrimaryConstraint)createTable.getConstraintStatements().get(1);
@@ -366,9 +369,9 @@ public class FlinkTransformerTest {
         ReverseContext context = ReverseContext.builder().property(property).build();
         BaseStatement reverse = flinkTransformer.reverse(dialectNode, context);
         assertTrue(reverse instanceof CreateTable);
-        CreateTable createTable = (CreateTable) reverse;
+        CreateTable createTable = (CreateTable)reverse;
         assertEquals(3, createTable.getQualifiedName().getParts().size());
-        assertEquals("catalog.database.mytable", createTable.getQualifiedName().toString());
+        assertEquals("catalog.database.MyTable", createTable.getQualifiedName().toString());
         assertEquals(11, createTable.getColumnDefines().size());
         ColumnDefinition userId = createTable.getColumnDefines().get(0);
         assertEquals("user_id", userId.getColName().getValue());
@@ -425,4 +428,4 @@ public class FlinkTransformerTest {
 
 }
 
-//Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev.com/forum#!/testme
+// Generated with love by TestMe :) Please report issues and submit feature requests at: http://weirddev.com/forum#!/testme

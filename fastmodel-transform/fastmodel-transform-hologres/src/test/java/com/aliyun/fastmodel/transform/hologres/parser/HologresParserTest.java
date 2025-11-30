@@ -306,6 +306,29 @@ public class HologresParserTest {
     }
 
     @Test
+    public void testParseDefaultValueNumeric() {
+        CreateTable o = hologresParser2.parseNode("CREATE TABLE tbl_default (    \n"
+            + "  smallint_col smallint DEFAULT 0,    \n"
+            + "  int_col int DEFAULT 0,    \n"
+            + "  bigint_col bigint DEFAULT 0,    \n"
+            + "  boolean_col boolean DEFAULT FALSE,    \n"
+            + "  float_col real DEFAULT 0.0,    \n"
+            + "  double_col double precision DEFAULT 0.0,    \n"
+            + "  decimal_col numeric(26, 2) DEFAULT 0.0,    \n"
+            + "  text_col text DEFAULT 'N',    \n"
+            + "  char_col char(2) DEFAULT 'N',    \n"
+            + "  varchar_col varchar(200) DEFAULT 'N',    \n"
+            + "  timestamptz_col timestamptz DEFAULT now(),    \n"
+            + "  date_col date DEFAULT now(),    \n"
+            + "  timestamp_col timestamp DEFAULT now()\n"
+            + ");\n");
+        List<ColumnDefinition> columnDefines = o.getColumnDefines();
+        ColumnDefinition columnDefinition = columnDefines.get(0);
+        BaseExpression defaultValue = columnDefinition.getDefaultValue();
+        assertEquals(defaultValue.getOrigin(), "0");
+    }
+
+    @Test
     @SneakyThrows
     public void testParseDefaultValueType() {
         String value = IOUtils.resourceToString("/hologres/default_text.txt", Charset.defaultCharset());

@@ -252,6 +252,47 @@ public class AdbPostgreSQLTransformerTest {
             + ",DEFAULT PARTITION outlying_years);", table);
     }
 
+    @SneakyThrows
+    @Test
+    public void testAllTypes() {
+        String sql = IOUtils.resourceToString("/adbpostgresql/all_type.txt", Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(sql);
+        String table = generatorWithoutTable(dialectNode);
+        assertEquals(
+            "CREATE TABLE table012 (\n"
+                + "   f1  INTEGER,\n"
+                + "   f2  BIGINT,\n"
+                + "   f3  BOOLEAN,\n"
+                + "   f4  REAL,\n"
+                + "   f5  TEXT,\n"
+                + "   f6  TEXT,\n"
+                + "   f7  TIMESTAMP WITH TIME ZONE,\n"
+                + "   f8  DECIMAL(10,2),\n"
+                + "   f9  DATE,\n"
+                + "   f10 TIMESTAMP,\n"
+                + "   f11 CHAR(10),\n"
+                + "   f12 VARCHAR(10),\n"
+                + "   f13 INTEGER,\n"
+                + "   f14 BIGINT,\n"
+                + "   f15 SMALLINT,\n"
+                + "   f16 JSON,\n"
+                + "   f17 JSONB,\n"
+                + "   f18 BYTEA,\n"
+                + "   f21 TIMESTAMP WITH TIME ZONE,\n"
+                + "   f22 TIMESTAMP,\n"
+                + "   f23 INET,\n"
+                + "   f24 MONEY,\n"
+                + "   f25 VARBIT,\n"
+                + "   f26 INTERVAL,\n"
+                + "   f27 OID,\n"
+                + "   f28 UUID,\n"
+                + "   f29 REGCLASS\n"
+                + ")\n"
+                + "DISTRIBUTED BY (f1)\n"
+                + ";",
+            table);
+    }
+
     private String generatorWithoutTable(DialectNode dialectNode) {
         ReverseContext build = ReverseContext.builder().merge(true).build();
         Node node = transformer.reverse(dialectNode, build);

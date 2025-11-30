@@ -1,19 +1,3 @@
-/*
- * Copyright [2024] [name of copyright owner]
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc;
 
 import java.util.List;
@@ -41,14 +25,21 @@ public class DistributeNonKeyConstraint extends NonKeyConstraint {
 
     private final Integer bucket;
 
+    private final Boolean auto;
+
     public static final String TYPE = "DISTRIBUTE";
 
-    public DistributeNonKeyConstraint(List<Identifier> columns, Boolean random, Boolean replicated,Integer bucket) {
+    public DistributeNonKeyConstraint(List<Identifier> columns, Boolean random, Boolean replicated, Integer bucket, Boolean auto) {
         super(IdentifierUtil.sysIdentifier(), true, TYPE);
         this.columns = columns;
         this.random = random;
         this.replicated = replicated;
         this.bucket = bucket;
+        this.auto = auto;
+    }
+
+    public DistributeNonKeyConstraint(List<Identifier> columns, Boolean random, Boolean replicated, Integer bucket) {
+        this(columns, random, replicated, bucket, null);
     }
 
     public DistributeNonKeyConstraint(List<Identifier> columns, Integer bucket) {
@@ -56,11 +47,7 @@ public class DistributeNonKeyConstraint extends NonKeyConstraint {
     }
 
     public DistributeNonKeyConstraint(List<Identifier> columns, Boolean random, Integer bucket) {
-        super(IdentifierUtil.sysIdentifier(), true, TYPE);
-        this.columns = columns;
-        this.random = random;
-        this.bucket = bucket;
-        this.replicated = false;
+        this(columns, random, false, bucket, false);
     }
 
     public DistributeNonKeyConstraint(boolean random, Integer bucket) {

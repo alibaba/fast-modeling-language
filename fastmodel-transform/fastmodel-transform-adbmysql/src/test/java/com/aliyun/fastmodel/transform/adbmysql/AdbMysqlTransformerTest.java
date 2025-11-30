@@ -346,7 +346,7 @@ public class AdbMysqlTransformerTest {
         AdbMysqlTransformer adbMysqlTransformer = new AdbMysqlTransformer();
         String s = IOUtils.resourceToString("/adbmysql/issue2.txt", Charset.defaultCharset());
         String result = generator(new DialectNode(s), adbMysqlTransformer);
-        assertEquals("CREATE TABLE adb_external_tpch_10gb.external_customer\n"
+        assertEquals("CREATE TABLE ADB_EXTERNAL_TPCH_10GB.External_customer\n"
             + "(\n"
             + "   c_custkey    INT NOT NULL COMMENT '',\n"
             + "   c_name       VARCHAR(1024) NOT NULL COMMENT '',\n"

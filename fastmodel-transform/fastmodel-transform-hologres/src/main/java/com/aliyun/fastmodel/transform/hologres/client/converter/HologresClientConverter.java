@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.aliyun.fastmodel.core.parser.LanguageParser;
+import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.Property;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
@@ -22,13 +23,16 @@ import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.TimestampLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.util.StringLiteralUtil;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
 import com.aliyun.fastmodel.transform.api.client.converter.BaseClientConverter;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
+import com.aliyun.fastmodel.transform.api.client.dto.property.StringProperty;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.LogicalPartitionedBy;
 import com.aliyun.fastmodel.transform.hologres.client.property.HologresPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.TimeToLiveSeconds;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
@@ -58,6 +62,24 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
     @Override
     public LanguageParser getLanguageParser() {
         return hologresParser;
+    }
+
+    @Override
+    public Table convertToTable(Node node, HologresTransformContext context) {
+        Table table = super.convertToTable(node, context);
+        // 设置下logical分区的值
+        List<BaseClientProperty> properties = table.getProperties();
+        CreateTable createTable = (CreateTable)node;
+        // 如果createTable获取的分区信息，如果是LogicalPartitionedBy，那么设置下ClientProperty增加逻辑分区信息
+        // 判断是否为逻辑分区信息，如果是，那么设置下
+        if (createTable.getPartitionedBy() instanceof LogicalPartitionedBy) {
+            StringProperty logicalPartitionedBy = new StringProperty();
+            logicalPartitionedBy.setKey(HologresPropertyKey.LOGIC_PARTITIONED_BY.getValue());
+            logicalPartitionedBy.setValueString(BooleanUtils.toStringTrueFalse(Boolean.TRUE));
+            properties.add(logicalPartitionedBy);
+            table.setProperties(properties);
+        }
+        return table;
     }
 
     @Override
@@ -110,6 +132,26 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
             list.add(property);
         }
         return list;
+    }
+
+    @Override
+    protected PartitionedBy toPartitionedBy(Table table, List<Column> columns) {
+        PartitionedBy partitionedBy = super.toPartitionedBy(table, columns);
+        if (partitionedBy == null) {
+            return partitionedBy;
+        }
+        // 从table的properties中查找是否有逻辑分区信息
+        List<BaseClientProperty> properties = table.getProperties();
+        if (CollectionUtils.isEmpty(properties)) {
+            return partitionedBy;
+        }
+        BaseClientProperty logicalPartitionedBy = properties.stream().filter(property ->
+            property.getKey().equals(HologresPropertyKey.LOGIC_PARTITIONED_BY.getValue())
+        ).findFirst().orElse(null);
+        if (logicalPartitionedBy != null && logicalPartitionedBy.getValue().toString().equalsIgnoreCase(Boolean.TRUE.toString())) {
+            return new LogicalPartitionedBy(partitionedBy.getColumnDefinitions());
+        }
+        return partitionedBy;
     }
 
     @Override
@@ -219,7 +261,7 @@ public class HologresClientConverter extends BaseClientConverter<HologresTransfo
             } else {
                 // 按照函数处理
                 return null;
-                //return new StringLiteral(value);
+                // return new StringLiteral(value);
             }
         }
         return super.getBaseExpression(baseDataType, defaultValue);

@@ -6,7 +6,9 @@ import java.util.List;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.DistributeNonKeyConstraint;
 import com.aliyun.fastmodel.transform.doris.DorisTransformer;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
@@ -14,6 +16,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * doris language parser test
@@ -102,5 +105,22 @@ public class DorisLanguageParserTest {
     public void testParseCreatTable1() {
         CreateTable createTable = dorisLanguageParser.parseNode("CREATE TABLE realtime_test (a bigint);");
         assertNotNull(createTable);
+    }
+
+    @Test
+    @SneakyThrows
+    public void testParseBucketAuto() {
+        String content = IOUtils.resourceToString("/doris/bucket_auto.txt", Charset.defaultCharset());
+        CreateTable o = dorisLanguageParser.parseNode(content);
+        assertNotNull(o);
+        List<ColumnDefinition> columnDefines = o.getColumnDefines();
+        assertEquals(10, columnDefines.size());
+        List<BaseConstraint> constraintStatements = o.getConstraintStatements();
+        BaseConstraint baseConstraint = constraintStatements.stream().filter(c -> {
+            return c instanceof DistributeNonKeyConstraint;
+        }).findFirst().get();
+        DistributeNonKeyConstraint distributeNonKeyConstraint = (DistributeNonKeyConstraint)baseConstraint;
+        Boolean auto = distributeNonKeyConstraint.getAuto();
+        assertTrue(auto);
     }
 }

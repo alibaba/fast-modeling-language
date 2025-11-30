@@ -16,6 +16,7 @@ import com.aliyun.fastmodel.compare.CompareNodeExecute;
 import com.aliyun.fastmodel.compare.CompareStrategy;
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.TransformerFactory;
 import com.aliyun.fastmodel.transform.api.client.CodeGenerator;
@@ -31,6 +32,7 @@ import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 /**
  * DefaultCodeGenerator
@@ -70,28 +72,33 @@ public class DefaultCodeGenerator implements CodeGenerator {
      * @return {@link DdlGeneratorResult}
      */
     private DdlGeneratorResult generate(BaseGeneratorRequest request, BiFunction<Transformer, BaseGeneratorRequest, Node> function) {
-        //参数校验
+        // 参数校验
         Preconditions.checkNotNull(request, "request can't be null");
         Preconditions.checkNotNull(request.getAfter(), "table can't be null");
         Preconditions.checkNotNull(request.getConfig(), "config can't be null");
-        //根据function提供的结果，获取ddl内容和reverse context
+        // 根据function提供的结果，获取ddl内容和reverse context
         Table tableClientDTO = request.getAfter();
         DialectMeta dialectMeta = request.getConfig().getDialectMeta();
         Transformer<Node> transformer = TransformerFactory.getInstance().get(dialectMeta);
         Preconditions.checkNotNull(transformer, "can't find the transformer with dialectMeta:" + dialectMeta);
-        //将传入的request转为node
+        // 将传入的request转为node
         Node reverse = function.apply(transformer, request);
         Node node = transformer.reverseTable(tableClientDTO, ReverseContext.builder()
             .version(request.getConfig().getDialectMeta().getVersion())
             .build());
-        //比较node
+        // 比较node
         List<BaseStatement> compare = CompareNodeExecute.getInstance().compare((BaseStatement)reverse, (BaseStatement)node,
             request.getConfig().isDropIfExist() ? CompareStrategy.FULL : CompareStrategy.INCREMENTAL);
-        //将返回的node，转为目标的ddl语句
-        List<DialectNode> dialectNodes = compare.stream().map(
+        List<BaseStatement> finalStatement = Lists.newArrayList(compare);
+        if (reverse != null && request.getConfig().isMergeAlterTableOperations()) {
+            finalStatement = Lists.newArrayList(new CompositeStatement(compare));
+        }
+        // 将返回的node，转为目标的ddl语句
+        List<DialectNode> dialectNodes = finalStatement.stream().map(
             statement -> {
                 TransformContext build = TransformContext.builder().database(request.getAfter().getDatabase())
                     .appendSemicolon(request.getConfig().isAppendSemicolon())
+                    .caseSensitive(request.getConfig().isCaseSensitive())
                     .schema(request.getAfter().getSchema()).build();
                 return transformer.transform(statement,
                     build);

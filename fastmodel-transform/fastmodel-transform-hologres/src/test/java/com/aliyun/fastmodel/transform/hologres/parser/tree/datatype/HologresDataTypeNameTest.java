@@ -139,4 +139,10 @@ public class HologresDataTypeNameTest {
         IDataTypeName dataTypeName = HologresDataTypeName.getByValue("character varying");
         assertEquals(dataTypeName, HologresDataTypeName.VARCHAR);
     }
+
+    @Test
+    public void testGetByNumeric() {
+        IDataTypeName dataTypeName = HologresDataTypeName.getByValue("numeric");
+        assertEquals(dataTypeName, HologresDataTypeName.DECIMAL);
+    }
 }

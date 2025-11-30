@@ -70,6 +70,8 @@ import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.Any_nameC
 import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.AnysconstContext;
 import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.Array_boundsContext;
 import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.B_exprContext;
+import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.BitwithlengthContext;
+import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.BitwithoutlengthContext;
 import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.Builtin_function_nameContext;
 import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.C_expr_exprContext;
 import com.aliyun.fastmodel.transform.adbpg.parser.AdbPostgreSQLParser.CharacterContext;
@@ -300,10 +302,10 @@ public class AdbPostgreSQLAstBuilder extends AdbPostgreSQLParserBaseVisitor<Node
 
     @Override
     public Node visitOpttabledistribute(OpttabledistributeContext ctx) {
-        if(ctx.RANDOMLY() != null) {
-            return new DistributeNonKeyConstraint(null, true, null, null);
+        if (ctx.RANDOMLY() != null) {
+            return new DistributeNonKeyConstraint(null, true, null, null, null);
         } else if (ctx.REPLICATED() != null) {
-            return new DistributeNonKeyConstraint(null, null, true, null);
+            return new DistributeNonKeyConstraint(null, null, true, null, null);
         } else {
             List<Identifier> columns = ParserHelper.visit(this, ctx.opt_column_list().columnlist().columnElem(), Identifier.class);
             return new DistributeNonKeyConstraint(columns, null);
@@ -923,6 +925,22 @@ public class AdbPostgreSQLAstBuilder extends AdbPostgreSQLParserBaseVisitor<Node
         return new PostgreSQLGenericDataType(text);
     }
 
+    @Override
+    public Node visitBitwithoutlength(BitwithoutlengthContext ctx) {
+        return new PostgreSQLGenericDataType(PostgreSQLDataTypeName.VARBIT.getValue(), Collections.emptyList());
+    }
+
+    @Override
+    public Node visitBitwithlength(BitwithlengthContext ctx) {
+        DataTypeParameter typeParameter = null;
+        if (ctx.expr_list() != null) {
+            LongLiteral longLiteral = (LongLiteral)visit(ctx.expr_list().a_expr().get(0));
+            typeParameter = new NumericParameter(longLiteral.getValue().toString());
+        }
+        return new PostgreSQLGenericDataType(PostgreSQLDataTypeName.VARBIT.getValue(),
+            typeParameter == null ? Collections.emptyList() : Lists.newArrayList(typeParameter));
+    }
+
     private List<DataTypeParameter> getDataTypeParameters(List<A_exprContext> a_exprContexts) {
         List<DataTypeParameter> list = new ArrayList<>();
         for (A_exprContext a : a_exprContexts) {
@@ -942,7 +960,7 @@ public class AdbPostgreSQLAstBuilder extends AdbPostgreSQLParserBaseVisitor<Node
             LongLiteral longLiteral = (LongLiteral)visit(ctx.iconst());
             typeParameter = new NumericParameter(longLiteral.getValue().toString());
         }
-        return new PostgreSQLGenericDataType(ctx.character_c().getText(),
+        return new PostgreSQLGenericDataType(ParserHelper.getOrigin(ctx.character_c()),
             typeParameter == null ? Collections.emptyList() : Lists.newArrayList(typeParameter));
     }
 
@@ -960,7 +978,7 @@ public class AdbPostgreSQLAstBuilder extends AdbPostgreSQLParserBaseVisitor<Node
         }
         boolean without = ctx.opt_timezone().WITHOUT() != null;
         if (without) {
-            throw new UnsupportedOperationException("unsupported without zone dataType");
+            return new PostgreSQLGenericDataType(PostgreSQLDataTypeName.TIMESTAMP.getValue(), arguments);
         } else {
             return new PostgreSQLGenericDataType(PostgreSQLDataTypeName.TIMESTAMPTZ.getValue(), arguments);
         }

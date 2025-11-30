@@ -184,7 +184,7 @@ public class ParserHelper {
         CaseChangingCharStream caseChangingCharStream = new CaseChangingCharStream(charStream, true);
         Lexer lexer = lexerFunction.apply(caseChangingCharStream);
         lexer.removeErrorListeners();
-        ThrowingErrorListener LISTENER = new ThrowingErrorListener();
+        ThrowingErrorListener LISTENER = new ThrowingErrorListener(code);
         lexer.addErrorListener(LISTENER);
         CommonTokenStream commonTokenStream = new CommonTokenStream(lexer);
         Parser parser = parserFunction.apply(commonTokenStream);

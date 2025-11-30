@@ -10,6 +10,7 @@ package com.aliyun.fastmodel.transform.postgresql.parser.tree.datatype;
 
 import com.aliyun.fastmodel.transform.api.datatype.simple.ISimpleDataTypeName;
 import com.aliyun.fastmodel.transform.api.datatype.simple.SimpleDataTypeName;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -74,12 +75,12 @@ public enum PostgreSQLDataTypeName implements ISimpleDataTypeName {
     /**
      * char
      */
-    CHAR("CHAR", "BPCHAR", Dimension.ONE, SimpleDataTypeName.STRING),
+    CHAR("CHAR", "CHARACTER", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
      * varchar
      */
-    VARCHAR("VARCHAR", "CHARACTERVARYING", Dimension.ONE, SimpleDataTypeName.STRING),
+    VARCHAR("VARCHAR", "CHARACTER VARYING", Dimension.ONE, SimpleDataTypeName.STRING),
 
     /**
      * serial:<a href="https://help.aliyun.com/document_detail/187391.html">...</a>
@@ -139,7 +140,7 @@ public enum PostgreSQLDataTypeName implements ISimpleDataTypeName {
     /**
      * varbit
      */
-    VARBIT("VARBIT", "", Dimension.ONE, SimpleDataTypeName.STRING),
+    VARBIT("VARBIT", "BIT VARYING", Dimension.ONE, SimpleDataTypeName.STRING),
     /**
      * interval
      */
@@ -166,6 +167,7 @@ public enum PostgreSQLDataTypeName implements ISimpleDataTypeName {
     /**
      * alias
      */
+    @Getter
     private final String alias;
 
     /**
@@ -210,10 +212,6 @@ public enum PostgreSQLDataTypeName implements ISimpleDataTypeName {
             }
         }
         throw new IllegalArgumentException("not support the dataType with value:" + value);
-    }
-
-    public String getAlias() {
-        return alias;
     }
 
     @Override

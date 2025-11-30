@@ -12,17 +12,29 @@ import org.apache.commons.lang3.StringUtils;
 public enum FlinkDataTypeName implements ISimpleDataTypeName {
 
     /**
-     * DATE
+     * Flink数据类型
      */
-    DATE("DATE", Dimension.ZERO, SimpleDataTypeName.DATE),
+    STRING("STRING", Dimension.ONE, SimpleDataTypeName.STRING),
+
+    INT("INT", Dimension.ONE, SimpleDataTypeName.NUMBER),
+
+    BIGINT("BIGINT", Dimension.ONE, SimpleDataTypeName.NUMBER),
 
     BOOLEAN("BOOLEAN", Dimension.ZERO, SimpleDataTypeName.BOOLEAN),
 
-    CHAR("CHAR", Dimension.ONE, SimpleDataTypeName.STRING),
+    DATE("DATE", Dimension.ZERO, SimpleDataTypeName.DATE),
+
+    TIMESTAMP("TIMESTAMP", Dimension.ONE, SimpleDataTypeName.DATE),
+
+    DECIMAL("DECIMAL", Dimension.TWO, SimpleDataTypeName.NUMBER),
+
+    DOUBLE("DOUBLE", Dimension.TWO, SimpleDataTypeName.NUMBER),
+
+    FLOAT("FLOAT", Dimension.TWO, SimpleDataTypeName.NUMBER),
 
     VARCHAR("VARCHAR", Dimension.ONE, SimpleDataTypeName.STRING),
 
-    STRING("STRING", Dimension.ONE, SimpleDataTypeName.STRING),
+    CHAR("CHAR", Dimension.ONE, SimpleDataTypeName.STRING),
 
     BINARY("BINARY", Dimension.ONE, SimpleDataTypeName.STRING),
 
@@ -36,15 +48,7 @@ public enum FlinkDataTypeName implements ISimpleDataTypeName {
 
     INTEGER("INTEGER", Dimension.ONE, SimpleDataTypeName.NUMBER),
 
-    BIGINT("BIGINT", Dimension.ONE, SimpleDataTypeName.NUMBER),
-
-    FLOAT("FLOAT", Dimension.TWO, SimpleDataTypeName.NUMBER),
-
-    DOUBLE("DOUBLE", Dimension.TWO, SimpleDataTypeName.NUMBER),
-
     TIME("TIME", Dimension.ONE, SimpleDataTypeName.DATE),
-
-    TIMESTAMP("TIMESTAMP", Dimension.ONE, SimpleDataTypeName.DATE),
 
     TIMESTAMP_LTZ("TIMESTAMP_LTZ", Dimension.ONE, SimpleDataTypeName.DATE),
 
@@ -54,18 +58,13 @@ public enum FlinkDataTypeName implements ISimpleDataTypeName {
 
     ARRAY("ARRAY", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
 
-    MULTISET("MULTISET", Dimension.ONE, SimpleDataTypeName.STRING),
+    MULTISET("MULTISET", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
 
     MAP("MAP", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
 
     ROW("ROW", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
 
-    RAW("RAW", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
-
-    DECIMAL("DECIMAL", Dimension.TWO, SimpleDataTypeName.NUMBER),
-
-    INT("INT", Dimension.ONE, SimpleDataTypeName.NUMBER)
-
+    RAW("RAW", Dimension.MULTIPLE, SimpleDataTypeName.STRING)
     ;
 
 

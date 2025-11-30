@@ -48,4 +48,9 @@ public class TableConfig {
     @Default
     private boolean appendSemicolon = true;
 
+    /**
+     * 是否合并alterTable的操作
+     */
+    private boolean mergeAlterTableOperations;
+
 }

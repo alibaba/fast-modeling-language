@@ -47,6 +47,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.LogicalPartitionedBy;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.hologres.client.property.HologresPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
@@ -137,7 +138,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
                 node.getPartitionedBy().getColumnDefinitions().stream().map(x -> formatExpression(x.getColName()))
                     .collect(joining(","))).append(")");
         }
-        //with
+        // with
         List<Property> properties = node.getProperties();
         List<String> excludeKeys = Lists.newArrayList(
             HologresPropertyKey.DYNAMIC.getValue(),
@@ -152,7 +153,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             builder.append("\n)");
         }
         String sql = PropertyUtil.getPropertyValue(properties, HologresPropertyKey.TASK_DEFINITION.getValue());
-        //query
+        // query
         if (StringUtils.isNotBlank(sql)) {
             builder.append(" AS\n");
             builder.append(sql);
@@ -201,7 +202,8 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         String tableCode = getCode(node.getQualifiedName());
         builder.append(tableCode);
         String elementIndent = indentString(indent + 1);
-        List<ColumnDefinition> columnDefines = merge(node.getColumnDefines(), node.getPartitionedBy());
+        PartitionedBy partitionedBy = node.getPartitionedBy();
+        List<ColumnDefinition> columnDefines = merge(node.getColumnDefines(), partitionedBy);
         if (!columnEmpty) {
             builder.append(" (\n");
             String columnList = formatColumnList(columnDefines, elementIndent);
@@ -212,8 +214,11 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             builder.append("\n").append(")");
         }
         if (!node.isPartitionEmpty()) {
+            if (partitionedBy instanceof LogicalPartitionedBy) {
+                builder.append("LOGICAL");
+            }
             builder.append(" PARTITION BY LIST(").append(
-                node.getPartitionedBy().getColumnDefinitions().stream().map(x -> formatExpression(x.getColName()))
+                partitionedBy.getColumnDefinitions().stream().map(x -> formatExpression(x.getColName()))
                     .collect(joining(","))).append(")");
         }
         builder.append(";\n");
@@ -302,7 +307,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     private void appendConstraint(CreateTable node, Integer indent) {
         for (BaseConstraint next : node.getConstraintStatements()) {
-            //hologres只有primary key定义
+            // hologres只有primary key定义
             if (!(next instanceof PrimaryConstraint)) {
                 continue;
             }
@@ -322,13 +327,33 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         return true;
     }
 
-    private String callSetProperty(String code, String key, String value) {
+    private String callSetProperty(QualifiedName code, String key, String value) {
+        // 增加校验，判断是否支持print，只有明确定义了不支持print
+        HologresPropertyKey propertyKey = HologresPropertyKey.getByValue(key);
+        if (propertyKey != null && !propertyKey.isSupportPrint()) {
+            return null;
+        }
         String result = HologresPropertyUtil.getPropertyValue(hologresVersion, key, value);
-        //将code中的双引号去除
-        String strip = StripUtils.removeDoubleStrip(code);
-        //如果是列属性，那么
+        // 因为hologres没有三段氏，所以这里不再删除schema的双引号
+        List<Identifier> originalParts = code.getOriginalParts();
+        String schema = null;
+        String tableName = null;
+        if (originalParts.size() == 3) {
+            schema = formatExpression(originalParts.get(1));
+            tableName = formatExpression(originalParts.get(2));
+        } else if (originalParts.size() == 2) {
+            schema = formatExpression(originalParts.get(0));
+            tableName = formatExpression(originalParts.get(1));
+        } else if (originalParts.size() == 1) {
+            tableName = formatExpression(originalParts.get(0));
+        }
+        // 如果是列属性
         String format = "CALL SET_TABLE_PROPERTY('%s', '%s', '%s');";
-        return String.format(format, strip, key, result);
+        if (schema == null) {
+            return String.format(format, tableName, key, result);
+        } else {
+            return String.format(format, schema + "." + tableName, key, result);
+        }
     }
 
     private String commentTable(String code, String comment) {
@@ -351,7 +376,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     protected String formatColumnDefinition(ColumnDefinition column, Integer max) {
         StringBuilder sb = appendNameAndType(column, max);
         if (column.getDataType() == null) {
-            //如果没有数据类型，那么只返回名称即可
+            // 如果没有数据类型，那么只返回名称即可
             return sb.toString();
         }
         boolean isPrimary = column.getPrimary() != null && column.getPrimary();
@@ -455,14 +480,19 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         if (useAlterTableSetSentence) {
             BuilderUtil.addTransaction(builder, () -> buildSetPropertiesUseAlter(setTableProperties, propertyList));
         } else {
-            BuilderUtil.addTransaction(builder, () -> buildSetProperties(setTableProperties.getQualifiedName(), propertyList));
+            QualifiedName tableName = StringJoinUtil.join(
+                null,
+                this.context.getSchema(),
+                setTableProperties.getQualifiedName().getSuffix()
+            );
+            BuilderUtil.addTransaction(builder, () -> buildSetProperties(tableName, propertyList));
         }
         return true;
     }
 
     private String buildSetPropertiesUseAlter(SetTableProperties setTableProperties, List<Property> propertyList) {
-        //ALTER TABLE <schema_name>.<table_name> SET (dictionary_encoding_columns = '[columnName{:[on|off|auto]}[,...]]');
-        //针对Task_definition进行单独设置
+        // ALTER TABLE <schema_name>.<table_name> SET (dictionary_encoding_columns = '[columnName{:[on|off|auto]}[,...]]');
+        // 针对Task_definition进行单独设置
         String prefix = "ALTER TABLE " + getCode(setTableProperties.getQualifiedName())
             + " SET ";
         String propertyValue = PropertyUtil.getPropertyValue(propertyList, HologresPropertyKey.TASK_DEFINITION.getValue());
@@ -480,7 +510,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             return !StringUtils.equalsIgnoreCase(p.getName(), HologresPropertyKey.TASK_DEFINITION.getValue());
         }).map(p -> {
             String result = HologresPropertyUtil.getPropertyValue(hologresVersion, p.getName(), p.getValue());
-            //将code中的双引号去除
+            // 将code中的双引号去除
             return p.getName() + "=" + StripUtils.addStrip(result);
         }).collect(joining(",", "(", ")"));
         list.add(prefix + value + ";");
@@ -492,11 +522,11 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         Iterator<Property> iterator = properties.iterator();
         if (iterator.hasNext()) {
             Property p = iterator.next();
-            String value = callSetProperty(getCode(qualifiedName), p.getName(), p.getValue());
+            String value = callSetProperty(qualifiedName, p.getName(), p.getValue());
             stringBuilder.append(value);
             while (iterator.hasNext()) {
                 p = iterator.next();
-                String str = callSetProperty(getCode(qualifiedName), p.getName(), p.getValue());
+                String str = callSetProperty(qualifiedName, p.getName(), p.getValue());
                 if (StringUtils.isBlank(str)) {
                     continue;
                 }
@@ -560,7 +590,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
                     + ";";
                 changeValue.add(builder);
             }
-            //如果改了默认值
+            // 如果改了默认值
             if (changeCol.change(ChangeType.DEFAULT_VALUE)) {
                 if (defaultValue == null) {
                     String builder = "ALTER TABLE " + code
@@ -599,7 +629,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
 
     @Override
     protected String getCode(QualifiedName qualifiedName) {
-        //hologres的2.x版本不支持3段式的创建，1.x支持，为了兼容统一采用2段式的创建
+        // hologres的2.x版本不支持3段式的创建，1.x支持，为了兼容统一采用2段式的创建
         QualifiedName tableName = StringJoinUtil.join(
             null,
             this.context.getSchema(),

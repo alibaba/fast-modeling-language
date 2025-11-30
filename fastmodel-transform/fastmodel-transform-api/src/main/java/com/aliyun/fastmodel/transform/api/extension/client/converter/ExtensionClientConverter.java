@@ -622,9 +622,6 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
             ConstraintType type = constraint.getType();
             if (type == ExtensionClientConstraintType.DISTRIBUTE) {
                 DistributeNonKeyConstraint distributeConstraint = toDistributeConstraint(constraint);
-                if (distributeConstraint == null) {
-                    continue;
-                }
                 baseConstraints.add(distributeConstraint);
             }
             if (type == ExtensionClientConstraintType.ORDER_BY) {
@@ -728,24 +725,17 @@ public abstract class ExtensionClientConverter<T extends TransformContext> exten
     }
 
     private DistributeNonKeyConstraint toDistributeConstraint(Constraint constraint) {
-        if (constraint instanceof DistributeClientConstraint) {
-            DistributeClientConstraint clientConstraint = (DistributeClientConstraint)constraint;
-            List<Identifier> list = null;
-            if (CollectionUtils.isNotEmpty(constraint.getColumns())) {
-                list = constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList());
-                return new DistributeNonKeyConstraint(list, clientConstraint.getBucket());
-            } else {
-                if (BooleanUtils.isTrue(clientConstraint.getRandom())) {
-                    return new DistributeNonKeyConstraint(clientConstraint.getRandom(), clientConstraint.getBucket());
-                }
-            }
-        }
         List<Identifier> list = null;
         if (CollectionUtils.isNotEmpty(constraint.getColumns())) {
             list = constraint.getColumns().stream().map(Identifier::new).collect(Collectors.toList());
+        }
+        if (constraint instanceof DistributeClientConstraint) {
+            DistributeClientConstraint clientConstraint = (DistributeClientConstraint)constraint;
+            return new DistributeNonKeyConstraint(list, BooleanUtils.isTrue(clientConstraint.getRandom()), false, clientConstraint.getBucket(),
+                clientConstraint.getAuto());
+        } else {
             return new DistributeNonKeyConstraint(list, null);
         }
-        return null;
     }
 
 }

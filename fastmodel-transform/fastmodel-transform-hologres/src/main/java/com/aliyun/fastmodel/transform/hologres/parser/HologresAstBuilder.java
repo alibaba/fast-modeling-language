@@ -57,6 +57,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.UniqueConstrain
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.dialect.IVersion;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.LogicalPartitionedBy;
 import com.aliyun.fastmodel.transform.hologres.client.property.HologresPropertyKey;
 import com.aliyun.fastmodel.transform.hologres.dialect.HologresVersion;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.A_exprContext;
@@ -98,6 +99,7 @@ import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Generic_o
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.GenerictypeContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.IconstContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.IndirectionContext;
+import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.LogicalpartitionspecContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.NameContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.NumericContext;
 import com.aliyun.fastmodel.transform.hologres.parser.HologreSQLParser.Opt_array_boundsContext;
@@ -180,7 +182,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
     public Node visitStmtmulti(StmtmultiContext ctx) {
         List<BaseStatement> visit = ParserHelper.visit(this, ctx.singlestmt(), BaseStatement.class);
         if (CollectionUtils.isEmpty(visit)) {
-            //ignore
+            // ignore
             return null;
         }
         if (visit.size() > 1) {
@@ -294,14 +296,14 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
         if (ctx.DYNAMIC() == null) {
             return null;
         }
-        //CREATE opttemp DYNAMIC TABLE (IF_P NOT EXISTS)? create_dt_target AS selectstmt opt_with_data
+        // CREATE opttemp DYNAMIC TABLE (IF_P NOT EXISTS)? create_dt_target AS selectstmt opt_with_data
         // CREATE opttemp DYNAMIC TABLE (IF_P NOT EXISTS)? create_dt_target2
-        //if not exists
+        // if not exists
         boolean ifNotExist = ctx.IF_P() != null;
         Create_dt_targetContext target = ctx.create_dt_target();
         Qualified_nameContext qualified_nameContext = target.qualified_name();
         QualifiedName tableName = (QualifiedName)visit(qualified_nameContext);
-        //column
+        // column
         Opt_dynamic_table_opt_column_listContext opt_dynamic_table_opt_column_listContext = target.opt_dynamic_table_opt_column_list();
         List<ColumnDefinition> list = null;
         if (opt_dynamic_table_opt_column_listContext != null) {
@@ -312,11 +314,11 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
         OptpartitionspecContext optpartitionspec = target.optpartitionspec();
         PartitionedBy partitionedBy = toPartitionBy(optpartitionspec);
 
-        //dynamic table
+        // dynamic table
         List<Property> propertyList = Lists.newArrayList();
         propertyList.add(new Property(HologresPropertyKey.DYNAMIC.getValue(), "true"));
 
-        //property
+        // property
         if (target.opt_reloptions() != null) {
             List<Property> other = ParserHelper.visit(this, target.opt_reloptions().reloptions().reloption_list().reloption_elem(),
                 Property.class);
@@ -325,7 +327,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
             }
         }
 
-        //return
+        // return
         if (ctx.selectstmt() != null) {
             String origin = ParserHelper.getOrigin(ctx.selectstmt());
             Property property = new Property(HologresPropertyKey.TASK_DEFINITION.getValue(), origin);
@@ -432,7 +434,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
             properties.add(new Property(HologresPropertyKey.SERVER_NAME.getValue(), serverName.getValue()));
         }
 
-        //options
+        // options
         List<Property> options = buildOptions(ctx);
         properties.addAll(options);
 
@@ -463,12 +465,31 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
             ColumnDefinition columnDefinition = map.get(p.getColName());
             partitionColumns.add(columnDefinition);
         }
+        if (partitionedBy instanceof LogicalPartitionedBy) {
+            return new LogicalPartitionedBy(partitionColumns);
+        }
         return new PartitionedBy(partitionColumns);
     }
 
     @Override
     public Node visitOptpartitionspec(OptpartitionspecContext ctx) {
-        return visit(ctx.partitionspec());
+        if (ctx.partitionspec() != null) {
+            return visit(ctx.partitionspec());
+        }
+        if (ctx.logicalpartitionspec() != null) {
+            return visit(ctx.logicalpartitionspec());
+        }
+        return null;
+    }
+
+    @Override
+    public Node visitLogicalpartitionspec(LogicalpartitionspecContext ctx) {
+        List<Identifier> list = ParserHelper.visit(this, ctx.part_params().part_elem(), Identifier.class);
+        return new LogicalPartitionedBy(
+            list.stream().map(c -> ColumnDefinition.builder()
+                .colName(c)
+                .build()).collect(Collectors.toList())
+        );
     }
 
     @Override
@@ -606,7 +627,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
             List<Identifier> list = ParserHelper.visit(this, columnlist.columnElem(), Identifier.class);
             return new UniqueConstraint(IdentifierUtil.sysIdentifier(), list);
         }
-        //un support other constraint
+        // un support other constraint
         return null;
     }
 
@@ -653,7 +674,7 @@ public class HologresAstBuilder extends HologreSQLParserBaseVisitor<Node> {
      */
     private String convertUnionValue(String key, String value) {
         HologresPropertyKey byValue = HologresPropertyKey.getByValue(key);
-        //如果不在我们指定的内容，那么直接返回
+        // 如果不在我们指定的内容，那么直接返回
         if (byValue == null) {
             return value;
         }

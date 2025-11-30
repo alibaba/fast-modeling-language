@@ -5,13 +5,20 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
+import com.aliyun.fastmodel.transform.hive.format.HiveExpressionVisitor;
 import com.aliyun.fastmodel.transform.hive.format.HiveHelper;
 import com.aliyun.fastmodel.transform.hive.format.HivePropertyKey;
+import com.aliyun.fastmodel.transform.hive.parser.util.HiveReservedWordUtil;
 import com.aliyun.fastmodel.transform.spark.context.SparkTableFormat;
 import com.aliyun.fastmodel.transform.spark.context.SparkTransformContext;
 import com.google.common.collect.Maps;
@@ -200,6 +207,43 @@ public class SparkVisitor extends FastModelVisitor {
 
         removeNewLine(builder);
         return executable;
+    }
+
+    @Override
+    protected String getCode(QualifiedName qualifiedName) {
+        QualifiedName join = StringJoinUtil.join(sparkTransformContext.getDatabase(), sparkTransformContext.getSchema(), qualifiedName.getSuffix());
+        return formatName(join);
+    }
+
+    @Override
+    public String formatName(QualifiedName name) {
+        return name.getOriginalParts().stream()
+            .map(e -> {
+                return formatColName(e, 0);
+            })
+            .collect(joining("."));
+    }
+
+    @Override
+    protected String formatColName(Identifier colName, Integer size) {
+        String value = colName.getValue();
+        if (!colName.isDelimited()) {
+            boolean reservedKeyWord = HiveReservedWordUtil.isReservedKeyWord(value);
+            // 如果node是关键字，那么进行转义处理
+            if (reservedKeyWord) {
+                value = StripUtils.addPrefix(value);
+            } else {
+                value = formatExpression(colName);
+            }
+        } else {
+            value = formatExpression(colName);
+        }
+        return StringUtils.rightPad(value, size);
+    }
+
+    @Override
+    protected String formatExpression(BaseExpression baseExpression) {
+        return new HiveExpressionVisitor().process(baseExpression);
     }
 
     @Override

@@ -60,7 +60,7 @@ public class DialectTransformTest {
         assertEquals(transform.getNode(), "CREATE TABLE a\n"
             + "(\n"
             + "   b BIGINT\n"
-            + ") COMMENT 'comment'"
+            + ") COMMENT 'comment';"
         );
     }
 

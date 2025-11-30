@@ -78,6 +78,11 @@ public class TransformContext {
     private QuerySetting querySetting = new QuerySetting();
 
     /**
+     * 是否大小写敏感
+     */
+    private boolean caseSensitive;
+
+    /**
      * 支持从另外一个context直接进行赋值
      *
      * @param context
@@ -94,6 +99,7 @@ public class TransformContext {
         this.schema = context.getSchema();
         this.querySetting = context.getQuerySetting();
         this.prettyFormat = context.isPrettyFormat();
+        this.caseSensitive = context.isCaseSensitive();
     }
 
     /**
@@ -112,6 +118,7 @@ public class TransformContext {
         this.database = tBuilder.database;
         this.schema = tBuilder.schema;
         this.prettyFormat = tBuilder.prettyFormat;
+        this.caseSensitive = tBuilder.caseSensitive;
     }
 
     /**
@@ -162,6 +169,11 @@ public class TransformContext {
          */
         private boolean prettyFormat = true;
 
+        /**
+         * 是否大小写敏感
+         */
+        private boolean caseSensitive;
+
         public T dataTypeTransformer(DataTypeConverter dataTypeTransformer) {
             this.dataTypeTransformer = dataTypeTransformer;
             return (T)this;
@@ -199,6 +211,11 @@ public class TransformContext {
 
         public T prettyFormat(boolean prettyFormat) {
             this.prettyFormat = prettyFormat;
+            return (T)this;
+        }
+
+        public T caseSensitive(boolean caseSensitive) {
+            this.caseSensitive = caseSensitive;
             return (T)this;
         }
 

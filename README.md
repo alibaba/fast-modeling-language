@@ -98,3 +98,8 @@ FML文档可The introduction and guide of the FML can be found under the `doc/` 
 - Run locally: `docsify serve docs`
 - Then visit http://localhost:3000
 
+
+## JDK8 Deploy
+```mvn
+mvn clean compile deploy -Dmaven.test.skip  -Pjdk8 -pl '!fastmodel-transform/fastmodel-transform-hologres,!fastmodel-transform/fastmodel-transform-example,!fastmodel-transform/fastmodel-transform-postgresql,!fastmodel-transform/fastmodel-transform-adbpg,!fastmodel-ide/fastmodel-ide-open-front,!fastmodel-ide/fastmodel-ide-open,!fastmodel-ide/fastmodel-ide-spi,!fastmodel-jacoco,!fastmodel-benchmarks
+```

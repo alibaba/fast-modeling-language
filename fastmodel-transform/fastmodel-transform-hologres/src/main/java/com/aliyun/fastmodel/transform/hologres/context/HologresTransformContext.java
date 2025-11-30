@@ -38,8 +38,6 @@ public class HologresTransformContext extends TransformContext {
 
     private Long timeToLiveInSeconds = DEFAULT_SECONDS;
 
-    private boolean caseSensitive;
-
     /**
      * 使用set语句代替call set table_property
      */
@@ -51,7 +49,6 @@ public class HologresTransformContext extends TransformContext {
             HologresTransformContext hologresTransformContext = (HologresTransformContext)context;
             orientation = hologresTransformContext.getOrientation();
             timeToLiveInSeconds = hologresTransformContext.getTimeToLiveInSeconds();
-            caseSensitive = hologresTransformContext.isCaseSensitive();
             useAlterTableSetSentence = hologresTransformContext.isUseAlterTableSetSentence();
         }
     }
@@ -60,7 +57,6 @@ public class HologresTransformContext extends TransformContext {
         super(builder);
         orientation = builder.getOrientation();
         timeToLiveInSeconds = builder.getTimeToLiveInSeconds();
-        caseSensitive = builder.isCaseSensitive();
         useAlterTableSetSentence = builder.isUseAlterTableSetSentence();
     }
 
@@ -74,8 +70,6 @@ public class HologresTransformContext extends TransformContext {
         private String orientation = COLUMN;
 
         private Long timeToLiveInSeconds = DEFAULT_SECONDS;
-
-        private boolean caseSensitive;
 
         private boolean useAlterTableSetSentence;
 
@@ -91,11 +85,6 @@ public class HologresTransformContext extends TransformContext {
 
         public Builder timeToLiveInSeconds(Long timeToLiveInSeconds) {
             this.timeToLiveInSeconds = timeToLiveInSeconds;
-            return this;
-        }
-
-        public Builder caseSensitive(boolean caseSensitive) {
-            this.caseSensitive = caseSensitive;
             return this;
         }
 

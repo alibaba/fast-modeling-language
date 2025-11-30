@@ -56,7 +56,7 @@ public class HologresV3TransformerTest {
         DialectNode transform = hologresV3Transformer.transform(dimTable, HologresTransformContext.builder().build());
         assertEquals("BEGIN;\n"
             + "CREATE TABLE b;\n"
-            + "CALL SET_TABLE_PROPERTY('b', 'dictionary_encoding_columns', '\"c1\":auto,\" C2\":auto');\n"
+            + "CALL SET_TABLE_PROPERTY('a.b', 'dictionary_encoding_columns', '\"c1\":auto,\" C2\":auto');\n"
             + "COMMIT;", transform.getNode());
     }
 

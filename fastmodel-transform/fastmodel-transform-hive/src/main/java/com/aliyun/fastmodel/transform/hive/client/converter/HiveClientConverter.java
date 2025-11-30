@@ -55,9 +55,9 @@ public class HiveClientConverter extends BaseClientConverter<HiveTransformContex
     }
 
     @Override
-    public Table convertToTable(Node table, HiveTransformContext context) {
-        Table table1 = super.convertToTable(table, context);
-        CreateTable createTable = (CreateTable)table;
+    public Table convertToTable(Node node, HiveTransformContext context) {
+        Table table1 = super.convertToTable(node, context);
+        CreateTable createTable = (CreateTable)node;
         List<Property> properties = createTable.getProperties();
         if (properties.isEmpty()) {
             return table1;
@@ -77,7 +77,7 @@ public class HiveClientConverter extends BaseClientConverter<HiveTransformContex
 
     @Override
     protected List<ColumnDefinition> toColumnDefinition(Table table, List<Column> columns) {
-        //mc是columns分开的处理
+        // mc是columns分开的处理
         return columns.stream().filter(column -> !column.isPartitionKey()).map(
             c -> {
                 return toColumnDefinition(table, c);
@@ -129,7 +129,7 @@ public class HiveClientConverter extends BaseClientConverter<HiveTransformContex
                 return new HiveGenericDataType(byValue, numericParameter, scale);
             }
         }
-        //complex data use parse dataType
+        // complex data use parse dataType
         ReverseContext context = ReverseContext.builder().build();
         try {
             return hiveLanguageParser.parseDataType(dataTypeName, context);

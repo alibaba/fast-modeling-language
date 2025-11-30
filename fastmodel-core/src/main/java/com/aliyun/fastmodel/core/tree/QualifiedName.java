@@ -17,7 +17,6 @@
 package com.aliyun.fastmodel.core.tree;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.google.common.base.Joiner;
@@ -30,11 +29,10 @@ import com.google.common.collect.Lists;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import static java.util.Locale.ENGLISH;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Desc:
+ * QualifiedName
  *
  * @author panguanjing
  * @date 2020/11/3
@@ -49,7 +47,7 @@ public class QualifiedName extends AbstractNode {
 
     private QualifiedName(List<Identifier> originalParts) {
         this.originalParts = originalParts;
-        parts = originalParts.stream().map(identifier -> identifier.getValue().toLowerCase(ENGLISH)).collect(
+        parts = originalParts.stream().map(Identifier::getValue).collect(
             toList());
     }
 

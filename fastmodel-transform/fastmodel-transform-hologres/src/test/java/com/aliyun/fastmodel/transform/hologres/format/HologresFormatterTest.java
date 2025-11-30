@@ -193,15 +193,16 @@ public class HologresFormatterTest {
 
     @Test
     public void testSetPropertiesWithSchema() {
-        SetTableProperties setTableProperties =  new SetTableProperties(
+        SetTableProperties setTableProperties = new SetTableProperties(
             QualifiedName.of("jiawatest"),
             ImmutableList.of(
                 new Property("binlog.level", "none")
             )
         );
-        DialectNode dialectNode = HologresFormatter.format(setTableProperties, HologresTransformContext.builder().database("public").schema("analyse").build(), HologresVersion.V1);
-        assertEquals(dialectNode.getNode(), "BEGIN;\n"
-            + "CALL SET_TABLE_PROPERTY('analyse.jiawatest', 'binlog.level', 'none');\n"
-            + "COMMIT;");
+        DialectNode dialectNode = HologresFormatter.format(setTableProperties, HologresTransformContext.builder().database("public").schema("analyse")
+            .build(), HologresVersion.V1);
+        assertEquals("BEGIN;\n"
+            + "CALL SET_TABLE_PROPERTY('\"analyse\".jiawatest', 'binlog.level', 'none');\n"
+            + "COMMIT;", dialectNode.getNode());
     }
 }

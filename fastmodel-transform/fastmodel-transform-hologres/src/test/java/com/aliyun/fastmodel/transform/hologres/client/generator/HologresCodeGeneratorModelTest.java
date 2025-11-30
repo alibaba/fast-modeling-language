@@ -466,4 +466,37 @@ public class HologresCodeGeneratorModelTest {
             + "COMMENT ON TABLE \"schema\".abc IS 'abc';\n"
             + "COMMIT;", generate.getDialectNodes().get(0).getNode());
     }
+
+    @Test
+    public void testGeneratorUpperCase() {
+        DefaultCodeGenerator defaultCodeGenerator = new DefaultCodeGenerator();
+        DdlGeneratorModelRequest request = new DdlGeneratorModelRequest();
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(DialectMeta.getByNameAndVersion(DialectName.HOLOGRES.getName(), HologresVersion.V1))
+            .caseSensitive(true)
+            .build();
+        List<Column> columns = Lists.newArrayList();
+        columns.add(Column.builder()
+            .name("UpperCaseColumn")
+            .dataType("int")
+            .build());
+        Table table = Table.builder()
+            .ifNotExist(false)
+            .name("Tb_Test_Case")
+            .schema("schema")
+            .columns(columns)
+            .comment("abc")
+            .lifecycleSeconds(1000L)
+            .build();
+        request.setAfter(table);
+        request.setConfig(config);
+        DdlGeneratorResult generate = defaultCodeGenerator.generate(request);
+        assertEquals("BEGIN;\n"
+            + "CREATE TABLE \"schema\".\"Tb_Test_Case\" (\n"
+            + "   \"UpperCaseColumn\" INTEGER NOT NULL\n"
+            + ");\n"
+            + "CALL SET_TABLE_PROPERTY('\"schema\".\"Tb_Test_Case\"', 'time_to_live_in_seconds', '1000');COMMENT ON TABLE \"schema\""
+            + ".\"Tb_Test_Case\" IS 'abc';\n"
+            + "COMMIT;", generate.getDialectNodes().get(0).getNode());
+    }
 }

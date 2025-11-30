@@ -35,7 +35,7 @@ import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.client.dto.table.TableConfig;
-import com.aliyun.fastmodel.transform.hologres.client.property.ClusterKey;
+import com.aliyun.fastmodel.transform.api.extension.client.property.table.ClusterKey;
 import com.aliyun.fastmodel.transform.hologres.client.property.ColumnStatus;
 import com.aliyun.fastmodel.transform.hologres.client.property.DictEncodingColumn;
 import com.aliyun.fastmodel.transform.hologres.client.property.DistributionKey;

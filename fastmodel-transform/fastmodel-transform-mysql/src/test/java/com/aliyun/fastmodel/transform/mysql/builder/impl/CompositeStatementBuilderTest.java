@@ -57,7 +57,7 @@ public class CompositeStatementBuilderTest {
         );
         CompositeStatementBuilder compositeStatementBuilder = new CompositeStatementBuilder();
         DialectNode build = compositeStatementBuilder.build(compositeStatement, null);
-        assertEquals(build.getNode(), "CREATE TABLE dim_shop COMMENT 'comment'");
+        assertEquals(build.getNode(), "CREATE TABLE dim_shop COMMENT 'comment';");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class CompositeStatementBuilderTest {
         assertEquals(build.getNode(), "CREATE TABLE dim_shop\n"
             + "(\n"
             + "   c1 BIGINT COMMENT 'c1 Comment'\n"
-            + ") COMMENT 'comment'");
+            + ") COMMENT 'comment';");
     }
 
     @Test
@@ -114,7 +114,9 @@ public class CompositeStatementBuilderTest {
             + "(\n"
             + "   c1 BIGINT\n"
             + ") COMMENT 'comment';\n"
-            + "ALTER TABLE dim_shop_2 SET COMMENT 'comment';");
+            + "\n"
+            + "ALTER TABLE dim_shop_2\n"
+            + "  COMMENT 'comment';");
     }
 
     @Test
@@ -127,7 +129,8 @@ public class CompositeStatementBuilderTest {
         );
         CompositeStatementBuilder compositeStatementBuilder = new CompositeStatementBuilder();
         DialectNode build = compositeStatementBuilder.build(compositeStatement, null);
-        assertEquals(build.getNode(), "ALTER TABLE dim_shop_2 SET COMMENT 'comment'");
+        assertEquals(build.getNode(), "ALTER TABLE dim_shop_2\n"
+            + "  COMMENT 'comment';");
     }
 
     @Test

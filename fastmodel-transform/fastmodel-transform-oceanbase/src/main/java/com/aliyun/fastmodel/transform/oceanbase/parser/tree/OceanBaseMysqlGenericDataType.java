@@ -7,6 +7,8 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.transform.oceanbase.context.OceanBaseContext;
+import com.aliyun.fastmodel.transform.oceanbase.format.OceanBaseMysqlExpressionVisitor;
 import com.aliyun.fastmodel.transform.oceanbase.parser.visitor.OceanBaseMysqlAstVisitor;
 import lombok.Getter;
 
@@ -51,5 +53,10 @@ public class OceanBaseMysqlGenericDataType extends GenericDataType {
     public <R, C> R accept(IAstVisitor<R, C> visitor, C context) {
         OceanBaseMysqlAstVisitor<R, C> oceanBaseMysqlAstVisitor = (OceanBaseMysqlAstVisitor)visitor;
         return oceanBaseMysqlAstVisitor.visitOceanBaseMysqlGenericDataType(this, context);
+    }
+
+    @Override
+    public String toString() {
+        return new OceanBaseMysqlExpressionVisitor(OceanBaseContext.builder().build()).process(this);
     }
 }

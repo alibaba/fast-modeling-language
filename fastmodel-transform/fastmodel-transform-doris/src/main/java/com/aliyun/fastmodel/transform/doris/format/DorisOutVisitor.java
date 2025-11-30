@@ -578,6 +578,8 @@ public class DorisOutVisitor extends FastModelVisitor implements DorisAstVisitor
         if (distributeKeyConstraint.getBucket() != null) {
             builder.append(" BUCKETS ");
             builder.append(distributeKeyConstraint.getBucket());
+        } else if (BooleanUtils.isTrue(distributeKeyConstraint.getAuto())) {
+            builder.append(" BUCKETS AUTO");
         }
         return true;
     }

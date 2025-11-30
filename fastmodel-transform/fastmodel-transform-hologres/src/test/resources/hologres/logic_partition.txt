@@ -1,0 +1,11 @@
+CREATE TABLE public.dwd_sales_trans_log_di_rt (
+    log_seq bigint NOT NULL,
+    ds text NOT NULL
+    ,PRIMARY KEY (log_seq, ds)
+)
+  LOGICAL PARTITION BY LIST (ds)
+  WITH (
+    orientation = 'column',
+    storage_format = 'orc',
+    binlog_level = 'replica'
+  );

@@ -331,6 +331,28 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         if (dataTypeParameter != null) {
             list = ImmutableList.of(dataTypeParameter);
         }
+
+        if (ctx.lengthTwoDimension() != null) {
+            list = Lists.newArrayList();
+            List<MySqlParser.DecimalLiteralContext> decimalLiteralContexts = ctx.lengthTwoDimension().decimalLiteral();
+            if (decimalLiteralContexts != null) {
+                for (MySqlParser.DecimalLiteralContext decimalLiteralContext : decimalLiteralContexts) {
+                    DataTypeParameter oneDataTypeParameter = (DataTypeParameter)visit(decimalLiteralContext);
+                    list.add(oneDataTypeParameter);
+                }
+            }
+        }
+
+        if (ctx.lengthTwoOptionalDimension() != null) {
+            list = Lists.newArrayList();
+            List<MySqlParser.DecimalLiteralContext> decimalLiteralContexts = ctx.lengthTwoOptionalDimension().decimalLiteral();
+            if (decimalLiteralContexts != null) {
+                for (MySqlParser.DecimalLiteralContext decimalLiteralContext : decimalLiteralContexts) {
+                    DataTypeParameter oneDataTypeParameter = (DataTypeParameter)visit(decimalLiteralContext);
+                    list.add(oneDataTypeParameter);
+                }
+            }
+        }
         return new GenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
@@ -424,7 +446,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitPrimaryKeyTableConstraint(PrimaryKeyTableConstraintContext ctx) {
-        //primary key table constraint
+        // primary key table constraint
         UidContext name = ctx.name;
         Identifier constraintName = null;
         if (name != null) {
@@ -463,7 +485,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitUniqueKeyTableConstraint(UniqueKeyTableConstraintContext ctx) {
-        //unique key table constraint
+        // unique key table constraint
         UidContext name = ctx.name;
         Identifier constraintName = null;
         if (name != null) {
@@ -482,7 +504,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitForeignKeyTableConstraint(ForeignKeyTableConstraintContext ctx) {
-        //foreign key constraint
+        // foreign key constraint
         UidContext name = ctx.name;
         Identifier constraintName = null;
         if (name != null) {
@@ -512,7 +534,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
 
     @Override
     public Node visitCheckTableConstraint(CheckTableConstraintContext ctx) {
-        //check table constraint
+        // check table constraint
         return super.visitCheckTableConstraint(ctx);
     }
 
@@ -716,7 +738,7 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
         } else {
             constraint = IdentifierUtil.sysIdentifier();
         }
-        //columns parse
+        // columns parse
         IndexColumnNamesContext indexColumnNamesContext = ctx.indexColumnNames();
         if (indexColumnNamesContext != null) {
             List<IndexColumnName> indexColumnNames =
@@ -775,6 +797,27 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
     private QualifiedName getQualifiedName(TableNameContext tableName) {
         List<Identifier> list = ParserHelper.visit(this, tableName.fullId().uid(), Identifier.class);
         return QualifiedName.of(list);
+    }
+
+    @Override
+    public Node visitLengthTwoDimension(MySqlParser.LengthTwoDimensionContext ctx) {
+        List<DataTypeParameter> list = Lists.newArrayList();
+        List<MySqlParser.DecimalLiteralContext> decimalLiteralContexts = ctx.decimalLiteral();
+        if (decimalLiteralContexts != null) {
+            for (MySqlParser.DecimalLiteralContext decimalLiteralContext : decimalLiteralContexts) {
+                DataTypeParameter dataTypeParameter = (DataTypeParameter)visit(decimalLiteralContext);
+                list.add(dataTypeParameter);
+            }
+        }
+        return new GenericDataType(
+            new Identifier(ctx.getParent().getChild(0).getText()),
+            list
+        );
+    }
+
+    @Override
+    public Node visitDecimalLiteral(MySqlParser.DecimalLiteralContext ctx) {
+        return new NumericParameter(ctx.getText());
     }
 
     @Override

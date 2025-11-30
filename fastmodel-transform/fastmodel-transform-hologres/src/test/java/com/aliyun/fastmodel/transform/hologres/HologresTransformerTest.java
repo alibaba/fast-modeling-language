@@ -378,8 +378,8 @@ public class HologresTransformerTest {
             + "   c3 TEXT NOT NULL,\n"
             + "   PRIMARY KEY(c1,c2)\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('t1', 'dictionary_encoding_columns', '\"c1:on,c2:on\"');\n"
-            + "CALL SET_TABLE_PROPERTY('t1', 'segment_key', '\"c1\"');\n"
+            + "CALL SET_TABLE_PROPERTY('s1.t1', 'dictionary_encoding_columns', '\"c1:on,c2:on\"');\n"
+            + "CALL SET_TABLE_PROPERTY('s1.t1', 'segment_key', '\"c1\"');\n"
             + "COMMIT;");
     }
 
@@ -708,15 +708,15 @@ public class HologresTransformerTest {
             + "   created_at TIMESTAMP WITH TIME ZONE NOT NULL,\n"
             + "   PRIMARY KEY(id)\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'time_to_live_in_seconds', '3153600000');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'storage_format', 'orc');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'bitmap_columns', '\"username,password,email\"');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'dictionary_encoding_columns', '\"username:auto,password:auto,email:auto\"');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'distribution_key', '\"id\"');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'segment_key', '\"created_at\"');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'table_group', 'holo_db_tg_default');\n"
-            + "CALL SET_TABLE_PROPERTY('user_info', 'table_storage_mode', 'any');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'time_to_live_in_seconds', '3153600000');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'storage_format', 'orc');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'bitmap_columns', '\"username,password,email\"');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'dictionary_encoding_columns', '\"username:auto,password:auto,email:auto\"');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'distribution_key', '\"id\"');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'segment_key', '\"created_at\"');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'table_group', 'holo_db_tg_default');\n"
+            + "CALL SET_TABLE_PROPERTY('public.user_info', 'table_storage_mode', 'any');\n"
             + "COMMIT;", generator);
     }
 
@@ -785,9 +785,9 @@ public class HologresTransformerTest {
             + "   id        BIGINT PRIMARY KEY,\n"
             + "   \"123_col\" TEXT NOT NULL\n"
             + ");\n"
-            + "CALL SET_TABLE_PROPERTY('test_col_tb1_1630', 'time_to_live_in_seconds', '3153600000');\n"
-            + "CALL SET_TABLE_PROPERTY('test_col_tb1_1630', 'orientation', 'column');\n"
-            + "CALL SET_TABLE_PROPERTY('test_col_tb1_1630', 'binlog.level', 'none');\n"
+            + "CALL SET_TABLE_PROPERTY('public.test_col_tb1_1630', 'time_to_live_in_seconds', '3153600000');\n"
+            + "CALL SET_TABLE_PROPERTY('public.test_col_tb1_1630', 'orientation', 'column');\n"
+            + "CALL SET_TABLE_PROPERTY('public.test_col_tb1_1630', 'binlog.level', 'none');\n"
             + "COMMIT;", generator);
     }
 

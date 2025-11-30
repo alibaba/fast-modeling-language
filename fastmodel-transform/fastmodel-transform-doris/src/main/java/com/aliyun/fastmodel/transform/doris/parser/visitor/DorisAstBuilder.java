@@ -129,8 +129,7 @@ public class DorisAstBuilder extends DorisParserBaseVisitor<Node> {
         List<ColumnDefinition> list = null;
         List<TableIndex> tableIndices = null;
         Comment comment = null;
-        if (ctx.ctasCols != null) {
-        } else {
+        if (ctx.ctasCols == null) {
             list = ParserHelper.visit(this,
                 ctx.columnDefs().columnDef(), ColumnDefinition.class);
             if (ctx.indexDefs() != null) {
@@ -416,10 +415,10 @@ public class DorisAstBuilder extends DorisParserBaseVisitor<Node> {
         if (ctx.INTEGER_VALUE() != null) {
             bucket = Integer.parseInt(ctx.INTEGER_VALUE().getText());
         }
-        DistributeNonKeyConstraint distributeKeyConstraint = new DistributeNonKeyConstraint(
-            identifiers, random, bucket
+        Boolean auto = ctx.autoBucket != null;
+        return new DistributeNonKeyConstraint(
+            identifiers, random, false, bucket, auto
         );
-        return distributeKeyConstraint;
     }
 
     private Property getEngineProp(IdentifierContext engine) {

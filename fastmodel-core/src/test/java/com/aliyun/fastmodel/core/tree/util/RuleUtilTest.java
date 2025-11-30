@@ -39,7 +39,7 @@ public class RuleUtilTest {
     @Test
     public void testGenerateRuleName() {
         QualifiedName tableName = RuleUtil.generateRulesName(QualifiedName.of("tableName"));
-        assertEquals(tableName.getSuffix(), "sys_rules_tablename");
+        assertEquals(tableName.getSuffix(), "sys_rules_tableName");
     }
 
     @Test

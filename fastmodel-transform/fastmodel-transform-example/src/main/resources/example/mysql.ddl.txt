@@ -4,7 +4,7 @@ CREATE TABLE dim_demo
    c2 VARCHAR(128) NOT NULL COMMENT 'string',
    PRIMARY KEY(c1,c2)
 );
-ALTER TABLE dim_demo ADD
+ALTER TABLE dim_demo ADD COLUMN
 (
    c3 DATETIME COMMENT 'date time'
 );
