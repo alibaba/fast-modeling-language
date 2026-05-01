@@ -16,6 +16,10 @@
 
 package com.aliyun.fastmodel.driver.client;
 
+import com.aliyun.fastmodel.driver.client.command.BaseCommandProperties;
+import com.aliyun.fastmodel.driver.client.command.ExecuteCommand;
+import com.aliyun.fastmodel.driver.client.exception.FastModelException;
+import com.aliyun.fastmodel.driver.client.metadata.FastModelDataBaseMetadata;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -36,11 +40,6 @@ import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-
-import com.aliyun.fastmodel.driver.client.command.BaseCommandProperties;
-import com.aliyun.fastmodel.driver.client.command.ExecuteCommand;
-import com.aliyun.fastmodel.driver.client.exception.FastModelException;
-import com.aliyun.fastmodel.driver.client.metadata.FastModelDataBaseMetadata;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

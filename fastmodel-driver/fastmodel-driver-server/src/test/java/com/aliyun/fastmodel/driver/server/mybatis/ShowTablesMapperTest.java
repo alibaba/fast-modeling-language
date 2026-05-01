@@ -31,7 +31,6 @@ import static org.junit.Assert.assertNotNull;
  * @author panguanjing
  * @date 2020/12/30
  */
-// 家娃说先ignore掉
 @Ignore
 public class ShowTablesMapperTest extends DriverBaseTest {
 
