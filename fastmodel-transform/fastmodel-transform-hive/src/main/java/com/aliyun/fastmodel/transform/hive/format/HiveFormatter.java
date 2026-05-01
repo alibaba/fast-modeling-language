@@ -40,7 +40,7 @@ public final class HiveFormatter {
         if (StringUtils.isBlank(result)) {
             return new DialectNode(result, process);
         }
-        if (BooleanUtils.isTrue(append)  && !StringUtils.endsWith(result, SEMICOLON)) {
+        if (BooleanUtils.isTrue(append) && !StringUtils.endsWith(result, SEMICOLON)) {
             result = result + SEMICOLON;
         }
         return new DialectNode(result, process);

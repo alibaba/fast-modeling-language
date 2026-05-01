@@ -67,6 +67,8 @@ import com.aliyun.fastmodel.transform.hive.parser.HiveParser.TableNameContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.TablePartitionContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.TablePropertiesPrefixedContext;
 import com.aliyun.fastmodel.transform.hive.parser.HiveParser.TypeParameterContext;
+import com.aliyun.fastmodel.transform.hive.parser.HiveParser.UnionTypeContext;
+import com.aliyun.fastmodel.transform.hive.parser.tree.datatype.HiveGenericDataType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -302,8 +304,12 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         return new RowDataType(getLocation(ctx), getOrigin(ctx), list);
     }
 
-
-
+    @Override
+    public Node visitUnionType(UnionTypeContext ctx) {
+        List<DataTypeParameter> list = ParserHelper.visit(this, ctx.colTypeList().colType(), BaseDataType.class).stream()
+            .map(c -> new TypeParameter(c)).collect(toList());
+        return new HiveGenericDataType(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx), ctx.KW_UNIONTYPE().getText(), list);
+    }
 
     private Boolean isPrimary(BaseConstraint baseConstraint) {
         return baseConstraint instanceof PrimaryConstraint;
@@ -334,7 +340,6 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         return ParserHelper.getIdentifier(ctx);
     }
 
-
     private void buildExternalProperties(CreateTableStatementContext ctx, List<Property> properties) {
         // external
         if (ctx.KW_EXTERNAL() != null) {
@@ -363,12 +368,6 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         }
         List<Property> properties = new ArrayList<>();
         List<String> children = ctx.children.stream().map(ParseTree::getText).collect(Collectors.toList());
-//        if (ctx.KW_BY() != null) {
-//            // stored by
-//            int byIndex = children.indexOf(ctx.KW_BY().getText());
-//            String byValue = StripUtils.strip(children.get(byIndex + 1));
-//            properties.add(new Property(HivePropertyKey.STORED_BY.getValue(), new StringLiteral(byValue)));
-//        }
         if (ctx.KW_AS() != null && ctx.KW_INPUTFORMAT() == null && ctx.KW_OUTPUTFORMAT() == null) {
             // stored as
             int asIndex = children.indexOf(ctx.KW_AS().getText());
@@ -398,7 +397,7 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
         if (ctx.rowFormatSerde() != null) {
             HiveParser.RowFormatSerdeContext rowFormatSerdeContext = ctx.rowFormatSerde();
             List<String> children = rowFormatSerdeContext.children.stream()
-                    .map(ParseTree::getText).collect(Collectors.toList());
+                .map(ParseTree::getText).collect(Collectors.toList());
             if (rowFormatSerdeContext.KW_SERDE() != null) {
                 // stored as
                 int index = children.indexOf(rowFormatSerdeContext.KW_SERDE().getText());
@@ -406,15 +405,15 @@ public class HiveAstBuilder extends HiveParserBaseVisitor<Node> {
                 properties.add(new Property(HivePropertyKey.ROW_FORMAT_SERDE.getValue(), new StringLiteral(value)));
             }
             if (rowFormatSerdeContext.tableProperties() != null
-                    && rowFormatSerdeContext.tableProperties().tablePropertiesList() != null
-                    && CollectionUtils.isNotEmpty(rowFormatSerdeContext.tableProperties().tablePropertiesList().keyValueProperty())) {
+                && rowFormatSerdeContext.tableProperties().tablePropertiesList() != null
+                && CollectionUtils.isNotEmpty(rowFormatSerdeContext.tableProperties().tablePropertiesList().keyValueProperty())) {
                 List<KeyValuePropertyContext> keyValuePropertyContexts =
-                        rowFormatSerdeContext.tableProperties().tablePropertiesList().keyValueProperty();
+                    rowFormatSerdeContext.tableProperties().tablePropertiesList().keyValueProperty();
                 keyValuePropertyContexts.forEach(context -> {
                     String propKey = StripUtils.strip(context.getChild(0).getText());
                     String propValue = StripUtils.strip(context.getChild(2).getText());
                     properties.add(new Property(StringUtils.join(Lists.newArrayList(HivePropertyKey.SERDE_PROPS.getValue(), propKey),
-                            "."), new StringLiteral(propValue)));
+                        "."), new StringLiteral(propValue)));
                 });
             }
         }

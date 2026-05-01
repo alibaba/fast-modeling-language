@@ -22,7 +22,6 @@ import com.aliyun.fastmodel.core.tree.AstVisitor;
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.constants.ConstraintType;
-import lombok.Data;
 import lombok.Getter;
 
 /**
@@ -31,7 +30,7 @@ import lombok.Getter;
  * @author panguanjing
  * @date 2021/7/26
  */
-@Data
+@Getter
 public class UniqueConstraint extends BaseConstraint {
 
     private final List<Identifier> columnNames;
@@ -43,7 +42,7 @@ public class UniqueConstraint extends BaseConstraint {
      * @param columnNames
      */
     public UniqueConstraint(Identifier constraintName,
-                            List<Identifier> columnNames) {
+        List<Identifier> columnNames) {
         this(constraintName, columnNames, true);
     }
 
@@ -55,8 +54,8 @@ public class UniqueConstraint extends BaseConstraint {
      * @param enable
      */
     public UniqueConstraint(Identifier constraintName,
-                            List<Identifier> columnNames,
-                            Boolean enable) {
+        List<Identifier> columnNames,
+        Boolean enable) {
         super(constraintName, ConstraintType.UNIQUE, enable);
         this.columnNames = columnNames;
     }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.starrocks.parser.visitor;
 
 import java.util.ArrayList;
@@ -248,7 +264,14 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
         List<Property> properties = Lists.newArrayList();
         IndexTypeContext indexTypeContext = ctx.indexType();
         if (indexTypeContext != null) {
-            Property property = new Property(TABLE_INDEX_TYPE.getValue(), "BITMAP");
+            String indexTypeName;
+            if (indexTypeContext.BITMAP() != null) {
+                indexTypeName = "BITMAP";
+            } else {
+                Identifier id = (Identifier) visit(indexTypeContext.identifier());
+                indexTypeName = id.getValue().toUpperCase();
+            }
+            Property property = new Property(TABLE_INDEX_TYPE.getValue(), indexTypeName);
             properties.add(property);
         }
         if (ctx.comment() != null) {
@@ -399,7 +422,10 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     @Override
     public Node visitPartitionKeyDesc(PartitionKeyDescContext ctx) {
         if (ctx.LESS() != null) {
-            ListPartitionValue visit = (ListPartitionValue)visit(ctx.partitionValueList().get(0));
+            ListPartitionValue visit = null;
+            if (!ctx.partitionValueList().isEmpty()) {
+                visit = (ListPartitionValue)visit(ctx.partitionValueList().get(0));
+            }
             return new LessThanPartitionKey(
                 ctx.MAXVALUE() != null,
                 visit
@@ -434,19 +460,22 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
     @Override
     public Node visitDistributionDesc(DistributionDescContext ctx) {
         Integer bucket = null;
+        boolean auto = false;
         if (ctx.BUCKETS() != null) {
-            bucket = Integer.parseInt(ctx.INTEGER_VALUE().getText());
+            if (ctx.INTEGER_VALUE() != null) {
+                bucket = Integer.parseInt(ctx.INTEGER_VALUE().getText());
+            } else if (ctx.AUTO() != null) {
+                auto = true;
+            }
         }
-        if (ctx.RANDOM() != null) {
-            return new DistributeNonKeyConstraint(true, bucket);
-        }
+        boolean random = ctx.RANDOM() != null;
+        List<Identifier> columns = null;
         if (ctx.identifierList() != null) {
-            return new DistributeNonKeyConstraint(
-                ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class),
-                bucket
-            );
+            columns = ParserHelper.visit(this, ctx.identifierList().identifier(), Identifier.class);
+        } else if (!random) {
+            return super.visitDistributionDesc(ctx);
         }
-        return super.visitDistributionDesc(ctx);
+        return new DistributeNonKeyConstraint(columns, random, false, bucket, auto);
     }
 
     private List<Property> toExtend(CreateTableStatementContext ctx) {

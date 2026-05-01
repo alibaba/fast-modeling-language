@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.starrocks.parser.tree.datatype;
 
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
@@ -73,9 +89,19 @@ public enum StarRocksDataTypeName implements ISimpleDataTypeName {
     DATE("DATE", Dimension.ZERO, SimpleDataTypeName.DATE),
 
     /**
+     * datev2 (Doris/StarRocks compatible)
+     */
+    DATEV2("DATEV2", Dimension.ZERO, SimpleDataTypeName.DATE),
+
+    /**
      * datetime
      */
     DATETIME("DATETIME", Dimension.ZERO, SimpleDataTypeName.DATE),
+
+    /**
+     * datetimev2 (Doris/StarRocks compatible)
+     */
+    DATETIMEV2("DATETIMEV2", Dimension.ONE, SimpleDataTypeName.DATE),
 
     /**
      * time
@@ -141,6 +167,11 @@ public enum StarRocksDataTypeName implements ISimpleDataTypeName {
      * decimal
      */
     DECIMALV2("DECIMALV2", Dimension.TWO, SimpleDataTypeName.NUMBER),
+
+    /**
+     * decimalv3, default decimal type since StarRocks 3.0
+     */
+    DECIMALV3("DECIMALV3", Dimension.TWO, SimpleDataTypeName.NUMBER),
 
     /**
      * decimal32

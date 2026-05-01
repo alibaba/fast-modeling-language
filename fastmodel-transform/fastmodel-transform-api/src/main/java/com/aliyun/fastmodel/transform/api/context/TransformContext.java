@@ -68,6 +68,12 @@ public class TransformContext {
     private DataTypeConverter dataTypeTransformer;
 
     /**
+     * 是否过滤属性
+     * 是否对用户传入的属性进行过滤，去掉自定义属性
+     */
+    private boolean filterProperties = true;
+
+    /**
      * 转换view处理内容
      */
     private ViewSetting viewSetting = new ViewSetting();
@@ -100,6 +106,7 @@ public class TransformContext {
         this.querySetting = context.getQuerySetting();
         this.prettyFormat = context.isPrettyFormat();
         this.caseSensitive = context.isCaseSensitive();
+        this.filterProperties = context.isFilterProperties();
     }
 
     /**
@@ -119,6 +126,7 @@ public class TransformContext {
         this.schema = tBuilder.schema;
         this.prettyFormat = tBuilder.prettyFormat;
         this.caseSensitive = tBuilder.caseSensitive;
+        this.filterProperties = tBuilder.filterProperties;
     }
 
     /**
@@ -153,6 +161,12 @@ public class TransformContext {
          * 数据类型转换
          */
         private DataTypeConverter dataTypeTransformer;
+
+        /**
+         * 是否过滤属性
+         * 是否对用户传入的属性进行过滤，去掉自定义属性
+         */
+        private boolean filterProperties = true;
 
         /**
          * view转换设置
@@ -216,6 +230,11 @@ public class TransformContext {
 
         public T caseSensitive(boolean caseSensitive) {
             this.caseSensitive = caseSensitive;
+            return (T)this;
+        }
+
+        public T filterProperties(boolean filterProperties) {
+            this.filterProperties = filterProperties;
             return (T)this;
         }
 

@@ -1,17 +1,17 @@
 /*
- * Copyright [2024] [name of copyright owner]
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package com.aliyun.fastmodel.transform.adbpg.format;
@@ -54,7 +54,7 @@ public class AdbPostgreSQLOutVisitorTest {
         columns.add(ColumnDefinition.builder().colName(new Identifier("c1")).dataType(DataTypeUtil.simpleType("INT", null)).build());
 
         List<BaseConstraint> constraints = Lists.newArrayList();
-        constraints.add(new DistributeNonKeyConstraint(Lists.newArrayList(new Identifier("c1")), null, null, null));
+        constraints.add(new DistributeNonKeyConstraint(Lists.newArrayList(new Identifier("c1")), null, null, null, null));
         CreateTable node = CreateTable.builder()
             .tableName(QualifiedName.of("abc"))
             .columns(columns)

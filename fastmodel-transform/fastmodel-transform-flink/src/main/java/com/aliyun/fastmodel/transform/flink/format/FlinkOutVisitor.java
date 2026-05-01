@@ -1,8 +1,25 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.flink.format;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
@@ -17,9 +34,10 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
+import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.flink.context.FlinkTransformContext;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.flink.parser.util.FlinkReservedWordUtil;
 import com.aliyun.fastmodel.transform.flink.parser.visitor.FlinkAstVisitor;
 import com.aliyun.fastmodel.transform.flink.parser.visitor.FlinkExpressionAstVisitor;
@@ -135,13 +153,29 @@ public class FlinkOutVisitor extends FastModelVisitor implements FlinkAstVisitor
     }
 
     @Override
+    public Boolean visitPrimaryConstraint(PrimaryConstraint primaryConstraint, Integer ident) {
+        Identifier name = primaryConstraint.getName();
+        if (!IdentifierUtil.isSysIdentifier(name)) {
+            builder.append(indentString(ident)).append(CONSTRAINT).append(formatExpression(name));
+            builder.append(" PRIMARY KEY(");
+        } else {
+            builder.append(indentString(ident)).append("PRIMARY KEY(");
+        }
+        builder.append(
+            primaryConstraint.getColNames().stream().map(this::formatIdentifierWithBackticks).collect(Collectors.joining(",")));
+        builder.append(")");
+        builder.append(" NOT ENFORCED");
+        return true;
+    }
+
+    @Override
     public Boolean visitPartitionedBy(PartitionedBy partitionedBy, Integer context) {
         builder.append("PARTITIONED BY (");
 
         List<ColumnDefinition> partitioned = partitionedBy.getColumnDefinitions();
         String collect = partitioned.stream().map(
-            x -> formatExpression(x.getColName())
-        ).collect(joining(", "));
+            x -> formatIdentifierWithBackticks(x.getColName())
+        ).collect(Collectors.joining(", "));
         builder.append(collect);
 
         builder.append(")");
@@ -172,6 +206,19 @@ public class FlinkOutVisitor extends FastModelVisitor implements FlinkAstVisitor
             value = formatExpression(colName);
         }
         return StringUtils.rightPad(value, size);
+    }
+
+    /**
+     * Format identifier with backticks for reserved keywords
+     */
+    private String formatIdentifierWithBackticks(Identifier identifier) {
+        String value = formatExpression(identifier);
+        boolean reservedKeyWord = FlinkReservedWordUtil.isReservedKeyWord(value);
+        if (reservedKeyWord) {
+            // Add backticks around the identifier if it's a reserved keyword
+            value = StripUtils.addPrefix(value);
+        }
+        return value;
     }
 
     private String formatPhysicalColumnDefinition(ColumnDefinition column, Integer max) {

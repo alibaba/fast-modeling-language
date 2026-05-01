@@ -73,11 +73,8 @@ public enum ConstraintType {
     /**
      * 自定义约束信息
      */
-    CHECK(Constants.CHECK, ConstraintScope.UNDEFINED, "自定义约束"),
-    /**
-     * index
-     */
-    INDEX(Constants.INDEX, ConstraintScope.UNDEFINED, "索引"),
+    CHECK(Constants.CHECK, ConstraintScope.UNDEFINED, "自定义约束")
+
 
     ;
 

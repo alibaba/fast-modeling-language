@@ -367,15 +367,32 @@ createTableStatement
           distributionDesc?
           orderByDesc?
           rollupDesc?
+          tableTrailingCharsetDesc?
+          tableTrailingCollateDesc?
           properties?
           extProperties?
      ;
 
+tableTrailingCharsetDesc
+    : DEFAULT? (CHAR SET | CHARSET | CHARACTER SET) EQ? identifierOrString
+    ;
+
+tableTrailingCollateDesc
+    : DEFAULT? COLLATE EQ? identifierOrString
+    ;
+
 columnDesc
     : identifier type charsetName? KEY? aggDesc? (NULL | NOT NULL)?
     (defaultDesc | AUTO_INCREMENT | generatedColumnDesc)?
+    onUpdateDesc?
+    columnConstraint*
     (withMaskingPolicy)?
     comment?
+    ;
+
+columnConstraint
+    : UNIQUE                                   #columnConstraintUnique
+    | CHECK '(' expression ')'                 #columnConstraintCheck
     ;
 
 charsetName
@@ -386,6 +403,10 @@ charsetName
 
 defaultDesc
     : DEFAULT (string | NULL | CURRENT_TIMESTAMP | '(' qualifiedName '(' ')' ')')
+    ;
+
+onUpdateDesc
+    : ON UPDATE CURRENT_TIMESTAMP
     ;
 
 generatedColumnDesc
@@ -409,7 +430,7 @@ collateDesc
     ;
 
 keyDesc
-    : (AGGREGATE | UNIQUE | PRIMARY | DUPLICATE) KEY identifierList
+    : (AGGREGATE | UNIQUE | PRIMARY | DUPLICATE) (KEY | KEYS) identifierList (NOT ENFORCED)?
     ;
 
 orderByDesc
@@ -453,7 +474,16 @@ withRowAccessPolicy
 
 createTemporaryTableStatement
     : CREATE TEMPORARY TABLE qualifiedName
-        queryStatement
+        '(' columnDesc (',' columnDesc)* (',' indexDesc)* ')'
+        engineDesc?
+        charsetDesc?
+        keyDesc?
+        comment?
+        partitionDesc?
+        distributionDesc?
+        orderByDesc?
+        properties?
+    | CREATE TEMPORARY TABLE qualifiedName AS? queryStatement
     ;
 
 createTableAsSelectStatement
@@ -488,7 +518,7 @@ dropIndexStatement
     ;
 
 indexType
-    : USING BITMAP
+    : USING (BITMAP | identifier)
     ;
 
 showTableStatement
@@ -2373,14 +2403,14 @@ partitionValue
     ;
 
 distributionClause
-    : DISTRIBUTED BY HASH identifierList (BUCKETS INTEGER_VALUE)?
+    : DISTRIBUTED BY HASH identifierList (BUCKETS (INTEGER_VALUE | AUTO))?
     | DISTRIBUTED BY HASH identifierList
     ;
 
 distributionDesc
-    : DISTRIBUTED BY HASH identifierList (BUCKETS INTEGER_VALUE)?
+    : DISTRIBUTED BY HASH identifierList (BUCKETS (INTEGER_VALUE | AUTO))?
     | DISTRIBUTED BY HASH identifierList
-    | DISTRIBUTED BY RANDOM (BUCKETS INTEGER_VALUE)?
+    | DISTRIBUTED BY RANDOM (BUCKETS (INTEGER_VALUE | AUTO))?
     ;
 
 refreshSchemeDesc
@@ -2511,7 +2541,9 @@ baseType
     | name=FLOAT
     | name=DOUBLE
     | name=DATE
+    | name=DATEV2
     | name=DATETIME
+    | name=DATETIMEV2 typeParameter?
     | name=TIME
     | name=CHAR typeParameter?
     | name=VARCHAR typeParameter?
@@ -2526,7 +2558,7 @@ baseType
     ;
 
 decimalType
-    : name=(DECIMAL | DECIMALV2 | DECIMAL32 | DECIMAL64 | DECIMAL128 | NUMERIC | NUMBER )
+    : name=(DECIMAL | DECIMALV2 | DECIMALV3 | DECIMAL32 | DECIMAL64 | DECIMAL128 | NUMERIC | NUMBER )
         ('(' precision=INTEGER_VALUE (',' scale=INTEGER_VALUE)? ')')?
     ;
 
@@ -2581,7 +2613,7 @@ number
     ;
 
 nonReserved
-    : ACCESS | ACTIVE | AFTER | AGGREGATE | APPLY | ASYNC | AUTHORS | AVG | ADMIN | ANTI | AUTHENTICATION | AUTO_INCREMENT
+    : ACCESS | ACTIVE | AFTER | AGGREGATE | APPLY | ASYNC | AUTHORS | AVG | ADMIN | ANTI | AUTHENTICATION | AUTO | AUTO_INCREMENT
     | ARRAY_AGG
     | BACKEND | BACKENDS | BACKUP | BEGIN | BITMAP_UNION | BLACKLIST | BINARY | BODY | BOOLEAN | BROKER | BUCKETS
     | BUILTIN | BASE
@@ -2589,7 +2621,7 @@ nonReserved
     | CUME_DIST | CUMULATIVE | COMMENT | COMMIT | COMMITTED | COMPUTE | CONNECTION | CONSISTENT | COSTS | COUNT
     | CONFIG | COMPACT
     | DATA | DATE | DATETIME | DAY | DECOMMISSION | DISABLE | DISTRIBUTION | DUPLICATE | DYNAMIC | DISTRIBUTED
-    | ENABLE | END | ENGINE | ENGINES | ERRORS | EVENTS | EXECUTE | EXTERNAL | EXTRACT | EVERY | ENCLOSE | ESCAPE | EXPORT
+    | ENABLE | END | ENFORCED | ENGINE | ENGINES | ERRORS | EVENTS | EXECUTE | EXTERNAL | EXTRACT | EVERY | ENCLOSE | ESCAPE | EXPORT
     | FAILPOINT | FAILPOINTS | FIELDS | FILE | FILTER | FIRST | FLOOR | FOLLOWING | FORMAT | FN | FRONTEND | FRONTENDS | FOLLOWER | FREE
     | FUNCTIONS
     | GLOBAL | GRANTS | GROUP_CONCAT

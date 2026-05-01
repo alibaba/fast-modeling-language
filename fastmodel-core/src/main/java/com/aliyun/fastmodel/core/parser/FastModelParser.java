@@ -75,16 +75,6 @@ public interface FastModelParser extends LanguageParser<Node, Void> {
     BaseExpression parseExpr(DomainLanguage expr) throws ParseException;
 
     /**
-     * 解析表达式，支持泛型, 不需要强转
-     *
-     * @param text¬ 表达式
-     * @param <T>   T
-     * @return T
-     * @throws ParseException 解析异常
-     */
-    <T> T parseExpression(String text) throws ParseException;
-
-    /**
      * 支持类型表达式的解析
      *
      * @param dataTypeExpr 数据类型表达式

@@ -63,10 +63,10 @@ public class HiveLanguageParserTest {
             + ")");
     }
 
-
     @Test
     public void parseComplex() {
-        CreateTable o = hiveLanguageParser.parseNode("create table a (b bigint comment 'comment abc', abc struct<course:string,score:int>, abc1 map<string,string>, bcd array<string>)");
+        CreateTable o = hiveLanguageParser.parseNode(
+            "create table a (b bigint comment 'comment abc', abc struct<course:string,score:int>, abc1 map<string,string>, bcd array<string>)");
         assertEquals(o.toString(), "CREATE DIM TABLE a \n"
             + "(\n"
             + "   b    BIGINT COMMENT 'comment abc',\n"
@@ -96,6 +96,12 @@ public class HiveLanguageParserTest {
             + "(\n"
             + "   a BIGINT\n"
             + ")");
+    }
+
+    @Test
+    public void testUnionType() {
+        CreateTable createTable = hiveLanguageParser.parseNode("create table a (col uniontype<int>)");
+        assertEquals(1, createTable.getColumnDefines().size());
     }
 
     @Test

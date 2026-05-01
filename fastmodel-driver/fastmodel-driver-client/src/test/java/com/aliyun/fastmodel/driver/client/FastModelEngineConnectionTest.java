@@ -19,8 +19,9 @@ package com.aliyun.fastmodel.driver.client;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import com.aliyun.fastmodel.driver.client.command.CommandFactory;
+import com.aliyun.fastmodel.driver.client.command.CommandType;
 import com.aliyun.fastmodel.driver.client.command.ExecuteCommand;
-import com.aliyun.fastmodel.driver.client.command.sample.SampleCommandFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,15 +39,12 @@ public class FastModelEngineConnectionTest {
 
     FastModelEngineConnection fastModelEngineConnection;
 
-    SampleCommandFactory commandFactory;
-
     @Before
     public void setUp() throws Exception {
-        commandFactory = new SampleCommandFactory();
         Properties properties = new Properties();
         properties.setProperty("ssl", "true");
-        ExecuteCommand command = commandFactory.createStrategy(
-            "sample",
+        ExecuteCommand command = CommandFactory.createStrategy(
+            CommandType.TENANT,
             properties
         );
         fastModelEngineConnection = new FastModelEngineConnection("jdbc:fastmodel://localhost:7071/database",

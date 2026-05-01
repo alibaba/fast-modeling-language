@@ -48,7 +48,7 @@ public class HiveLanguageParser implements LanguageParser<Node, ReverseContext> 
         return getNode(text, context, HiveParser::statements);
     }
 
-    private Node getNode(String text, ReverseContext context, Function<HiveParser, ParserRuleContext> functionalInterface) {
+    private Node getNode(String text, ReverseContext context, Function<HiveParser,ParserRuleContext> functionalInterface) {
         String code = StripUtils.appendSemicolon(text);
         CodePointCharStream charStream = CharStreams.fromString(code);
         CaseChangingCharStream caseChangingCharStream = new CaseChangingCharStream(charStream, true);

@@ -1,5 +1,6 @@
 <!-- docs/_sidebar.md -->
 
+* [首页](zh-cn/README.md)
 * [入门](zh-cn/guide.md)
 * [与SQL的差异](zh-cn/difference.md)
 * [基本元素](zh-cn/basic.md)
@@ -32,11 +33,17 @@
     * [渲染导入导出](zh-cn/command/impexp.md)
 * 逆向
     * [逆向建模](zh-cn/reverse/model.md)
+    * [逆向生成指标](zh-cn/reverse/indicator.md)
 * 发布
     * [模型发布](zh-cn/publish/model.md)
 * DDL转换
     * [总览](zh-cn/transformer/guide.md)
     * [建表SDK](zh-cn/transformer/table.md)
+    * [MaxCompute](zh-cn/transformer/maxcompute.md)
+    * [Hive](zh-cn/transformer/hive.md)
+    * [Hologres](zh-cn/transformer/hologres.md)
+    * [Mysql](zh-cn/transformer/mysql.md)
+    * [Oracle](zh-cn/transformer/oracle.md)
     * [其他](zh-cn/transformer/other.md)
     * [比较](zh-cn/transformer/compare.md)
 * JDBC
@@ -46,4 +53,3 @@
     * [IDE设计](zh-cn/ide/design.md)
 * 其他
     * [如何贡献](zh-cn/how-to-contribute.md)
-    * [RoadMap](zh-cn/roadmap.md)

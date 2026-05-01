@@ -1,0 +1,8 @@
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    price DECIMAL(10,2)
+);
+COMMENT ON TABLE products IS '商品表';
+COMMENT ON COLUMN products.name IS '商品名称';
+COMMENT ON COLUMN products.price IS '商品价格';
