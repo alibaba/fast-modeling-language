@@ -19,24 +19,12 @@ package com.aliyun.fastmodel.core.tree.statement.rule.function;
 import lombok.Getter;
 
 /**
- * function grade
- *
  * @author panguanjing
  * @date 2021/5/31
  */
 public enum FunctionGrade {
-
-    /**
-     * table rule
-     */
     TABLE("表级规则"),
-    /**
-     * column rule
-     */
     COLUMN("字段规则"),
-    /**
-     * vol rule
-     */
     VOL("波动率规则");
 
     @Getter

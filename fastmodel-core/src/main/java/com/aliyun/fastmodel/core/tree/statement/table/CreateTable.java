@@ -166,7 +166,9 @@ public class CreateTable extends BaseCreate {
     public ColumnDefinition getColumn(Identifier colName) {
         if (!isColumnEmpty()) {
             for (ColumnDefinition c : getColumnDefines()) {
-                if (!Objects.equals(c.getColName(), colName)) {continue;}
+                if (!Objects.equals(c.getColName(), colName)) {
+                    continue;
+                }
                 return c;
             }
         }

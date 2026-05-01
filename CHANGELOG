@@ -262,3 +262,31 @@ Transformer
 无
 安全漏洞修复（vulnerability）
 无
+
+## 0.5.19
+新功能（new features）
+Core
+• 暂无
+
+Transformer
+• 新增 PostgreSQL 客户端转换器（PostgreSQLStandaloneClientConverter / PostgreSQLPropertyConverter）与 Builder 模式支持
+• fastmodel-transform-api 新增 AutoPartitionedBy 自动分区表达式节点
+• Hologres 增强 ClusterKey 转换并补充 ClusterKeyTest 测试
+• StarRocks 主键约束兼容性修复，新增 StarRocksCompatFixTest
+• Doris reverse distribute key 修复
+• Spark Transformer 多项 bug 修复
+• ADB PG Transformer 增强
+
+JDBC Driver
+• 新增 TenantHttpClientBuilder 与 TenantTokenUtil，支持租户级别的 HTTP 客户端构造
+• Driver Server 新增 HTTPS 测试支持（DriverHttpsTest）
+• 命令工厂体系重构（CommandFactory / CommandType / TenantExecuteCommand）
+
+向下兼容（compatibility）
+• 暂无
+
+过期功能（deprecations）
+无
+
+安全漏洞修复（vulnerability）
+无

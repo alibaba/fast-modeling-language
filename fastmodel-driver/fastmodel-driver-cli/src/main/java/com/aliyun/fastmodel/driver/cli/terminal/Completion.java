@@ -45,8 +45,6 @@ public class Completion {
         "SHOW TIMEPERIODS",
         "CREATE DIM TABLE",
         "CREATE FACT TABLE",
-        "CREATE DWS TABLE",
-        "CREATE ADS TABLE",
         "HELP",
         "QUIT",
         "DESCRIBE"

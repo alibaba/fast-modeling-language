@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.api.extension.visitor;
 
 import com.aliyun.fastmodel.core.tree.IAstVisitor;
@@ -13,6 +29,7 @@ import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.Distrib
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.OrderByNonKeyConstraint;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupItem;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.RollupNonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.extension.tree.partition.AutoPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ExpressionPartitionBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.ListPartitionedBy;
 import com.aliyun.fastmodel.transform.api.extension.tree.partition.LogicalPartitionedBy;
@@ -478,5 +495,15 @@ public interface ExtensionAstVisitor<R, C> extends IAstVisitor<R, C> {
      */
     default R visitLogicPartitionedBy(LogicalPartitionedBy logicalPartitionedBy, C context) {
         return visitNode(logicalPartitionedBy, context);
+    }
+
+    /**
+     * visit autoPartitionedBy
+     * @param autoPartitionedBy 自动分区
+     * @param context context
+     * @return
+     */
+    default R visitAutoPartitionedBy(AutoPartitionedBy autoPartitionedBy, C context) {
+        return visitNode(autoPartitionedBy, context);
     }
 }

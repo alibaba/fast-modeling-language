@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.flink.parser.visitor;
 
 import java.util.ArrayList;
@@ -28,7 +44,6 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
-import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.flink.format.FlinkColumnPropertyKey;
 import com.aliyun.fastmodel.transform.flink.parser.FlinkSqlParser.ColumnTypeContext;
 import com.aliyun.fastmodel.transform.flink.parser.FlinkSqlParser.CommentSpecContext;
@@ -51,6 +66,7 @@ import com.aliyun.fastmodel.transform.flink.parser.FlinkSqlParser.UnquotedIdenti
 import com.aliyun.fastmodel.transform.flink.parser.FlinkSqlParser.WatermarkDefinitionContext;
 import com.aliyun.fastmodel.transform.flink.parser.FlinkSqlParserBaseVisitor;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkDataTypeName;
+import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkGenericDataType;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkRawDataType;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkRowDataType;
@@ -83,7 +99,7 @@ public class FlinkAstBuilder extends FlinkSqlParserBaseVisitor<Node> {
         if (list.size() == 1) {
             return list.get(0);
         }
-        return new CompositeStatement(getLocation(ctx), getOrigin(ctx), list);
+        return new CompositeStatement(ParserHelper.getLocation(ctx), ParserHelper.getOrigin(ctx), list);
     }
 
     @Override
@@ -177,7 +193,7 @@ public class FlinkAstBuilder extends FlinkSqlParserBaseVisitor<Node> {
                 getLocation(ctx),
                 getOrigin(ctx),
                 ctx.KW_MULTISET().getText(),
-                ImmutableList.of(new TypeParameter((BaseDataType)visit(ctx.lengthOneTypeDimension().columnType()))));
+                ImmutableList.of(new TypeParameter((BaseDataType) visit(ctx.lengthOneTypeDimension().columnType()))));
         } else if (ctx.KW_MAP() != null) {
             return new FlinkGenericDataType(
                 getLocation(ctx),

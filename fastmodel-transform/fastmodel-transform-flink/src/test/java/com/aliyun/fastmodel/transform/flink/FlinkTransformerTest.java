@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.flink;
 
 import java.util.stream.Collectors;
@@ -162,10 +178,68 @@ public class FlinkTransformerTest {
             "   `timestamp` TIMESTAMP_LTZ(3) METADATA FROM row,\n" +
             "   cost      AS age * test,\n" +
             "   WATERMARK FOR order_time AS order_time - INTERVAL '5' SECOND,\n" +
-            "   PRIMARY KEY(user_id,name)\n" +
+            "   PRIMARY KEY(user_id,name) NOT ENFORCED\n" +
             ")\n" +
             "PARTITIONED BY (user_id, name)\n" +
             "WITH ('connector'='kafka','test'='true');", result.getNode());
+    }
+
+    @Test
+    public void testTransform2() throws Exception {
+        DialectNode dialectNode = new DialectNode("CREATE TABLE IF NOT EXISTS `default`.all_primitive_types_quan\n" +
+            "(\n" +
+            "   c_tinyint   TINYINT NOT NULL,\n" +
+            "   `hour`      SMALLINT NOT NULL,\n" +
+            "   c_int       INT NOT NULL,\n" +
+            "   c_bigint    BIGINT NOT NULL,\n" +
+            "   c_boolean   DOUBLE(38,18) NOT NULL,\n" +
+            "   c_float     FLOAT(38,18) NOT NULL,\n" +
+            "   c_double    DOUBLE(38,18) NOT NULL,\n" +
+            "   c_decimal   DECIMAL(38,18) NOT NULL,\n" +
+            "   c_string    DATE NOT NULL,\n" +
+            "   c_varchar   TIME(1) NOT NULL,\n" +
+            "   c_char      TIMESTAMP NOT NULL,\n" +
+            "   c_binary    TIMESTAMP_LTZ(6) NOT NULL,\n" +
+            "   c_timestamp CHAR(6) NOT NULL,\n" +
+            "   c_date      VARCHAR(255) NOT NULL,\n" +
+            "   aaa         BINARY(22112) NULL COMMENT '',\n" +
+            "   ccc         BYTES NULL COMMENT '',\n" +
+            "   dddd        BOOLEAN NULL COMMENT '',\n" +
+            "   dddddddd    VARBINARY(21221) NULL COMMENT '',\n" +
+            "   eee         STRING NULL COMMENT '',\n" +
+            "   ffff        STRING NULL COMMENT '',\n" +
+            "   PRIMARY KEY(c_tinyint,`hour`) NOT ENFORCED\n" +
+            ")\n" +
+            "PARTITIONED BY (c_tinyint, `hour`);");
+        ReverseContext context = ReverseContext.builder().build();
+        BaseStatement createTable = flinkTransformer.reverse(dialectNode, context);
+
+        DialectNode result = flinkTransformer.transform(createTable, new TransformContext(null));
+        Assert.assertEquals("CREATE TABLE IF NOT EXISTS `default`.all_primitive_types_quan\n" +
+            "(\n" +
+            "   c_tinyint   TINYINT NOT NULL,\n" +
+            "   `hour`      SMALLINT NOT NULL,\n" +
+            "   c_int       INT NOT NULL,\n" +
+            "   c_bigint    BIGINT NOT NULL,\n" +
+            "   c_boolean   DOUBLE(38,18) NOT NULL,\n" +
+            "   c_float     FLOAT(38,18) NOT NULL,\n" +
+            "   c_double    DOUBLE(38,18) NOT NULL,\n" +
+            "   c_decimal   DECIMAL(38,18) NOT NULL,\n" +
+            "   c_string    DATE NOT NULL,\n" +
+            "   c_varchar   TIME(1) NOT NULL,\n" +
+            "   c_char      TIMESTAMP NOT NULL,\n" +
+            "   c_binary    TIMESTAMP_LTZ(6) NOT NULL,\n" +
+            "   c_timestamp CHAR(6) NOT NULL,\n" +
+            "   c_date      VARCHAR(255) NOT NULL,\n" +
+            "   aaa         BINARY(22112) COMMENT '',\n" +
+            "   ccc         BYTES COMMENT '',\n" +
+            "   dddd        BOOLEAN COMMENT '',\n" +
+            "   dddddddd    VARBINARY(21221) COMMENT '',\n" +
+            "   eee         STRING COMMENT '',\n" +
+            "   ffff        STRING COMMENT '',\n" +
+            "   PRIMARY KEY(c_tinyint,`hour`) NOT ENFORCED\n" +
+            ")\n" +
+            "PARTITIONED BY (c_tinyint, `hour`);", result.getNode());
     }
 
     @Test

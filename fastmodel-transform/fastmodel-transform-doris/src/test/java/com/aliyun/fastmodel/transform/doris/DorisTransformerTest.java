@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.doris;
 
 import java.nio.charset.Charset;
@@ -11,6 +27,7 @@ import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
+import com.aliyun.fastmodel.transform.api.client.dto.constraint.Constraint;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Column;
 import com.aliyun.fastmodel.transform.api.client.dto.table.Table;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
@@ -87,6 +104,18 @@ public class DorisTransformerTest {
                 + "DISTRIBUTED BY HASH(`user_id`) BUCKETS 16\n"
                 + "PROPERTIES (\"replication_num\"=\"3\",\"storage_medium\"=\"SSD\",\"storage_cooldown_time\"=\"2018-01-01 12:00:00\");",
             transform.getNode());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testReverse() {
+        String rangeContent = IOUtils.resourceToString("/doris/range.txt", Charset.defaultCharset());
+        DialectNode dialectNode = new DialectNode(rangeContent);
+        BaseStatement reverse = dorisTransformer.reverse(dialectNode);
+        assertNotNull(reverse);
+        Table table = dorisTransformer.transformTable(reverse, TransformContext.builder().build());
+        List<Constraint> constraints = table.getConstraints();
+        assertEquals(1, constraints.size());
     }
 
     @Test

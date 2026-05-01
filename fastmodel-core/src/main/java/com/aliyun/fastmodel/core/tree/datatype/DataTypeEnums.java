@@ -16,8 +16,6 @@
 
 package com.aliyun.fastmodel.core.tree.datatype;
 
-import lombok.Getter;
-
 /**
  * 内建的列数据类型
  *

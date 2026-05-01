@@ -1,0 +1,21 @@
+CREATE TABLE all_types (
+    f1 INTEGER,
+    f2 BIGINT,
+    f3 BOOLEAN,
+    f4 REAL,
+    f5 TEXT,
+    f6 TIMESTAMP WITH TIME ZONE,
+    f7 DECIMAL(10,2),
+    f8 DATE,
+    f9 TIMESTAMP,
+    f10 CHAR(10),
+    f11 VARCHAR(100),
+    f12 SMALLINT,
+    f13 JSON,
+    f14 JSONB,
+    f15 BYTEA,
+    f16 UUID,
+    f17 INET,
+    f18 MONEY,
+    f19 INTERVAL
+);

@@ -51,7 +51,7 @@ public class FastModelExceptionTest {
         }
     }
 
-    @Test(expected = SQLException.class)
+    @Test(expected = FastModelException.class)
     public void testNullPointException() throws SQLException {
         String url = "jdbc:fastmodel://model-engine,/autotest";
         Connection connection = DriverManager.getConnection(url);

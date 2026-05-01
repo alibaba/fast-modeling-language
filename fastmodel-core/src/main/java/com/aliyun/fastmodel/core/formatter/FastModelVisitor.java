@@ -1,9 +1,17 @@
 /*
- * Copyright (c)  2020. Aliyun.com All right reserved. This software is the
- * confidential and proprietary information of Aliyun.com ("Confidential
- * Information"). You shall not disclose such Confidential Information and shall
- * use it only in accordance with the terms of the license agreement you entered
- * into with Aliyun.com.
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package com.aliyun.fastmodel.core.formatter;
@@ -461,9 +469,8 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         builder.append(formatComment(node.getComment(), isEndNewLine(builder.toString())));
         if (!node.isPartitionEmpty()) {
             PartitionedBy partitionedBy = node.getPartitionedBy();
-            List<ColumnDefinition> columnDefinitions = partitionedBy.getColumnDefinitions();
             builder.append(
-                formatPartitions(columnDefinitions, isEndNewLine(builder.toString()), indentString(newIndent)));
+                formatPartitions(partitionedBy, isEndNewLine(builder.toString()), indentString(newIndent)));
         }
         List<Property> properties = node.getProperties();
         builder.append(formatWith(properties, isEndNewLine(builder.toString())));
@@ -732,13 +739,13 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         ).collect(joining(","));
     }
 
-    protected String formatPartitions(List<ColumnDefinition> partitionCol, boolean isNewLine, String elementIndent) {
+    protected String formatPartitions(PartitionedBy partitionedBy, boolean isNewLine, String elementIndent) {
         StringBuilder stringBuilder = new StringBuilder();
         if (!isNewLine) {
             stringBuilder.append("\n");
         }
         stringBuilder.append("PARTITIONED BY\n(\n");
-        String collect = formatColumnList(partitionCol, elementIndent);
+        String collect = formatColumnList(partitionedBy.getColumnDefinitions(), elementIndent);
         stringBuilder.append(collect);
         stringBuilder.append("\n").append(")\n");
         return stringBuilder.toString();
@@ -1303,9 +1310,11 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
 
     @Override
     public Boolean visitBaseSetComment(BaseSetComment baseSetComment, Integer context) {
-        builder.append("ALTER ").append(baseSetComment.getStatementType().getCode().toUpperCase()).append(" ").
-            append(getCode(baseSetComment.getQualifiedName())).append(
-                " SET").append(formatComment(baseSetComment.getComment(), false));
+        builder.append("ALTER ").append(baseSetComment.getStatementType().getCode().toUpperCase())
+            .append(" ")
+            .append(getCode(baseSetComment.getQualifiedName()))
+            .append(" SET")
+            .append(formatComment(baseSetComment.getComment(), false));
         return true;
     }
 
@@ -1344,7 +1353,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             builder.append("INSERT OVERWRITE ").append(getCode(insert.getQualifiedName()));
         }
         appendPartition(builder, insert.getPartitionSpecList(), ",");
-        //如果是overwrite，那么不生成列信息
+        // 如果是overwrite，那么不生成列信息
         if (BooleanUtils.isNotTrue(overwrite)) {
             builder.append(" (").append(
                 insert.getColumns().stream().map(ExpressionFormatter::formatExpression).collect(joining(","))
@@ -1432,7 +1441,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         return true;
     }
 
-    //add the createDict
+    // add the createDict
 
     @Override
     public Boolean visitCreateDict(CreateDict createDict, Integer context) {
@@ -1782,7 +1791,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
             process(n, context);
             builder.append(";\n");
         });
-        //删除最后一个换行
+        // 删除最后一个换行
         builder.deleteCharAt(builder.toString().length() - 1);
         return true;
     }
@@ -1832,7 +1841,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         builder.append(formatComment(createDimension.getComment(), isEndNewLine(builder.toString())));
         builder.append(formatWith(createDimension.getProperties(), isEndNewLine(builder.toString())));
         removeNewLine(builder);
-        //默认false，物理引擎不支持
+        // 默认false，物理引擎不支持
         return false;
     }
 
@@ -1852,7 +1861,7 @@ public class FastModelVisitor extends AstVisitor<Boolean, Integer> {
         } else if (BooleanUtils.isTrue(setColumnOrder.getFirst())) {
             builder.append(" FIRST");
         }
-        //默认是false，目前mc只有弹内支持，弹外不支持，所以先设置为false，物理引擎不支持
+        // 默认是false，目前mc只有弹内支持，弹外不支持，所以先设置为false，物理引擎不支持
         return false;
     }
 

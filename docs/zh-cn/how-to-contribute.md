@@ -135,6 +135,29 @@ package transformer <<转换器>> {
 
       Transformer -> TransformContext
 
+    package maxcompute {
+        class MaxComputeTransformer extends Transformer {
+        }
+
+        class MaxComputeTransformContext extends TransformContext {
+        }
+
+        class MaxComputeVisitor{
+        }
+
+        MaxComputeTransformer --> StatementBuilder
+
+
+        class BaseBuilder implements StatementBuilder
+
+        BaseBuilder --> MaxComputeFormatter
+
+        class MaxComputeFormatter
+
+        MaxComputeVisitor --|> FastModelVisitor
+
+        MaxComputeFormatter -> MaxComputeVisitor
+    }
 
 
     package hive{
@@ -152,7 +175,6 @@ package transformer <<转换器>> {
 
 
 transformer --> core
-compare --> core
 @enduml
 ```
 

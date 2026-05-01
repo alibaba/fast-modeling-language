@@ -26,11 +26,11 @@ import static org.junit.Assert.assertEquals;
 
 public class Test {
     @Test
-    public void testHive() {
+    public void testMaxCompute() {
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         Table table = getTable("c1", "c1", 1000L);
         TableConfig config = TableConfig.builder()
-            .dialectMeta(DialectMeta.DEFAULT_HIVE)  //这里根据目标引擎选择
+            .dialectMeta(DialectMeta.DEFAULT_MAX_COMPUTE)  //这里根据目标引擎选择
             .caseSensitive(false)
             .build();
         DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
@@ -42,7 +42,8 @@ public class Test {
         assertEquals(dialectNodes.stream().map(DialectNode::getNode).collect(Collectors.joining(";\n")), "CREATE TABLE IF NOT EXISTS a\n"
             + "(\n"
             + "   c1 STRING COMMENT 'comment'\n"
-            + ")\n");
+            + ")\n"
+            + "LIFECYCLE 1");
     }
 
     private Table getTable(String id, String name, long lifeCycleSeconds) {

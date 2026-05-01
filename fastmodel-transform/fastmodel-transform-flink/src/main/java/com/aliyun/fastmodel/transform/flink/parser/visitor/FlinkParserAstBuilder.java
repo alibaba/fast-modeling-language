@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.flink.parser.visitor;
 
 import java.util.ArrayList;
@@ -5,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.aliyun.fastmodel.common.parser.ParserHelper;
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.tree.Comment;
@@ -30,12 +47,14 @@ import com.aliyun.fastmodel.core.tree.util.IdentifierUtil;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.WaterMarkConstraint;
 import com.aliyun.fastmodel.transform.flink.format.FlinkColumnPropertyKey;
+import com.aliyun.fastmodel.transform.flink.parser.FlinkSqlParser.ComputedColumnExpressionContext;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkDataTypeName;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkGenericDataType;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkRawDataType;
 import com.aliyun.fastmodel.transform.flink.parser.tree.datatype.FlinkRowDataType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAlienSystemTypeNameSpec;
 import org.apache.calcite.sql.SqlBasicCall;
 import org.apache.calcite.sql.SqlBasicTypeNameSpec;
@@ -43,12 +62,16 @@ import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlCharStringLiteral;
 import org.apache.calcite.sql.SqlDataTypeSpec;
 import org.apache.calcite.sql.SqlIdentifier;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlTypeNameSpec;
 import org.apache.calcite.sql.util.SqlBasicVisitor;
+import org.apache.calcite.sql.validate.SqlValidatorImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.sql.parser.ddl.SqlCreateTable;
 import org.apache.flink.sql.parser.ddl.SqlTableColumn.SqlComputedColumn;
 import org.apache.flink.sql.parser.ddl.SqlTableColumn.SqlMetadataColumn;
@@ -60,6 +83,9 @@ import org.apache.flink.sql.parser.type.ExtendedSqlCollectionTypeNameSpec;
 import org.apache.flink.sql.parser.type.ExtendedSqlRowTypeNameSpec;
 import org.apache.flink.sql.parser.type.SqlMapTypeNameSpec;
 import org.apache.flink.sql.parser.type.SqlRawTypeNameSpec;
+
+import static com.aliyun.fastmodel.common.parser.ParserHelper.getLocation;
+import static com.aliyun.fastmodel.common.parser.ParserHelper.getOrigin;
 
 /**
  * @author 子梁

@@ -58,20 +58,4 @@ public class DataTypeUtil {
         return new GenericDataType(dataType, arguments);
     }
 
-    /**
-     * 转换下处理
-     *
-     * @param srcDataType
-     * @param dataTypeEnums
-     * @return
-     * @throws UnsupportedOperationException 如果srcDataType不是GenericDataType
-     */
-    public static BaseDataType convert(BaseDataType srcDataType, IDataTypeName dataTypeEnums) {
-        if (srcDataType instanceof GenericDataType) {
-            return new GenericDataType(dataTypeEnums.getValue(),
-                ((GenericDataType)srcDataType).getArguments());
-        }
-        return srcDataType;
-    }
-
 }

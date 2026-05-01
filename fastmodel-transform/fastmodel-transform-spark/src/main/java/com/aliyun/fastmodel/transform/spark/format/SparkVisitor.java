@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.spark.format;
 
 import java.util.List;
@@ -43,7 +59,7 @@ public class SparkVisitor extends FastModelVisitor {
     public SparkVisitor(SparkTransformContext context) {
         this.sparkTransformContext = context == null ? SparkTransformContext.builder().build() : context;
 
-        //init function
+        // init function
         BiConsumer<CreateTable, String> createTableStringBiConsumer = dataSourceFormat();
         formatFunctions.put(SparkTableFormat.DATASOURCE_FORMAT, createTableStringBiConsumer);
         BiConsumer<CreateTable, String> createTableHiveFormat = hiveFormat();
@@ -57,46 +73,46 @@ public class SparkVisitor extends FastModelVisitor {
      */
     private BiConsumer<CreateTable, String> hiveFormat() {
         BiConsumer<CreateTable, String> hiveFormat = (node, elementIndent) -> {
-            //append comment
+            // append comment
             appendComment(node);
-            //append partition
+            // append partition
             if (!node.isPartitionEmpty()) {
                 builder.append(
                     formatPartitions(
-                        node.getPartitionedBy().getColumnDefinitions(),
+                        node.getPartitionedBy(),
                         isEndNewLine(builder.toString()),
                         elementIndent)
                 );
             }
-            //clustered by
+            // clustered by
             appendClusteredBy(node);
-            //sorted by
+            // sorted by
             appendSortedBy(node);
 
-            //append into buckets
+            // append into buckets
             appendNumBuckets(node);
 
-            //append row format
+            // append row format
             String rowFormat = HiveHelper.appendRowFormat(node, elementIndent);
             if (StringUtils.isNotBlank(rowFormat)) {
                 appendLineIfNecessary();
                 builder.append(rowFormat);
             }
-            //append stored format
+            // append stored format
 
             String storedFormat = HiveHelper.appendStoredFormat(node);
             if (StringUtils.isNotBlank(storedFormat)) {
                 appendLineIfNecessary();
                 builder.append(storedFormat);
             }
-            //appendLocation
+            // appendLocation
             String location = HiveHelper.appendLocation(node);
             if (StringUtils.isNotBlank(location)) {
                 appendLineIfNecessary();
                 builder.append(location);
             }
 
-            //append tblProperties
+            // append tblProperties
             appendTblProperties(node);
 
         };
@@ -110,7 +126,7 @@ public class SparkVisitor extends FastModelVisitor {
         List<Property> propertyList = node.getProperties().stream().filter(property -> {
             String name = property.getName();
             HivePropertyKey byValue = HivePropertyKey.getByValue(name);
-            //一种是自定义的默认打印
+            // 一种是自定义的默认打印
             if (byValue == null) {
                 SparkPropertyKey sparkPropertyKey = SparkPropertyKey.getByValue(name);
                 if (sparkPropertyKey == null) {
@@ -119,7 +135,7 @@ public class SparkVisitor extends FastModelVisitor {
                     return sparkPropertyKey.isSupportPrint();
                 }
             }
-            //一种是系统自定义的属性，并且能够打印，
+            // 一种是系统自定义的属性，并且能够打印，
             return byValue.isSupportPrint();
         }).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(propertyList)) {
@@ -146,35 +162,35 @@ public class SparkVisitor extends FastModelVisitor {
                 builder.append("USING ").append(property);
             }
 
-            //append partition
+            // append partition
             if (!node.isPartitionEmpty()) {
                 builder.append(
                     formatPartitions(
-                        node.getPartitionedBy().getColumnDefinitions(),
+                        node.getPartitionedBy(),
                         isEndNewLine(builder.toString()),
                         elementIndent)
                 );
             }
 
-            //clustered by
+            // clustered by
             appendClusteredBy(node);
-            //sorted by
+            // sorted by
             appendSortedBy(node);
 
-            //append into buckets
+            // append into buckets
             appendNumBuckets(node);
 
-            //appendLocation
+            // appendLocation
             String location = HiveHelper.appendLocation(node);
             if (StringUtils.isNotBlank(location)) {
                 appendLineIfNecessary();
                 builder.append(location);
             }
 
-            //append comment
+            // append comment
             appendComment(node);
 
-            //append tblProperties
+            // append tblProperties
             appendTblProperties(node);
         };
     }

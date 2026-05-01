@@ -1,6 +1,23 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.postgresql.format;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
@@ -14,6 +31,8 @@ import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
 import com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey;
 import com.aliyun.fastmodel.transform.api.extension.tree.constraint.desc.NonKeyConstraint;
+import com.aliyun.fastmodel.transform.api.format.PropertyValueType;
+import com.aliyun.fastmodel.transform.postgresql.client.property.PostgreSQLPropertyKey;
 import com.aliyun.fastmodel.transform.postgresql.context.PostgreSQLTransformContext;
 import com.aliyun.fastmodel.transform.postgresql.parser.visitor.PostgreSQLExpressionVisitor;
 import com.aliyun.fastmodel.transform.postgresql.parser.visitor.PostgreSQLVisitor;
@@ -30,11 +49,20 @@ import static java.util.stream.Collectors.joining;
  */
 public class PostgreSQLOutVisitor extends FastModelVisitor implements PostgreSQLVisitor<Boolean, Integer> {
 
+    protected PostgreSQLTransformContext context;
+
+    public PostgreSQLOutVisitor(PostgreSQLTransformContext context) {
+        this.context = context;
+    }
+
+    public PostgreSQLOutVisitor() {
+        this.context = PostgreSQLTransformContext.builder().build();
+    }
+
     @Override
     public Boolean visitCreateTable(CreateTable node, Integer indent) {
         boolean columnEmpty = node.isColumnEmpty();
         boolean executable = !columnEmpty;
-        builder.append("BEGIN;\n");
         builder.append("CREATE TABLE ");
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
@@ -67,8 +95,21 @@ public class PostgreSQLOutVisitor extends FastModelVisitor implements PostgreSQL
             }
             process(node.getPartitionedBy(), indent);
         }
-        builder.append(";\n");
-        builder.append("COMMIT;");
+        builder.append(";");
+        // COMMENT ON TABLE
+        if (node.getCommentValue() != null) {
+            builder.append("\nCOMMENT ON TABLE ").append(tableCode)
+                .append(" IS ").append(formatStringLiteral(node.getCommentValue())).append(";");
+        }
+        // COMMENT ON COLUMN
+        if (!columnEmpty) {
+            for (ColumnDefinition col : columnDefines) {
+                if (col.getCommentValue() != null) {
+                    builder.append("\n");
+                    builder.append(commentColumn(tableCode, formatColName(col.getColName(), 0), col.getCommentValue()));
+                }
+            }
+        }
         return executable;
     }
 

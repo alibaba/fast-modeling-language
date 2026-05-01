@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 Alibaba Group Holding Ltd.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.aliyun.fastmodel.transform.flink.parser;
 
 import java.util.List;
@@ -5,6 +21,9 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import com.aliyun.fastmodel.common.parser.ParserHelper;
+import com.aliyun.fastmodel.common.parser.ThrowingErrorListener;
+import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
+import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
@@ -15,7 +34,11 @@ import com.aliyun.fastmodel.transform.flink.parser.visitor.FlinkAstBuilder;
 import com.aliyun.fastmodel.transform.flink.parser.visitor.FlinkParserAstBuilder;
 import com.google.auto.service.AutoService;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointCharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.sql.SqlNode;
