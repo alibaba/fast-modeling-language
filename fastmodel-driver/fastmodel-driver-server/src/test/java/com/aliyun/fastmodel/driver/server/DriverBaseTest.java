@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 
 /**
  * Desc:
@@ -32,16 +30,16 @@ import org.junit.BeforeClass;
  */
 public class DriverBaseTest {
 
-    private static SimpleHttp simpleHttp;
+    private SimpleHttp simpleHttp;
 
-    @BeforeClass
-    public static void before() throws IOException {
+    @Before
+    public void before() throws IOException {
         simpleHttp = new SimpleHttp("localhost", 8082);
         simpleHttp.start();
     }
 
-    @AfterClass
-    public static void after() {
+    @After
+    public void after() {
         simpleHttp.stop();
     }
 

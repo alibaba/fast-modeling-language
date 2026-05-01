@@ -19,10 +19,8 @@ package com.aliyun.fastmodel.driver.client;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import com.aliyun.fastmodel.driver.client.command.CommandFactory;
-import com.aliyun.fastmodel.driver.client.command.CommandType;
 import com.aliyun.fastmodel.driver.client.command.ExecuteCommand;
-import com.aliyun.fastmodel.driver.client.exception.FastModelException;
+import com.aliyun.fastmodel.driver.client.command.sample.SampleCommandFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,12 +37,14 @@ import static org.junit.Assert.assertTrue;
 public class FastModelEnginePrepareStatementTest {
     FastModelEngineConnection connection = null;
 
+    SampleCommandFactory sampleCommandFactory = new SampleCommandFactory();
+
     @Before
     public void setUp() throws Exception {
         Properties info = new Properties();
         info.setProperty("database", "demo");
-        ExecuteCommand executeCommand = CommandFactory.createStrategy(
-            CommandType.TENANT, info
+        ExecuteCommand executeCommand = sampleCommandFactory.createStrategy(
+            "sample", info
         );
         connection = new FastModelEngineConnection("jdbc:fastmodel://localhost:8082", executeCommand);
 
@@ -72,12 +72,12 @@ public class FastModelEnginePrepareStatementTest {
         assertFalse(select);
     }
 
-    @Test(expected = FastModelException.class)
+    @Test
     public void testExecuteUpdate() throws SQLException {
         FastModelEnginePrepareStatement fastModelEnginePrepareStatement =
             new FastModelEnginePrepareStatement(connection, "update abc set b = ?", 0);
         fastModelEnginePrepareStatement.setString(1, "%ads%");
         int i = fastModelEnginePrepareStatement.executeUpdate();
-        assertEquals(0, i);
+        assertEquals(1, i);
     }
 }

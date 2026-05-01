@@ -34,7 +34,6 @@ public abstract class BaseCommandProperties {
 
     private String database;
     private String user;
-    private String showName;
     private String password;
     private String host;
     private Integer port;
@@ -44,7 +43,6 @@ public abstract class BaseCommandProperties {
         port = getSetting(properties, "port", 0, Integer.class);
         database = getSetting(properties, "database", "", String.class);
         user = getSetting(properties, "user", "", String.class);
-        showName = getSetting(properties, "showName", "", String.class);
         password = getSetting(properties, "password", "", String.class);
     }
 
@@ -72,7 +70,6 @@ public abstract class BaseCommandProperties {
         Properties properties = new Properties();
         properties.setProperty("database", database);
         properties.setProperty("user", user);
-        properties.setProperty("showName", showName);
         properties.setProperty("password", password);
         properties.setProperty("host", host);
         properties.setProperty("port", String.valueOf(port));

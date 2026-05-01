@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class DriverTest extends DriverBaseTest {
 
-    String url = "jdbc:fastmodel://localhost:8082/";
+    String url = "jdbc:fastmodel://localhost:8082/jdbc";
 
     static {
         try {
