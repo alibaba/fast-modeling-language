@@ -73,4 +73,13 @@ When changing this skill, run its task and trigger evaluation contract:
 python3 skills/fml/scripts/validate_evals.py
 ```
 
+To include deterministic CLI results and refresh the checked-in report:
+
+```bash
+FML_CLI_JAR="$(find fastmodel-agent-cli/target -maxdepth 1 -name '*-executable.jar' -print -quit)"
+python3 skills/fml/scripts/validate_evals.py \
+  --cli-jar "$FML_CLI_JAR" \
+  --report skills/fml/evals/report.md
+```
+
 Run the skill creator's `quick_validate.py` as a separate structural check. The evaluation datasets live in `evals/evals.json` and `evals/trigger-evals.json`.
