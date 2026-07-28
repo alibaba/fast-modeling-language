@@ -1,0 +1,4 @@
+interface:
+  display_name: "FML Modeling"
+  short_description: "Validate, inspect, format, and transform FML models"
+  default_prompt: "Use $fml to validate this dimensional model and transform it into target-engine SQL."
