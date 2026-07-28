@@ -1,0 +1,1 @@
+create dim table dim_inventory (item_id bigint,item_level bigint);

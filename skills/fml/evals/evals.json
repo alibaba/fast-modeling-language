@@ -1,0 +1,109 @@
+{
+  "skill_name": "fml",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Validate the supplied order_model.fml and fix the smallest possible source issue. Report the exact parser diagnostic before changing the file.",
+      "expected_output": "The agent uses the FML CLI validate command, preserves existing conventions, reports structured diagnostics, makes a minimal edit, and reruns validation successfully.",
+      "files": [
+        "fixtures/order_model.fml"
+      ],
+      "assertions": [
+        "Runs the repository FML CLI validate command against the file",
+        "Reports the original diagnostic with error code and source location",
+        "Changes only the source needed to resolve the parse failure",
+        "Reruns validation and does not claim success unless ok is true and the exit code is zero"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Generate MySQL DDL from the supplied customer.fml. Before transforming, verify that this packaged CLI supports the requested dialect.",
+      "expected_output": "The agent queries capabilities, confirms mysql transformation support, transforms the model, and clearly separates successful transformation from target-engine deployability.",
+      "files": [
+        "fixtures/customer.fml"
+      ],
+      "assertions": [
+        "Runs capabilities before relying on MySQL support",
+        "Checks the mysql transform flag rather than inferring support from the dialect name",
+        "Uses transform with the mysql dialect and a file argument",
+        "Does not claim that transformation alone proves deployability"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "This PostgreSQL CREATE TABLE statement fails in production. Use the FML tooling to validate it as native PostgreSQL SQL and explain the result.",
+      "expected_output": "The agent checks capabilities, sees that native PostgreSQL validation is not advertised, and declines to fabricate a validation result while suggesting appropriate engine-native tooling.",
+      "files": [],
+      "assertions": [
+        "Runs or consults capabilities for postgresql validation support",
+        "Recognizes that postgresql validate is false",
+        "Does not invoke unsupported validation and does not fabricate parser output",
+        "Recommends PostgreSQL-native validation tooling when available"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Show me the AST structure of this inline model without creating a temporary file: create dim table dim_shop (shop_id bigint);",
+      "expected_output": "The agent safely passes the inline model over stdin, invokes inspect, and summarizes statement and child-node types from structured JSON.",
+      "files": [],
+      "assertions": [
+        "Uses stdin for generated inline content",
+        "Invokes inspect rather than approximating the AST",
+        "Avoids interpolating model content into executable shell syntax",
+        "Bases the summary on the CLI JSON output"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Format the supplied inventory.fml canonically and write the formatted FML back to the same file.",
+      "expected_output": "The agent invokes format, extracts only the JSON output field, writes that value to the model, and validates the resulting file.",
+      "files": [
+        "fixtures/inventory.fml"
+      ],
+      "assertions": [
+        "Uses the format command on the file",
+        "Extracts the JSON output value instead of writing the JSON envelope",
+        "Preserves the original file until formatting succeeds",
+        "Runs validate after writing the formatted model"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Export the supplied shop.fml as a PlantUML diagram and save the generated diagram source.",
+      "expected_output": "The agent checks PlantUML transformation capability, transforms through the CLI, and saves the decoded output rather than the JSON response envelope.",
+      "files": [
+        "fixtures/shop.fml"
+      ],
+      "assertions": [
+        "Checks the plantuml transform capability",
+        "Uses transform with the plantuml dialect",
+        "Writes the decoded output field as diagram source",
+        "Treats a nonzero CLI exit code as failure"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "List every SQL or visualization target this checkout can generate. Include versioned targets and distinguish transform support from native validation support.",
+      "expected_output": "The agent uses capabilities as the source of truth and reports every returned dialect/version entry with separate transform and validate flags.",
+      "files": [],
+      "assertions": [
+        "Uses capabilities instead of a hard-coded dialect list",
+        "Includes versioned targets such as hologres@2.0 and hologres@3.0 when returned",
+        "Separates transform and validate support",
+        "Does not silently omit visualization targets"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "The FML CLI returns partial output and exit code 4 while converting a model to Hive. Can I use the partial SQL? Diagnose the failure.",
+      "expected_output": "The agent treats exit code 4 as a failed transformation, retains structured error details, and does not present partial output as successful SQL.",
+      "files": [],
+      "assertions": [
+        "Classifies exit code 4 as transformation or execution failure",
+        "Does not treat partial output as success",
+        "Returns the structured error details",
+        "Suggests a corrective next step grounded in the diagnostic"
+      ]
+    }
+  ]
+}

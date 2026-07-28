@@ -1,0 +1,4 @@
+create dim table dim_customer (
+    customer_id bigint,
+    customer_level bigint
+);

@@ -64,3 +64,13 @@ Treat `ok: true` and exit code `0` as success. Treat any nonzero exit code as fa
 - Exit `4`: transformation or execution failed.
 
 Return diagnostics to the user with their error code and source location. Do not discard structured errors or replace them with generic prose.
+
+## Maintain the skill
+
+When changing this skill, run its task and trigger evaluation contract:
+
+```bash
+python3 skills/fml/scripts/validate_evals.py
+```
+
+Run the skill creator's `quick_validate.py` as a separate structural check. The evaluation datasets live in `evals/evals.json` and `evals/trigger-evals.json`.
