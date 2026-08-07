@@ -19,7 +19,9 @@ package com.aliyun.fastmodel.ide.open.service.impl;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.StreamUtils;
@@ -34,11 +36,14 @@ import static org.junit.Assert.fail;
  */
 public class FileStorageServiceImplTest {
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     private FileStorageServiceImpl storage;
 
     @Before
-    public void setUp() {
-        storage = new FileStorageServiceImpl();
+    public void setUp() throws Exception {
+        storage = new FileStorageServiceImpl(temporaryFolder.newFolder("uploads").toPath());
         storage.init();
     }
 
@@ -90,8 +95,23 @@ public class FileStorageServiceImplTest {
     }
 
     @Test
-    public void saveRejectsDotSegments() {
+    public void saveRejectsDotComponents() {
         assertRejected("..");
+        assertRejected(".");
+    }
+
+    @Test
+    public void saveRejectsControlCharacters() {
+        assertRejected("evil\u0000.sql");
+        assertRejected("evil\n.sql");
+    }
+
+    @Test
+    public void saveAllowsConsecutiveDotsInsidePlainName() throws Exception {
+        // separators are banned, so dots inside a plain name cannot traverse
+        Resource resource = storage.save(file("report..final.sql"));
+        assertTrue(resource.exists());
+        assertEquals("report..final.sql", resource.getFilename());
     }
 
     @Test
@@ -111,5 +131,14 @@ public class FileStorageServiceImplTest {
         assertTrue(loaded.exists());
         String content = StreamUtils.copyToString(loaded.getInputStream(), StandardCharsets.UTF_8);
         assertEquals("CREATE TABLE t (id INT);", content);
+    }
+
+    @Test
+    public void deleteAllKeepsStorageUsable() throws Exception {
+        storage.save(file("to_delete.sql"));
+        storage.deleteAll();
+        // save must keep working after deleteAll removed the root directory
+        Resource resource = storage.save(file("after_delete.sql"));
+        assertTrue(resource.exists());
     }
 }
