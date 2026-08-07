@@ -1,0 +1,4 @@
+create dim table dim_shop (
+    shop_id bigint,
+    shop_level bigint
+);

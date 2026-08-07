@@ -1,0 +1,2 @@
+create dim table dim_order (
+    order_id bigint

@@ -49,6 +49,7 @@
         <module>fastmodel-benchmarks</module>
         <module>fastmodel-common</module>
         <module>fastmodel-driver</module>
+        <module>fastmodel-agent-cli</module>
         <module>fastmodel-processor</module>
         <module>fastmodel-converter</module>
         <module>fastmodel-ide</module>

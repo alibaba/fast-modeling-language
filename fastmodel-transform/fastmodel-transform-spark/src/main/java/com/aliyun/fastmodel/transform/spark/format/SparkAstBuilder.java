@@ -79,9 +79,13 @@ public class SparkAstBuilder extends SparkParserBaseVisitor<Node> {
                 List<ColumnDefinition> list = ParserHelper.visit(this, ctx.createTableClauses().partitionFieldList(), ColumnDefinition.class);
                 partition = new PartitionedBy(list);
             }
-            if (ctx.createTableClauses().commentSpec() != null) {
-                List<Comment> visit = ParserHelper.visit(this, ctx.createTableClauses().commentSpec(), Comment.class);
-                comment = visit.get(0);
+            // ANTLR 列表访问器不会返回 null：无 comment 子句时返回空列表，必须用 isEmpty 判断，否则 get(0) 越界
+            List<CommentSpecContext> commentSpecs = ctx.createTableClauses().commentSpec();
+            if (!commentSpecs.isEmpty()) {
+                List<Comment> visit = ParserHelper.visit(this, commentSpecs, Comment.class);
+                if (!visit.isEmpty()) {
+                    comment = visit.get(0);
+                }
             }
         }
         List<Property> properties = Lists.newArrayList();

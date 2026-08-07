@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Please update models/retail/order.fml with a new order_channel dimension, keep the repository's existing conventions, and prove the model still parses.",
+    "should_trigger": true
+  },
+  {
+    "query": "Convert warehouse/customer.fml to Hologres 3.0 DDL and tell me whether the target is supported before generating anything.",
+    "should_trigger": true
+  },
+  {
+    "query": "这个 dim_shop.fml 为什么解析失败？请给出具体行列并修好后重新验证。",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a canonical formatting pass over models/inventory.fml, but don't change the model semantics.",
+    "should_trigger": true
+  },
+  {
+    "query": "Inspect the FML AST for the fact table in model/sales.fml so I can understand its child node types.",
+    "should_trigger": true
+  },
+  {
+    "query": "Generate a PlantUML model diagram from this project's FML source and save the diagram text under docs/architecture.",
+    "should_trigger": true
+  },
+  {
+    "query": "Which dialects and versions can this fast-modeling-language checkout transform or validate? Please derive the answer from the packaged tooling.",
+    "should_trigger": true
+  },
+  {
+    "query": "Validate this native MySQL DDL with the repository parser: CREATE TABLE dim_user (id BIGINT);",
+    "should_trigger": true
+  },
+  {
+    "query": "Turn model/commerce.fml into ClickHouse SQL, but only report success if the CLI exits cleanly.",
+    "should_trigger": true
+  },
+  {
+    "query": "We got FML parser exit code 3 in CI. Diagnose the structured error and point me to the failing source location.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run the application's existing Maven unit tests and summarize any Java test failures.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this hand-written PostgreSQL migration for locking and index risks before production deployment.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a Mermaid sequence diagram showing how the checkout service calls the payment service.",
+    "should_trigger": false
+  },
+  {
+    "query": "Format this Java file with the project's Checkstyle and Spotless configuration.",
+    "should_trigger": false
+  },
+  {
+    "query": "Use dbt to compile models/orders.sql and run the warehouse data tests.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain dimensional modeling concepts such as facts, dimensions, grain, and slowly changing dimensions without editing any files.",
+    "should_trigger": false
+  },
+  {
+    "query": "Parse this JSON document and list all nested property paths.",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate JPA entities from the existing MySQL database schema.",
+    "should_trigger": false
+  },
+  {
+    "query": "Check whether our Hive query is efficient by inspecting its EXPLAIN execution plan.",
+    "should_trigger": false
+  },
+  {
+    "query": "Draw an ER diagram directly from these database metadata tables using the DMS connector.",
+    "should_trigger": false
+  }
+]
