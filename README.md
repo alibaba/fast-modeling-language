@@ -91,6 +91,10 @@ IntelliJ IDEA IntelliJ IDEA Plugins
 - Code style template: docs/Alibaba_CodeStyle.xml
 - ErrorProne: https://errorprone.info/docs/installation
 
+## Security Notice
+
+The `fastmodel-ide-open` web service (default port 7001) does not provide built-in authentication. Do not expose it directly to untrusted networks; deploy it behind an authenticating gateway or reverse proxy, or restrict access to trusted networks only.
+
 ## Documentation
 
 FML文档可The introduction and guide of the FML can be found under the `doc/` directory, the docs is managed with the Docsify, to learn more about it: docsify quickstart

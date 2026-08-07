@@ -88,6 +88,10 @@ IntelliJ IDEA IntelliJ IDEA插件
 
 
 
+## 安全提示
+
+`fastmodel-ide-open` Web 服务（默认端口 7001）不提供内置认证，请勿直接暴露在不可信网络中；部署时应置于带认证的网关或反向代理之后，或仅允许可信网络访问。
+
 ## 文档
 
 FML文档的介绍和指南可以在doc/目录下找到，文档是通过Docsify管理的，要了解更多信息请参阅：docsify快速入门

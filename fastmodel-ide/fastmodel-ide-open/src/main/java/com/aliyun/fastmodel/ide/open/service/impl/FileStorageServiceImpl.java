@@ -41,16 +41,18 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Component
 public class FileStorageServiceImpl implements StorageService {
-    private final Path root = Paths.get(System.getProperty("java.io.tmpdir"));
+
+    /**
+     * Uploads are stored in a dedicated directory under the temp folder instead of the temp
+     * folder itself, so a sanitized file name can never overwrite unrelated temp files.
+     */
+    private final Path root = Paths.get(System.getProperty("java.io.tmpdir"), "fastmodel-ide-uploads");
 
     @Override
     @PostConstruct
     public void init() {
         try {
-            if (root.toFile().exists()) {
-                return;
-            }
-            Files.createDirectory(root);
+            Files.createDirectories(root);
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize folder for upload!", e);
         }
@@ -58,20 +60,21 @@ public class FileStorageServiceImpl implements StorageService {
 
     @Override
     public Resource save(MultipartFile file) {
+        String safeName = sanitizeFilename(file.getOriginalFilename());
         try {
-            Path resolve = root.resolve(file.getOriginalFilename());
+            Path resolve = resolveInRoot(safeName);
             Files.copy(file.getInputStream(), resolve, StandardCopyOption.REPLACE_EXISTING);
             Resource resource = new UrlResource(resolve.toUri());
             return resource;
         } catch (Exception e) {
-            throw new RuntimeException("Could not store the file. Error: " + file.getOriginalFilename(), e);
+            throw new RuntimeException("Could not store the file. Error: " + safeName, e);
         }
     }
 
     @Override
     public Resource load(String filename) {
         try {
-            Path file = root.resolve(filename);
+            Path file = resolveInRoot(sanitizeFilename(filename));
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() || resource.isReadable()) {
@@ -82,6 +85,33 @@ public class FileStorageServiceImpl implements StorageService {
         } catch (MalformedURLException e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
+    }
+
+    /**
+     * Rejects any client-supplied file name that contains path separators or traversal
+     * components; uploads must use a plain file name.
+     */
+    private String sanitizeFilename(String filename) {
+        if (filename == null || filename.trim().isEmpty()) {
+            throw new IllegalArgumentException("File name must not be empty");
+        }
+        String name = filename.trim();
+        if (name.contains("/") || name.contains("\\") || name.contains("..")) {
+            throw new IllegalArgumentException("Illegal file name: " + filename);
+        }
+        return name;
+    }
+
+    /**
+     * Resolves the sanitized name against the storage root and guarantees the final path stays
+     * inside the root directory (defense in depth against path traversal).
+     */
+    private Path resolveInRoot(String safeName) {
+        Path resolve = root.resolve(safeName).normalize();
+        if (!resolve.startsWith(root.normalize())) {
+            throw new IllegalArgumentException("Path traversal detected: " + safeName);
+        }
+        return resolve;
     }
 
     @Override

@@ -17,8 +17,12 @@
 package com.aliyun.fastmodel.ide.spi.receiver.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.Locale;
 
 import com.aliyun.fastmodel.core.parser.FastModelParser;
 import com.aliyun.fastmodel.core.parser.FastModelParserFactory;
@@ -33,6 +37,7 @@ import com.aliyun.fastmodel.transform.api.context.ReverseContext.ReverseTargetSt
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -43,6 +48,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @date 2022/1/12
  */
 public class DefaultToolServiceImpl implements ToolService {
+
+    /**
+     * Maximum number of bytes allowed when importing SQL by URI, to prevent a single request from
+     * fetching unbounded content.
+     */
+    private static final long MAX_IMPORT_BYTES = 10 * 1024 * 1024L;
 
     private final TransformerFactory transformerFactory;
 
@@ -71,14 +82,55 @@ public class DefaultToolServiceImpl implements ToolService {
 
     @Override
     public String importByUri(String uri, DialectMeta dialectMeta) {
+        URI url;
         try {
-            URI url = new URI(uri);
-            String text = IOUtils.toString(url, UTF_8);
-            return importSql(text, dialectMeta);
-        } catch (IOException e) {
-            throw new PlatformException("import by uri error" + uri, PlatformErrorCode.READ_FILE_ERROR, e);
+            url = new URI(uri);
         } catch (URISyntaxException e) {
             throw new PlatformException("import by uri error" + uri, PlatformErrorCode.URL_INVALID_ERROR, e);
+        }
+        validateUri(url);
+        try (InputStream in = new BoundedInputStream(url.toURL().openStream(), MAX_IMPORT_BYTES + 1)) {
+            byte[] bytes = IOUtils.toByteArray(in);
+            if (bytes.length > MAX_IMPORT_BYTES) {
+                throw new PlatformException("import by uri error, content exceeds " + MAX_IMPORT_BYTES + " bytes: "
+                    + uri, PlatformErrorCode.URL_INVALID_ERROR);
+            }
+            return importSql(new String(bytes, UTF_8), dialectMeta);
+        } catch (IOException e) {
+            throw new PlatformException("import by uri error" + uri, PlatformErrorCode.READ_FILE_ERROR, e);
+        }
+    }
+
+    /**
+     * Only allow fetching from http/https network addresses, and prohibit reading local files
+     * (such as file://) or accessing internal network addresses (loopback, private networks,
+     * link-local addresses like cloud metadata, etc.), to prevent arbitrary file reads and SSRF.
+     */
+    private void validateUri(URI uri) {
+        String scheme = uri.getScheme();
+        if (scheme == null || !(scheme.toLowerCase(Locale.ROOT).equals("http")
+            || scheme.toLowerCase(Locale.ROOT).equals("https"))) {
+            throw new PlatformException("import by uri error, unsupported scheme: " + scheme
+                + ", only http/https are allowed", PlatformErrorCode.URL_INVALID_ERROR);
+        }
+        String host = uri.getHost();
+        if (host == null || host.isEmpty()) {
+            throw new PlatformException("import by uri error, missing host: " + uri,
+                PlatformErrorCode.URL_INVALID_ERROR);
+        }
+        InetAddress[] addresses;
+        try {
+            addresses = InetAddress.getAllByName(host);
+        } catch (UnknownHostException e) {
+            throw new PlatformException("import by uri error, unknown host: " + host,
+                PlatformErrorCode.URL_INVALID_ERROR, e);
+        }
+        for (InetAddress address : addresses) {
+            if (address.isAnyLocalAddress() || address.isLoopbackAddress() || address.isLinkLocalAddress()
+                || address.isSiteLocalAddress() || address.isMulticastAddress()) {
+                throw new PlatformException("import by uri error, access to internal network address is not allowed: "
+                    + host, PlatformErrorCode.URL_INVALID_ERROR);
+            }
         }
     }
 }
