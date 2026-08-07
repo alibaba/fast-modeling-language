@@ -47,7 +47,7 @@ import picocli.CommandLine.Parameters;
 @Command(
     name = "fml",
     mixinStandardHelpOptions = true,
-    version = "fml-agent-cli ${revision}",
+    versionProvider = FmlAgentCli.VersionProvider.class,
     description = "Parse, validate, inspect, format, and transform Fast Modeling Language.",
     subcommands = {
         FmlAgentCli.Validate.class,
@@ -91,6 +91,42 @@ public final class FmlAgentCli implements Runnable {
     @Override
     public void run() {
         CommandLine.usage(this, System.out);
+    }
+
+    /**
+     * 从打包产物解析 CLI 版本号。
+     * <p>
+     * 注解占位符（如 ${revision}）在编译期不会被展开，直接写死会输出 null；
+     * 改为运行时优先读 manifest 的 Implementation-Version，其次读 jar 内的 pom.properties。
+     */
+    static final class VersionProvider implements CommandLine.IVersionProvider {
+        @Override
+        public String[] getVersion() {
+            return new String[] {"fml-agent-cli " + resolveVersion()};
+        }
+
+        static String resolveVersion() {
+            // 隔离 ClassLoader（如测试框架）下 getPackage() 可能为 null，需防御
+            Package pkg = FmlAgentCli.class.getPackage();
+            String manifestVersion = pkg == null ? null : pkg.getImplementationVersion();
+            if (manifestVersion != null && !manifestVersion.trim().isEmpty()) {
+                return manifestVersion.trim();
+            }
+            try (java.io.InputStream input = FmlAgentCli.class.getResourceAsStream(
+                "/META-INF/maven/com.aliyun.fastmodel/fastmodel-agent-cli/pom.properties")) {
+                if (input != null) {
+                    java.util.Properties properties = new java.util.Properties();
+                    properties.load(input);
+                    String version = properties.getProperty("version");
+                    if (version != null && !version.trim().isEmpty()) {
+                        return version.trim();
+                    }
+                }
+            } catch (IOException ignored) {
+                // 无法读取时回退为 unknown，保证 --version 输出可解析
+            }
+            return "unknown";
+        }
     }
 
     abstract static class InputCommand implements Callable<Integer> {
@@ -138,16 +174,17 @@ public final class FmlAgentCli implements Runnable {
         @Override
         public Integer call() throws Exception {
             String target = normalizeDialect(dialect);
-            List<BaseStatement> statements;
+            // 部分方言的 reverse() 返回非 BaseStatement 的 Node 子类型（如 zen 的 ListNode），统一按 Node 处理
+            List<Node> statements;
             if ("fml".equals(target)) {
-                statements = parse();
+                statements = new ArrayList<>(parse());
             } else {
                 Transformer<BaseStatement> transformer = requireTransformer(target);
                 if (!supportsNativeValidation(target, transformer)) {
                     throw new IllegalArgumentException(
                         "Native validation is not available for dialect: " + target);
                 }
-                BaseStatement statement = transformer.reverse(
+                Node statement = transformer.reverse(
                     new DialectNode(readInput()), ReverseContext.builder().build());
                 if (statement == null) {
                     throw new UnsupportedOperationException(
@@ -286,11 +323,15 @@ public final class FmlAgentCli implements Runnable {
 
     private static String dialectCapabilityJson(String name, Transformer<BaseStatement> transformer) {
         return "{\"name\":" + quote(name)
-            + ",\"transform\":" + overrides(transformer, "transform", Node.class, TransformContext.class)
+            + ",\"transform\":" + advertisedTransform(transformer)
             + ",\"validate\":" + supportsNativeValidation(name, transformer) + "}";
     }
 
-    private static boolean supportsNativeValidation(String name, Transformer<BaseStatement> transformer) {
+    static boolean advertisedTransform(Transformer<BaseStatement> transformer) {
+        return overrides(transformer, "transform", Node.class, TransformContext.class);
+    }
+
+    static boolean supportsNativeValidation(String name, Transformer<BaseStatement> transformer) {
         // PostgreSQL exposes reverse(), but its parser currently returns null for valid CREATE TABLE input.
         if ("postgresql".equals(name)) {
             return false;

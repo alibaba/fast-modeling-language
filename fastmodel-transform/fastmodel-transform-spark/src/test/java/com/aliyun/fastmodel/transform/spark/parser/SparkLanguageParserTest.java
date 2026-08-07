@@ -42,6 +42,19 @@ public class SparkLanguageParserTest {
     }
 
     @Test
+    public void parseNodeWithoutCommentClause() {
+        // 回归：无 comment 子句时 commentSpec() 返回空列表而非 null，不应越界
+        String parseNode = "create table a (a bigint)";
+        SparkLanguageParser sparkLanguageParser = new SparkLanguageParser();
+        Node o = sparkLanguageParser.parseNode(parseNode);
+        assertNotNull(o);
+        assertEquals(o.toString(), "CREATE TABLE a \n"
+            + "(\n"
+            + "   a BIGINT\n"
+            + ")");
+    }
+
+    @Test
     public void parseNodeWithAllDataTypes() {
         // 测试所有Spark SQL支持的基本数据类型
         String parseNode = "CREATE TABLE test_table ("

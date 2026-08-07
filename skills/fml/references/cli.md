@@ -46,6 +46,14 @@ Discover the installed contract:
 java -jar "$FML_CLI_JAR" capabilities
 ```
 
+Report the packaged CLI version:
+
+```bash
+java -jar "$FML_CLI_JAR" --version
+```
+
+The output is `fml-agent-cli <version>` with the resolved artifact version (never a placeholder). Record it when reporting results.
+
 The returned `dialects` array is generated from Java `ServiceLoader` metadata in the packaged JAR. Each item reports:
 
 - `name`: value accepted by `--dialect`
