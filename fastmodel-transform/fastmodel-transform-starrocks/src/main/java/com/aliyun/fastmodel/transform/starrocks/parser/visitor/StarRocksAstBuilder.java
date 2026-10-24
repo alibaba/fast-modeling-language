@@ -695,7 +695,7 @@ public class StarRocksAstBuilder extends StarRocksBaseVisitor<Node> {
 
     @Override
     public Node visitComment(CommentContext ctx) {
-        StringLiteral stringLiteral = (StringLiteral)visit(ctx.string());
+        StringLiteral stringLiteral = (StringLiteral)visit(ctx.commentText);
         return new Comment(stringLiteral.getValue());
     }
 

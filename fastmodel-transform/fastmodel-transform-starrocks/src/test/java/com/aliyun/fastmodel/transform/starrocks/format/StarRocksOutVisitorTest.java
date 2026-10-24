@@ -3,6 +3,7 @@ package com.aliyun.fastmodel.transform.starrocks.format;
 import java.util.List;
 
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
@@ -22,6 +23,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.DropCol;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
+import com.aliyun.fastmodel.core.tree.statement.table.SetColumnOrder;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.PrimaryConstraint;
@@ -49,9 +51,11 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_AGG_DESC;
+import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.COLUMN_KEY;
 import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_ENGINE;
 import static com.aliyun.fastmodel.transform.api.extension.client.property.ExtensionPropertyKey.TABLE_PARTITION_RAW;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -107,6 +111,35 @@ public class StarRocksOutVisitorTest {
             + "   PARTITION p1 VALUES LESS THAN (\"2010-01-10\"),\n"
             + "   START(\"2001-01-01\") END(\"2020-01-01\") EVERY (INTERVAL 10 HOUR)\n"
             + ");", s);
+    }
+
+    @Test
+    public void testPartitionColumnOnlyInPartitionedByMergedIntoColumns() {
+        StarRocksContext context = StarRocksContext.builder().build();
+        StarRocksOutVisitor visitor = new StarRocksOutVisitor(context);
+        // 普通列 c1
+        List<ColumnDefinition> columns = Lists.newArrayList(
+            ColumnDefinition.builder()
+                .colName(new Identifier("c1"))
+                .dataType(new StarRocksGenericDataType("int"))
+                .build());
+        // 分区列 pt(带数据类型)仅出现在 partitionedBy 中
+        List<ColumnDefinition> partitionColumns = Lists.newArrayList(
+            ColumnDefinition.builder()
+                .colName(new Identifier("pt"))
+                .dataType(new StarRocksGenericDataType("bigint"))
+                .build());
+        RangePartitionedBy partition = new RangePartitionedBy(partitionColumns, Lists.newArrayList());
+        CreateTable createTable = CreateTable.builder()
+            .tableName(QualifiedName.of("abc"))
+            .columns(columns)
+            .partition(partition)
+            .build();
+        visitor.visitCreateTable(createTable, 0);
+        String ddl = visitor.getBuilder().toString();
+        // StarRocks 规范:分区列必须出现在列定义里(类型取自列定义),PARTITION BY 仅引用列名
+        assertTrue("partition column should be merged into column definitions: " + ddl, ddl.contains("pt BIGINT"));
+        assertTrue(ddl.contains("PARTITION BY RANGE (pt)"));
     }
 
     @Test
@@ -231,6 +264,59 @@ public class StarRocksOutVisitorTest {
         starRocksVisitor.visitChangeCol(changeCol, 0);
         String s = starRocksVisitor.getBuilder().toString();
         assertEquals("ALTER TABLE abc.bcd MODIFY COLUMN c1 STRING NULL DEFAULT \"1\"", s);
+    }
+
+    @Test
+    public void testVisitSetColumnOrderFirstWithLegacyConstructor() {
+        SetColumnOrder order = new SetColumnOrder(QualifiedName.of("abc.bcd"), new Identifier("c2"),
+            new Identifier("c2"), new StarRocksGenericDataType("int"), null, true);
+
+        assertTrue(starRocksVisitor.visitSetColumnOrder(order, 0));
+        assertEquals("ALTER TABLE abc.bcd MODIFY COLUMN c2 INT FIRST", starRocksVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testVisitSetColumnOrderAfterPreservesDefinition() {
+        ColumnDefinition column = ColumnDefinition.builder().colName(new Identifier("c2"))
+            .dataType(new StarRocksGenericDataType("int")).notNull(true)
+            .defaultValue(new StringLiteral("1")).comment(new Comment("metric"))
+            .properties(Lists.newArrayList(new Property(COLUMN_AGG_DESC.getValue(), "SUM"))).build();
+        SetColumnOrder order = new SetColumnOrder(QualifiedName.of("abc.bcd"), new Identifier("c2"), column,
+            new Identifier("c1"), false);
+
+        assertTrue(starRocksVisitor.visitSetColumnOrder(order, 0));
+        assertEquals("ALTER TABLE abc.bcd MODIFY COLUMN c2 INT SUM NOT NULL DEFAULT \"1\" COMMENT \"metric\" AFTER c1",
+            starRocksVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testVisitSetColumnOrderPreservesKeyAndQuotedIdentifiers() {
+        ColumnDefinition column = ColumnDefinition.builder().colName(new Identifier("key", true))
+            .dataType(new StarRocksGenericDataType("int")).notNull(true)
+            .properties(Lists.newArrayList(new Property(COLUMN_KEY.getValue(), "KEY"))).build();
+        SetColumnOrder order = new SetColumnOrder(QualifiedName.of("abc.bcd"), new Identifier("key"), column,
+            new Identifier("anchor column", true), false);
+
+        assertTrue(starRocksVisitor.visitSetColumnOrder(order, 0));
+        assertEquals("ALTER TABLE abc.bcd MODIFY COLUMN `key` INT KEY NOT NULL AFTER `anchor column`",
+            starRocksVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testVisitSetColumnOrderRenameIsNotExecutable() {
+        SetColumnOrder order = new SetColumnOrder(QualifiedName.of("abc.bcd"), new Identifier("c1"),
+            new Identifier("c2"), new StarRocksGenericDataType("int"), null, true);
+
+        assertFalse(starRocksVisitor.visitSetColumnOrder(order, 0));
+        assertEquals("ALTER TABLE abc.bcd CHANGE COLUMN c1 c2 INT FIRST", starRocksVisitor.getBuilder().toString());
+    }
+
+    @Test
+    public void testVisitSetColumnOrderWithoutPositionIsNotExecutable() {
+        SetColumnOrder order = new SetColumnOrder(QualifiedName.of("abc.bcd"), new Identifier("c1"),
+            new Identifier("c1"), new StarRocksGenericDataType("int"), null, false);
+
+        assertFalse(starRocksVisitor.visitSetColumnOrder(order, 0));
     }
 
     @Test

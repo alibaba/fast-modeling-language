@@ -64,4 +64,48 @@ public class ExpressionVisitorTest {
         Identifier identifier = new Identifier("1");
         assertTrue(identifier.isDelimited());
     }
+
+    /**
+     * Quote digit-leading identifiers consistently.
+     */
+    @Test
+    public void testDigitLeadingNonDelimitedIdentifierGetsQuoted() {
+        ExpressionVisitor visitor = new ExpressionVisitor();
+
+        Identifier badTable = new Identifier("123_example_table");
+        assertFalse("回归保护:NAME_PATTERN 允许数字开头,Identifier 自动识别为非 delimited",
+            badTable.isDelimited());
+        assertEquals("`123_example_table`", visitor.visitIdentifier(badTable, null));
+
+        // 短的纯数字+下划线
+        Identifier shortBad = new Identifier("9a");
+        assertEquals("`9a`", visitor.visitIdentifier(shortBad, null));
+
+        // 纯数字仍维持原有行为(Identifier 自动识别为 delimited)
+        Identifier pureDigit = new Identifier("123");
+        assertTrue(pureDigit.isDelimited());
+        assertEquals("`123`", visitor.visitIdentifier(pureDigit, null));
+    }
+
+    /**
+     * 不以数字开头的正常标识符,行为保持不变,不加反引号。
+     */
+    @Test
+    public void testLetterLeadingIdentifierStaysUnquoted() {
+        ExpressionVisitor visitor = new ExpressionVisitor();
+        assertEquals("user_id", visitor.visitIdentifier(new Identifier("user_id"), null));
+        assertEquals("orders", visitor.visitIdentifier(new Identifier("orders"), null));
+        // 单字母也是允许首字符
+        assertEquals("a", visitor.visitIdentifier(new Identifier("a"), null));
+    }
+
+    /**
+     * 已经被引号包裹的不应该重复加,delimited=true 但首字符是反引号时直接返回原值。
+     */
+    @Test
+    public void testAlreadyQuotedIdentifierNotDoubled() {
+        ExpressionVisitor visitor = new ExpressionVisitor();
+        Identifier already = new Identifier("`123_xxx`", true);
+        assertEquals("`123_xxx`", visitor.visitIdentifier(already, null));
+    }
 }

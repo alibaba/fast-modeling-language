@@ -5,9 +5,9 @@ CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.mctest (
 	dt string
 ) ENGINE='ODPS'
 TABLE_PROPERTIES='{
-	"accessid":"LTAILd4****",
+	"accessid":"<access-key-id>",
 	"endpoint":"http://service.cn-hangzhou.maxcompute.aliyun.com/api",
-	"accesskey":"4A5Q7ZVzcYnWMQPysX****",
+	"accesskey":"<access-key-secret>",
 	"partition_column":"dt",
 	"project_name":"test_adb",
 	"table_name":"person"

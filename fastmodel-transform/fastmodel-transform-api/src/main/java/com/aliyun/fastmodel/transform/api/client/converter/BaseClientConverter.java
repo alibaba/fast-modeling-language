@@ -801,24 +801,28 @@ public abstract class BaseClientConverter<T extends TransformContext> implements
         }
         //if only one
         if (dimension == Dimension.TWO) {
-            //because is decimal, so must type parameter is numeric
-            if (arguments.size() == FIRST_INDEX) {
-                DataTypeParameter dataTypeParameter = arguments.get(0);
-                NumericParameter numericParameter = (NumericParameter)dataTypeParameter;
+            // Numeric parameters belong to types such as DECIMAL. VECTOR has a
+            // TypeParameter followed by a NumericParameter, so do not cast by
+            // position when converting a generic type.
+            if (arguments.size() == FIRST_INDEX && arguments.get(0) instanceof NumericParameter) {
+                NumericParameter numericParameter = (NumericParameter)arguments.get(0);
                 column.setPrecision(Integer.parseInt(numericParameter.getValue()));
-            } else if (arguments.size() == SECOND_INDEX) {
-                DataTypeParameter dataTypeParameter = arguments.get(0);
-                NumericParameter numericParameter = (NumericParameter)dataTypeParameter;
+            } else if (arguments.size() == SECOND_INDEX
+                && arguments.get(0) instanceof NumericParameter
+                && arguments.get(1) instanceof NumericParameter) {
+                NumericParameter numericParameter = (NumericParameter)arguments.get(0);
                 column.setPrecision(Integer.parseInt(numericParameter.getValue()));
-                dataTypeParameter = arguments.get(1);
-                numericParameter = (NumericParameter)dataTypeParameter;
+                numericParameter = (NumericParameter)arguments.get(1);
                 column.setScale(Integer.parseInt(numericParameter.getValue()));
+            } else {
+                column.setDataType(formatExpression(genericDataType));
             }
         } else if (dimension == Dimension.ONE) {
-            if (arguments.size() == FIRST_INDEX) {
-                DataTypeParameter dataTypeParameter = arguments.get(0);
-                NumericParameter numericParameter = (NumericParameter)dataTypeParameter;
+            if (arguments.size() == FIRST_INDEX && arguments.get(0) instanceof NumericParameter) {
+                NumericParameter numericParameter = (NumericParameter)arguments.get(0);
                 column.setLength(Integer.parseInt(numericParameter.getValue()));
+            } else {
+                column.setDataType(formatExpression(genericDataType));
             }
         }
         return column;

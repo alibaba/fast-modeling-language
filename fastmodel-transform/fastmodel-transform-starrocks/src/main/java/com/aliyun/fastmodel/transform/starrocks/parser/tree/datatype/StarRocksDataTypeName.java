@@ -207,6 +207,12 @@ public enum StarRocksDataTypeName implements ISimpleDataTypeName {
      * MAP
      */
     Map("MAP", Dimension.MULTIPLE, SimpleDataTypeName.STRING),
+
+    /**
+     * unknown type，外部表中无法映射到 StarRocks 类型的列占位符；
+     * 仅作只读解析兼容（映射为 STRING 语义），透传生成的 DDL 不可用于建表。
+     */
+    UNKNOWN_TYPE("UNKNOWN_TYPE", Dimension.ZERO, SimpleDataTypeName.STRING),
     ;
 
     /**

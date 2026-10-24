@@ -32,7 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * StarRocks DDL 兼容性修复用例集合（aone #81289947 扩展修复）。
+ * StarRocks DDL 兼容性回归用例。
  */
 public class StarRocksCompatFixTest {
 
@@ -194,5 +194,32 @@ public class StarRocksCompatFixTest {
         String output = visitor.getBuilder().toString();
         assertTrue("expected 'BUCKETS 10', was: " + output, output.contains("BUCKETS 10"));
         assertTrue("should not contain AUTO: " + output, !output.contains("AUTO"));
+    }
+
+    @Test
+    public void testUnknownTypeColumnRoundTrip() {
+        String input = "CREATE TABLE sample_events (event_id BIGINT, payload UNKNOWN_TYPE) "
+            + "ENGINE=OLAP DUPLICATE KEY(event_id) PROPERTIES (\"replication_num\"=\"1\");";
+        CreateTable table = (CreateTable)parser.parseNode(input);
+        assertEquals(2, table.getColumnDefines().size());
+        assertEquals("UNKNOWN_TYPE", table.getColumnDefines().get(1).getDataType().getTypeName().getValue());
+        StarRocksOutVisitor visitor = new StarRocksOutVisitor(StarRocksContext.builder().build());
+        visitor.process(table, 0);
+        assertTrue(visitor.getBuilder().toString().contains("UNKNOWN_TYPE"));
+    }
+
+    @Test
+    public void testExternalTableWithParenthesizedComment() {
+        String input = "CREATE TABLE sample_events ("
+            + "event_id BIGINT(20) DEFAULT NULL, "
+            + "sample_name VARCHAR(1073741824) DEFAULT NULL, "
+            + "event_time DATETIME DEFAULT NULL, "
+            + "payload UNKNOWN_TYPE DEFAULT NULL COMMENT \"sample payload\") "
+            + "PRIMARY KEYS (event_id, sample_name) COMMENT (\"Sample events\") "
+            + "PROPERTIES (\"bucket\"=\"4\", \"merge-engine\"=\"partial-update\");";
+        CreateTable table = (CreateTable)parser.parseNode(input);
+        assertEquals(4, table.getColumnDefines().size());
+        assertEquals("Sample events", table.getCommentValue());
+        assertEquals("UNKNOWN_TYPE", table.getColumnDefines().get(3).getDataType().getTypeName().getValue());
     }
 }

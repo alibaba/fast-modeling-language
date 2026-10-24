@@ -15,6 +15,7 @@ Validate:
 ```bash
 java -jar "$FML_CLI_JAR" validate model.fml
 java -jar "$FML_CLI_JAR" validate --dialect mysql schema.sql
+java -jar "$FML_CLI_JAR" validate --dialect max-compute schema.sql
 java -jar "$FML_CLI_JAR" validate --text "create dim table dim_shop (shop_id bigint);"
 java -jar "$FML_CLI_JAR" validate -
 ```
@@ -37,6 +38,9 @@ Transform:
 java -jar "$FML_CLI_JAR" transform --dialect hive model.fml
 java -jar "$FML_CLI_JAR" transform --dialect mysql model.fml
 java -jar "$FML_CLI_JAR" transform --dialect hologres@3.0 model.fml
+java -jar "$FML_CLI_JAR" transform --dialect max-compute model.fml
+java -jar "$FML_CLI_JAR" transform --dialect max-compute@1.0 model.fml
+java -jar "$FML_CLI_JAR" transform --dialect max-compute@2.0 model.fml
 java -jar "$FML_CLI_JAR" transform --dialect plantuml model.fml
 ```
 
@@ -60,7 +64,9 @@ The returned `dialects` array is generated from Java `ServiceLoader` metadata in
 - `transform`: supports FML-to-dialect output
 - `validate`: supports parsing native dialect input
 
-The current package discovers ADB MySQL, ADB PostgreSQL, ClickHouse, Doris, Flink, FML, graph, Hive, Hologres (default/2.0/3.0), MySQL, OceanBase MySQL, Oracle, PlantUML, PostgreSQL, Spark, SQLite, StarRocks, and Zen implementations. ClickHouse is native-input only; graph and PlantUML are output-only. PostgreSQL native validation is not advertised until its reverse parser reliably returns a statement.
+The current package discovers ADB MySQL, ADB PostgreSQL, ClickHouse, Doris, Flink, FML, graph, Hive, Hologres (default/2.0/3.0), MaxCompute (default/1.0/2.0), MySQL, OceanBase MySQL, Oracle, PlantUML, PostgreSQL, Spark, SQLite, StarRocks, and Zen implementations. ClickHouse is native-input only; graph and PlantUML are output-only. PostgreSQL native validation is not advertised until its reverse parser reliably returns a statement.
+
+MaxCompute accepts `max-compute`, `max-compute@1.0`, and `max-compute@2.0` for both `transform` and `validate`. The default selects the 2.0 transformer. These commands parse or generate SQL locally; they do not connect to a MaxCompute project or execute SQL.
 
 ## Success response shapes
 

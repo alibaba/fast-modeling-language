@@ -79,4 +79,16 @@ public class TransformAddConstraintCaseTest extends BaseTransformCaseTest {
             );
         after = CreateDimTable.builder().tableName(QualifiedName.of("a.dim_shop")).columns(columns).build();
     }
+
+    @Test
+    public void testAddNewColWithPrimaryMaxCompute() {
+        initTableWithPrimary();
+        List<BaseStatement> compare = CompareNodeExecute.getInstance().compare(before, after,
+            CompareStrategy.INCREMENTAL);
+        String collect = starter.transformMaxCompute(compare, ";");
+        assertEquals("ALTER TABLE dim_shop ADD COLUMNS\n"
+            + "(\n"
+            + "   c1 BIGINT COMMENT 'a.b'\n"
+            + ");", collect);
+    }
 }

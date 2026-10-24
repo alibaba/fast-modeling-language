@@ -33,6 +33,7 @@
         <module>fastmodel-transform-template</module>
         <module>fastmodel-transform-plantuml</module>
         <module>fastmodel-transform-hive</module>
+        <module>fastmodel-transform-maxcompute</module>
         <module>fastmodel-transform-fml</module>
         <module>fastmodel-transform-example</module>
         <module>fastmodel-transform-hologres</module>

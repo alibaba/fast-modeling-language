@@ -19,8 +19,10 @@ package com.aliyun.fastmodel.driver.server;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +38,8 @@ import com.sun.net.httpserver.HttpsServer;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Https Server
+ * HTTPS example server. Set FML_HTTPS_KEYSTORE_PATH to a local PKCS12 keystore and
+ * FML_HTTPS_KEYSTORE_PASSWORD to its password before starting the server.
  *
  * @author panguanjing
  * @date 2020/12/25
@@ -54,46 +57,43 @@ public class SimpleHttpsServer {
 
     public void startHttps()
         throws Exception {
-        InetSocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), port);
-        //init
-        httpsServer = HttpsServer.create(address, 0);
+        String keyStorePath = System.getenv("FML_HTTPS_KEYSTORE_PATH");
+        String keyStorePassword = System.getenv("FML_HTTPS_KEYSTORE_PASSWORD");
+        if (keyStorePath == null || keyStorePath.trim().isEmpty()
+            || keyStorePassword == null || keyStorePassword.isEmpty()) {
+            throw new IllegalStateException("Set FML_HTTPS_KEYSTORE_PATH and FML_HTTPS_KEYSTORE_PASSWORD");
+        }
 
         SSLContext sslContext = SSLContext.getInstance("TLS");
+        char[] password = keyStorePassword.toCharArray();
+        try {
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            try (InputStream input = Files.newInputStream(Paths.get(keyStorePath))) {
+                ks.load(input, password);
+            }
 
-        //init the keystore
-        char[] password = "simulator".toCharArray();
-        KeyStore ks = KeyStore.getInstance("JKS");
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, password);
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(ks);
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        } finally {
+            Arrays.fill(password, '\0');
+        }
 
-        //FileInputStream fis = new FileInputStream("lig.keystore");
-        InputStream fis = this.getClass().getResourceAsStream("/lig.keystore");
-        ks.load(fis, password);
-
-        //set up the key manager factory
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, password);
-
-        //set up the trust manager factory
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(ks);
-
-        //set up the Https context and parameters
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        // Validate TLS configuration before binding a listening socket.
+        InetSocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), port);
+        httpsServer = HttpsServer.create(address, 0);
 
         httpsServer.setHttpsConfigurator(
             new HttpsConfigurator(sslContext) {
                 @Override
                 public void configure(HttpsParameters httpsParameters) {
-                    try {
-                        SSLContext c = SSLContext.getDefault();
-                        SSLEngine engine = c.createSSLEngine();
-                        httpsParameters.setNeedClientAuth(false);
-                        httpsParameters.setCipherSuites(engine.getEnabledCipherSuites());
-                        httpsParameters.setProtocols(engine.getEnabledProtocols());
-
-                        httpsParameters.setSSLParameters(c.getDefaultSSLParameters());
-                    } catch (NoSuchAlgorithmException e) {
-                        log.error("occur exception", e);
-                    }
+                    SSLEngine engine = sslContext.createSSLEngine();
+                    httpsParameters.setNeedClientAuth(false);
+                    httpsParameters.setCipherSuites(engine.getEnabledCipherSuites());
+                    httpsParameters.setProtocols(engine.getEnabledProtocols());
+                    httpsParameters.setSSLParameters(sslContext.getDefaultSSLParameters());
 
                 }
             }

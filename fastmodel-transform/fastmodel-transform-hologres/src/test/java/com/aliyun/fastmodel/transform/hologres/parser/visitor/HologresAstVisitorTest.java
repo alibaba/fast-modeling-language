@@ -168,7 +168,7 @@ public class HologresAstVisitorTest {
         hologresAstVisitor.visitSetTableProperties(properties, 0);
         String s = hologresAstVisitor.getBuilder().toString();
         assertEquals("BEGIN;\n"
-            + "CALL SET_TABLE_PROPERTY('tbl', 'dictionary_encoding_columns', '\"C1\":on,\"c2\":off');\n"
+            + "CALL SET_TABLE_PROPERTY('tbl', 'dictionary_encoding_columns', '\"c1\":on,\"c2\":off');\n"
             + "COMMIT;", s);
     }
 

@@ -4,9 +4,9 @@ CREATE EXTERNAL TABLE IF NOT EXISTS adb_external_demo.mysqltest (
 	age int
  ) ENGINE = 'MYSQL'
  TABLE_PROPERTIES = '{
-   "url":"jdbc:mysql://rm-bp1gx6h1tyd04****.mysql.rds.aliyuncs.com:3306/test_adb",
+   "url":"jdbc:mysql://db.example.invalid:3306/example",
    "tablename":"person",
-   "username":"testUserName",
-   "password":"testUserPassword",
+   "username":"<username>",
+   "password":"<password>",
    "charset":"utf8"
 }';

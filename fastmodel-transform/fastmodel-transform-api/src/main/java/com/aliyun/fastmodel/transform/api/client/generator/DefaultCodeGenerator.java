@@ -18,7 +18,6 @@ package com.aliyun.fastmodel.transform.api.client.generator;
 
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.compare.CompareNodeExecute;
 import com.aliyun.fastmodel.compare.CompareStrategy;
@@ -102,16 +101,12 @@ public class DefaultCodeGenerator implements CodeGenerator {
             finalStatement = Lists.newArrayList(new CompositeStatement(compare));
         }
         // 将返回的node，转为目标的ddl语句
-        List<DialectNode> dialectNodes = finalStatement.stream().map(
-            statement -> {
-                TransformContext build = TransformContext.builder().database(request.getAfter().getDatabase())
-                    .appendSemicolon(request.getConfig().isAppendSemicolon())
-                    .caseSensitive(request.getConfig().isCaseSensitive())
-                    .filterProperties(request.getConfig().isFilterProperties())
-                    .schema(request.getAfter().getSchema()).build();
-                return transformer.transform(statement,
-                    build);
-            }).collect(Collectors.toList());
+        TransformContext context = TransformContext.builder().database(request.getAfter().getDatabase())
+            .appendSemicolon(request.getConfig().isAppendSemicolon())
+            .caseSensitive(request.getConfig().isCaseSensitive())
+            .filterProperties(request.getConfig().isFilterProperties())
+            .schema(request.getAfter().getSchema()).build();
+        List<DialectNode> dialectNodes = transformer.transformStatements(finalStatement, node, context);
         return DdlGeneratorResult.builder().dialectNodes(dialectNodes).build();
     }
 

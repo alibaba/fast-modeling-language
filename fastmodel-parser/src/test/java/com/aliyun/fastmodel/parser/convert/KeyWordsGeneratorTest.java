@@ -25,7 +25,6 @@ import org.junit.Test;
 
 /**
  * 用于生成lsp的关键词的工具，目前都是部分的关键字的内容不太方便
- * https://configuration.lsp.alibaba-inc.com/index#/edit/84
  *
  * @author panguanjing
  * @date 2021/3/30

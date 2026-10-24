@@ -17,6 +17,8 @@
 package com.aliyun.fastmodel.transform.hologres.parser.util;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.common.utils.StripUtils;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
@@ -34,6 +36,23 @@ import com.google.common.collect.Lists;
 public class HologresPropertyUtil {
 
     public static String getPropertyValue(HologresVersion hologresVersion, String key, String value) {
+        return getPropertyValue(hologresVersion, key, value, UnaryOperator.identity());
+    }
+
+    /**
+     * Format a property value and optionally map each referenced column before quoting it.
+     *
+     * <p>The mapper is intentionally applied only to V2 and later. Hologres V1 quotes the
+     * complete property value and must retain its historical behavior.</p>
+     *
+     * @param hologresVersion hologres version
+     * @param key property key
+     * @param value property value
+     * @param columnMapper mapper for column references
+     * @return formatted property value
+     */
+    public static String getPropertyValue(HologresVersion hologresVersion, String key, String value,
+                                          UnaryOperator<String> columnMapper) {
         HologresPropertyConverter instance = HologresPropertyConverter.getInstance();
         BaseClientProperty baseClientProperty = instance.create(key, value);
         //https://help.aliyun.com/document_detail/160754.html?spm=a2c4g.467951.0.0.12c01598oEHfQG
@@ -42,8 +61,9 @@ public class HologresPropertyUtil {
             return value;
         }
         if (hologresVersion.greaterThan(HologresVersion.V1)) {
+            List<String> mappedColumns = list.stream().map(columnMapper).collect(Collectors.toList());
             //按照2.0的方式，call set_table_property('tbl', 'clustering_key', '"C1",c2');
-            String[] strings = list.stream().map(l -> {
+            String[] strings = mappedColumns.stream().map(l -> {
                 if (l.startsWith(StripUtils.DOUBLE_QUOTE)) {
                     return l;
                 } else {

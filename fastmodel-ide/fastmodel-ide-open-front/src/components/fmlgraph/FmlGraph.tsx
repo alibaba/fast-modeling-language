@@ -117,7 +117,7 @@ const FmlGraph: React.FC<IFmlGraphProps> = (props: IFmlGraphProps) => {
             </Row>
         </Content>
         <Divider/>
-        <Footer style={{textAlign: 'center'}}>Powered by ©2022 <a href={'https://kimball.alibaba-inc.com'}>建模引擎</a>
+        <Footer style={{textAlign: 'center'}}>Powered by ©2022 <a href={'https://github.com/alibaba/fast-modeling-language'}>建模引擎</a>
         </Footer>
     </Layout>
         ;

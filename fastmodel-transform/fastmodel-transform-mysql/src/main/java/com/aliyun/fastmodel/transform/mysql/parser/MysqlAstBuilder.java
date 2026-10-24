@@ -126,6 +126,8 @@ import com.aliyun.fastmodel.transform.mysql.parser.MySqlParser.TableOptionUnionC
 import com.aliyun.fastmodel.transform.mysql.parser.MySqlParser.UidContext;
 import com.aliyun.fastmodel.transform.mysql.parser.MySqlParser.UniqueKeyColumnConstraintContext;
 import com.aliyun.fastmodel.transform.mysql.parser.MySqlParser.UniqueKeyTableConstraintContext;
+import com.aliyun.fastmodel.transform.mysql.parser.tree.MysqlGenericDataType;
+import com.aliyun.fastmodel.transform.mysql.parser.tree.MysqlGenericDataType.SignEnum;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -353,11 +355,29 @@ public class MysqlAstBuilder extends MySqlParserBaseVisitor<Node> {
                 }
             }
         }
-        return new GenericDataType(
+        String typeName = ctx.typeName.getText();
+        SignEnum signEnum = null;
+        if (ctx.UNSIGNED() != null && !ctx.UNSIGNED().isEmpty()) {
+            signEnum = SignEnum.UNSIGNED;
+        } else if (ctx.SIGNED() != null && !ctx.SIGNED().isEmpty()) {
+            signEnum = SignEnum.SIGNED;
+        }
+        Boolean zeroFill = ctx.ZEROFILL() != null && !ctx.ZEROFILL().isEmpty() ? Boolean.TRUE : null;
+        if (signEnum == null && zeroFill == null) {
+            return new GenericDataType(
+                getLocation(ctx),
+                getOrigin(ctx),
+                typeName,
+                list
+            );
+        }
+        return new MysqlGenericDataType(
             getLocation(ctx),
             getOrigin(ctx),
-            ctx.typeName.getText(),
-            list
+            typeName,
+            list,
+            signEnum,
+            zeroFill
         );
     }
 

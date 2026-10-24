@@ -153,6 +153,7 @@ KW_ARRAY: A R R A Y ;
 KW_STRUCT: S T R U C T ;
 KW_JSON : J S O N ;
 KW_MAP: M A P ;
+KW_VECTOR : V E C T O R ;
 KW_WITH: W I T H ;
 KW_SET: S E T ;
 KW_UNSET: U N S E T ;

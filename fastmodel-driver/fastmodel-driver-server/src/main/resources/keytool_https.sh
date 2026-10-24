@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Copyright 2021-2022 Alibaba Group Holding Ltd.
 #
@@ -14,4 +15,30 @@
 #    limitations under the License.
 #
 
-keytool -genkeypair -keyalg RSA -alias self_signed -keypass simulator -keystore lig.keystore -storepass simulator
+set -eu
+umask 077
+
+if [ "$#" -ne 1 ]; then
+    printf 'Usage: %s /absolute/path/outside-the-checkout/example.p12\n' "$0" >&2
+    exit 1
+fi
+case "$1" in
+    /*) ;;
+    *) printf 'The keystore path must be absolute.\n' >&2; exit 1 ;;
+esac
+if [ -e "$1" ] || [ -L "$1" ]; then
+    printf 'Refusing to overwrite an existing keystore.\n' >&2
+    exit 1
+fi
+destination_dir=$(CDPATH= cd -- "$(dirname -- "$1")" && pwd -P)
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+checkout=$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null || true)
+if [ -n "$checkout" ]; then
+    case "$destination_dir/" in
+        "$checkout/"*) printf 'Keep the keystore outside the source checkout.\n' >&2; exit 1 ;;
+    esac
+fi
+
+# keytool prompts for the password; it is never embedded in this script or its arguments.
+# Use the same password in FML_HTTPS_KEYSTORE_PASSWORD and this path in FML_HTTPS_KEYSTORE_PATH.
+keytool -genkeypair -keyalg RSA -keysize 2048 -alias self_signed -storetype PKCS12 -keystore "$1"

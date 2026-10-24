@@ -322,4 +322,83 @@ public class DefaultCodeGeneratorMysqlTest {
 
         System.out.println("Number of ALTER TABLE statements for 'users': " + alterTableCount);
     }
+
+    /**
+     * 已有表包含 INT UNSIGNED 时，新增列不应因为无符号类型解析失败，且原有无符号字段需要保持无符号语义
+     */
+    @Test
+    public void testDefaultCodeGeneratorWithUnsignedColumn() {
+        DefaultCodeGenerator generator = new DefaultCodeGenerator();
+
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(new DialectMeta(DialectName.MYSQL, IVersion.getDefault()))
+            .build();
+
+        Table beforeTable = Table.builder()
+            .name("unsigned_table")
+            .database("test")
+            .columns(ImmutableList.of(
+                Column.builder().name("id").dataType("INT UNSIGNED").length(10).build(),
+                Column.builder().name("total").dataType("BIGINT UNSIGNED").length(20).build()
+            ))
+            .build();
+
+        Table afterTable = Table.builder()
+            .name("unsigned_table")
+            .database("test")
+            .columns(ImmutableList.of(
+                Column.builder().name("id").dataType("INT UNSIGNED").length(10).build(),
+                Column.builder().name("total").dataType("BIGINT UNSIGNED").length(20).build(),
+                Column.builder().name("remark").dataType("VARCHAR").length(64).comment("remark").build()
+            ))
+            .build();
+
+        DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
+            .before(beforeTable)
+            .after(afterTable)
+            .config(config)
+            .build();
+
+        DdlGeneratorResult result = generator.generate(request);
+        assertNotNull(result);
+        List<com.aliyun.fastmodel.transform.api.dialect.DialectNode> dialectNodes = result.getDialectNodes();
+        assertTrue("Should generate add column ddl", dialectNodes.size() > 0);
+
+        String sql = dialectNodes.stream().map(node -> node.getNode()).collect(java.util.stream.Collectors.joining("\n"));
+        assertTrue("Should add the new column", sql.toUpperCase().contains("ADD COLUMN"));
+        assertTrue("Should not modify unsigned column", !sql.toUpperCase().contains("MODIFY COLUMN"));
+    }
+
+    /**
+     * 新建表时，无符号类型需要完整保留
+     */
+    @Test
+    public void testDefaultCodeGeneratorCreateTableWithUnsignedColumn() {
+        DefaultCodeGenerator generator = new DefaultCodeGenerator();
+
+        TableConfig config = TableConfig.builder()
+            .dialectMeta(new DialectMeta(DialectName.MYSQL, IVersion.getDefault()))
+            .build();
+
+        DdlGeneratorModelRequest request = DdlGeneratorModelRequest.builder()
+            .after(Table.builder()
+                .name("unsigned_create")
+                .database("test")
+                .columns(ImmutableList.of(
+                    Column.builder().name("id").dataType("INT UNSIGNED").length(10).build(),
+                    Column.builder().name("amount").dataType("DECIMAL UNSIGNED").precision(20).scale(4).build(),
+                    Column.builder().name("total").dataType("BIGINT UNSIGNED ZEROFILL").length(20).build()
+                ))
+                .build())
+            .config(config)
+            .build();
+
+        DdlGeneratorResult result = generator.generate(request);
+        assertNotNull(result);
+        String sql = result.getDialectNodes().stream().map(node -> node.getNode())
+            .collect(java.util.stream.Collectors.joining("\n"));
+        assertTrue(sql, sql.contains("INT(10) UNSIGNED"));
+        assertTrue(sql, sql.contains("DECIMAL(20,4) UNSIGNED"));
+        assertTrue(sql, sql.contains("BIGINT(20) UNSIGNED ZEROFILL"));
+    }
 }

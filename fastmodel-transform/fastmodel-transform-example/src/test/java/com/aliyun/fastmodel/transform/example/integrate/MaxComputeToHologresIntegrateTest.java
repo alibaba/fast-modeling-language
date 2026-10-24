@@ -12,10 +12,7 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Desc:
@@ -23,7 +20,6 @@ import static org.junit.Assert.*;
  * @author panguanjing
  * @date 2022/6/17
  */
-@Ignore
 public class MaxComputeToHologresIntegrateTest {
 
     MaxComputeToHologresIntegrate maxComputeToHologresIntegrate;
@@ -47,23 +43,10 @@ public class MaxComputeToHologresIntegrateTest {
     }
 
     @Test
-    public void testCase2() {
-        String mc = "SELECT  a\n"
-            + "        ,MAX(b)\n"
-            + "FROM    (\n"
-            + "            SELECT  a\n"
-            + "                    ,b\n"
-            + "            FROM    (\n"
-            + "                        SELECT  *\n"
-            + "                        FROM    public.test\n"
-            + "                    ) \n"
-            + "        ) \n"
-            + "WHERE   b = '10'";
-        DialectNode dialectNode = maxComputeToHologresIntegrate.mcToHologres(new DialectNode(mc));
-        String expected = "SELECT\n"
-            + "    *\n"
-            + "FROM\n"
-            + "    test";
-        MatcherAssert.assertThat(dialectNode.getNode(), Matchers.equalToIgnoringWhiteSpace(expected));
+    public void testProjectionFilterAndGrouping() {
+        String mc = "SELECT a, MAX(b) AS largest_value FROM example_project.test WHERE b > 10 GROUP BY a";
+        DialectNode actual = maxComputeToHologresIntegrate.mcToHologres(new DialectNode(mc));
+        String expected = "SELECT a , MAX(b) AS largest_value FROM test WHERE b > 10 GROUP BY a";
+        MatcherAssert.assertThat(actual.getNode(), Matchers.equalToIgnoringWhiteSpace(expected));
     }
 }

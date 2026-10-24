@@ -59,7 +59,6 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Query visitor
- * https://yuque.antfin-inc.com/docs/share/06c91e54-aacf-4a34-b593-762a606b6a22?#pYDCk
  *
  * @author panguanjing
  * @date 2022/6/18

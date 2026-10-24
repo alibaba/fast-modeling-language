@@ -1,6 +1,6 @@
-GET https://pre-kimball.alibaba-inc.com/stuido/driver
+GET http://localhost:18080/studio/driver
 Accept: application/json
 
 ###
-GET http://model-engine-v1.daily-ms.dw.alibaba-inc.com/studio/driver?database=dataworks
+GET http://localhost:18080/studio/driver?database=example
 Accept: application/json

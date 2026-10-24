@@ -39,6 +39,7 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.api.dialect.DialectName;
 import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.google.common.collect.ImmutableList;
+import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -121,5 +122,27 @@ public class CompareDdlTest {
             .build();
         list.add(build);
         return list;
+    }
+
+    @Test
+    public void testMaxCompute() {
+        List<ColumnDefinition> columnDefines = beforeColumnDefine();
+        CreateTable before = getCreateTable(columnDefines);
+        Transformer transformer = TransformerFactory.getInstance().get(DialectMeta.DEFAULT_MAX_COMPUTE);
+        DialectNode beforeDialectNode = transformer.transform(before,
+            TransformContext.builder().appendSemicolon(true).build());
+        String maxComputeDDL = "CREATE TABLE dim_shop (a bigint comment 'comment');";
+        List<BaseStatement> compare = NodeCompareFactory.getInstance().compare(DialectMeta.getMaxCompute(),
+            beforeDialectNode.getNode(),
+            maxComputeDDL,
+            CompareContext.builder().build());
+        String print = print(compare);
+        assertEquals(print, "ALTER TABLE dim_shop DROP COLUMN c1;\n"
+            + "ALTER TABLE dim_shop ADD COLUMNS\n"
+            + "(\n"
+            + "   a BIGINT COMMENT 'comment'\n"
+            + ");\n"
+            + "ALTER TABLE dim_shop SET COMMENT '';\n"
+            + "ALTER TABLE dim_shop DROP PARTITION COLUMN a");
     }
 }

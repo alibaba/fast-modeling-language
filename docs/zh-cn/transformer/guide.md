@@ -76,7 +76,7 @@
 public class MaxComputeTransformerTest {
     public static void main(String[] args) {
         TransformerFactory transformFactory = TransformerFactory.getInstance();
-        Transformer transformer = transformFactory.get(DialectMeta.DEFAULT_MAXCOMPUTE);
+        Transformer transformer = transformFactory.get(DialectMeta.DEFAULT_MAX_COMPUTE);
         DialectNode dialectNode = new DialectNode("create table a (test bigint) comment 'test';");
         Node baseStatement = transformer.reverse(dialectNode);
         Transformer mysqlTransformer = transformFactory.get(DialectMeta.DEFAULT_MYSQL);

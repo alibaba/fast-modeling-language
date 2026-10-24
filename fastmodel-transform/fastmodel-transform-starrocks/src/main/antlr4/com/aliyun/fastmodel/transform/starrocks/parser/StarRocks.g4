@@ -2453,7 +2453,8 @@ varType
     ;
 
 comment
-    : COMMENT string
+    : COMMENT commentText=string
+    | COMMENT '(' commentText=string ')'
     ;
 
 outfile
@@ -2555,6 +2556,7 @@ baseType
     | name=JSON
     | name=VARBINARY typeParameter?
     | name=BINARY typeParameter?
+    | name=UNKNOWN_TYPE
     ;
 
 decimalType

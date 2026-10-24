@@ -94,6 +94,13 @@ public class ColumnCompare implements TableElementCompare {
         //顺序的调整
         //copy beforeColumn
         List<ColumnDefinition> beforeCopy = new CopyOnWriteArrayList<>(beforeColumnDefines);
+        // 删除列会自然改变剩余列的位置，不能将这种位移再次生成为调序语句。
+        for (BaseStatement statement : builder.build()) {
+            if (statement instanceof DropCol) {
+                Identifier droppedColumn = ((DropCol)statement).getColumnName();
+                beforeCopy.removeIf(column -> Objects.equals(column.getColName(), droppedColumn));
+            }
+        }
         OrderColumnManager beforeOrderColumnManager = new OrderColumnManager(qualifiedName, beforeCopy);
         OrderColumnManager afterOrderColumnManager = new OrderColumnManager(qualifiedName, afterColumnDefines);
         for (ColumnDefinition c : afterColumnDefines) {

@@ -41,6 +41,12 @@
 
         <dependency>
             <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-maxcompute</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
             <artifactId>fastmodel-transform-hive</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

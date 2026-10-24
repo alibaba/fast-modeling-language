@@ -21,9 +21,14 @@ import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.statement.script.RefRelation;
 import com.aliyun.fastmodel.core.tree.statement.table.AddConstraint;
+import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext.ReverseTargetStrategy;
+import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
+import com.aliyun.fastmodel.transform.mysql.MysqlTransformer;
+import com.aliyun.fastmodel.transform.mysql.context.MysqlTransformContext;
+import com.aliyun.fastmodel.transform.mysql.parser.tree.MysqlGenericDataType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -46,10 +51,28 @@ public class MysqlTransformerParserTest {
         CreateTable createTable =
             (CreateTable)mysqlTransformerParser.parseNode(
                 "create table if not exists a (b bigint unsigned comment 'comment');");
-        assertEquals(createTable.toString(), "CREATE DIM TABLE IF NOT EXISTS a \n"
+        assertEquals("CREATE DIM TABLE IF NOT EXISTS a \n"
             + "(\n"
-            + "   b BIGINT COMMENT 'comment'\n"
-            + ")");
+            + "   b BIGINT UNSIGNED COMMENT 'comment'\n"
+            + ")", createTable.toString());
+    }
+
+    @Test
+    public void testParserWithUnsigned() {
+        CreateTable createTable =
+            (CreateTable)mysqlTransformerParser.parseNode(
+                "create table t (a int(10) unsigned, b bigint unsigned zerofill, c decimal(10,2) unsigned);");
+        ColumnDefinition a = createTable.getColumnDefines().get(0);
+        assertTrue(a.getDataType() instanceof MysqlGenericDataType);
+        assertEquals("INT(10) UNSIGNED", a.getDataType().toString());
+        assertEquals("BIGINT UNSIGNED ZEROFILL", createTable.getColumnDefines().get(1).getDataType().toString());
+        assertEquals("DECIMAL(10,2) UNSIGNED", createTable.getColumnDefines().get(2).getDataType().toString());
+
+        MysqlTransformer mysqlTransformer = new MysqlTransformer();
+        DialectNode node = mysqlTransformer.transform(createTable, MysqlTransformContext.builder().build());
+        assertTrue(node.getNode(), node.getNode().contains("a INT(10) UNSIGNED"));
+        assertTrue(node.getNode(), node.getNode().contains("b BIGINT UNSIGNED ZEROFILL"));
+        assertTrue(node.getNode(), node.getNode().contains("c DECIMAL(10,2) UNSIGNED"));
     }
 
     @Test

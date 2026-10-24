@@ -82,6 +82,11 @@
         </dependency>
         <dependency>
             <groupId>com.aliyun.fastmodel</groupId>
+            <artifactId>fastmodel-transform-maxcompute</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun.fastmodel</groupId>
             <artifactId>fastmodel-transform-oceanbase</artifactId>
             <version>${project.version}</version>
         </dependency>
