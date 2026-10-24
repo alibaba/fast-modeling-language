@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateDimTable;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
+import com.aliyun.fastmodel.transform.mc.context.MaxComputeContext;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -42,5 +43,30 @@ public class TransformTableTest extends BaseTransformCaseTest {
             .build();
         String text = starter.compareAndTransform(b, a, DialectMeta.getHive(), HiveTransformContext.builder().build());
         assertEquals("ALTER TABLE b SET TBLPROPERTIES('comment'='abc')", text);
+    }
+
+    @Test
+    public void transformRenameTable() {
+        BaseStatement before = CreateDimTable.builder().tableName(
+            QualifiedName.of("a.b")
+        ).build();
+
+        BaseStatement after = CreateDimTable.builder().tableName(
+            QualifiedName.of("a.c")
+        ).build();
+        String s = starter.compareAndTransform(before, after, DialectMeta.getMaxCompute(),
+            MaxComputeContext.builder().build());
+        assertEquals("ALTER TABLE b RENAME TO c", s);
+    }
+
+    @Test
+    public void testSetTableComment_MaxCompute() {
+        BaseStatement b
+            = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).build();
+        BaseStatement a = CreateDimTable.builder().tableName(QualifiedName.of("a.b")).comment(new Comment("abc"))
+            .build();
+        String text = starter.compareAndTransform(b, a, DialectMeta.getMaxCompute(),
+            MaxComputeContext.builder().build());
+        assertEquals("ALTER TABLE b SET COMMENT 'abc'", text);
     }
 }

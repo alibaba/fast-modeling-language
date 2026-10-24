@@ -16,19 +16,29 @@
 
 package com.aliyun.fastmodel.transform.starrocks.format;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.aliyun.fastmodel.core.formatter.FastModelVisitor;
+import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Property;
+import com.aliyun.fastmodel.core.tree.QualifiedName;
 import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
+import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
+import com.aliyun.fastmodel.core.tree.datatype.RowDataType;
+import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.core.tree.expr.BaseExpression;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.expr.atom.FunctionCall;
 import com.aliyun.fastmodel.core.tree.expr.literal.BooleanLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.ListStringLiteral;
+import com.aliyun.fastmodel.core.tree.statement.BaseOperatorStatement;
+import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
 import com.aliyun.fastmodel.core.tree.statement.table.AddCols;
 import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
@@ -37,6 +47,7 @@ import com.aliyun.fastmodel.core.tree.statement.table.DropCol;
 import com.aliyun.fastmodel.core.tree.statement.table.PartitionedBy;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameCol;
 import com.aliyun.fastmodel.core.tree.statement.table.RenameTable;
+import com.aliyun.fastmodel.core.tree.statement.table.SetColumnOrder;
 import com.aliyun.fastmodel.core.tree.statement.table.SetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.UnSetTableProperties;
 import com.aliyun.fastmodel.core.tree.statement.table.constraint.BaseConstraint;
@@ -89,16 +100,111 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
 
     public static final String MAXVALUE = "MAXVALUE";
     private final StarRocksContext starRocksContext;
+    private final CreateTable alterTarget;
+    private final Set<Identifier> keyColumns = new LinkedHashSet<>();
+    private boolean alterClauseOnly;
 
     public StarRocksOutVisitor(StarRocksContext context) {
+        this(context, null);
+    }
+
+    public StarRocksOutVisitor(StarRocksContext context, CreateTable alterTarget) {
         this.starRocksContext = context;
+        this.alterTarget = alterTarget;
+        if (alterTarget != null && alterTarget.getConstraintStatements() != null) {
+            for (BaseConstraint constraint : alterTarget.getConstraintStatements()) {
+                if (constraint instanceof PrimaryConstraint || constraint instanceof UniqueConstraint
+                    || constraint instanceof DuplicateKeyConstraint || constraint instanceof AggregateKeyConstraint) {
+                    constraint.getChildren().stream().filter(Identifier.class::isInstance)
+                        .map(Identifier.class::cast).forEach(keyColumns::add);
+                }
+            }
+        }
+    }
+
+    /**
+     * Only compatible column changes can share a StarRocks schema-change job.
+     */
+    public static boolean isSchemaChange(BaseStatement statement) {
+        if (statement instanceof SetColumnOrder) {
+            SetColumnOrder order = (SetColumnOrder)statement;
+            return Objects.equal(order.getOldColName(), order.getNewColName())
+                && (order.getBeforeColName() != null || BooleanUtils.isTrue(order.getFirst()));
+        }
+        if (statement instanceof ChangeCol) {
+            ChangeCol change = (ChangeCol)statement;
+            return Objects.equal(change.getOldColName(), change.getColumnDefinition().getColName());
+        }
+        return statement instanceof AddCols || statement instanceof DropCol;
+    }
+
+    @Override
+    public Boolean visitCompositeStatement(CompositeStatement statement, Integer context) {
+        List<BaseStatement> statements = statement.getStatements();
+        if (statements.isEmpty() || !statements.stream().allMatch(StarRocksOutVisitor::isSchemaChange)) {
+            return super.visitCompositeStatement(statement, context);
+        }
+        QualifiedName table = ((BaseOperatorStatement)statements.get(0)).getQualifiedName();
+        if (statements.stream().anyMatch(item -> !Objects.equal(table,
+            ((BaseOperatorStatement)item).getQualifiedName()))) {
+            return super.visitCompositeStatement(statement, context);
+        }
+        // Separate ALTER statements race with the preceding asynchronous schema change.
+        appendAlterTable(table);
+        boolean previous = alterClauseOnly;
+        alterClauseOnly = true;
+        try {
+            boolean executable = true;
+            for (int i = 0; i < statements.size(); i++) {
+                if (i > 0) {
+                    builder.append(",");
+                }
+                executable &= Boolean.TRUE.equals(process(statements.get(i), context));
+            }
+            return executable;
+        } finally {
+            alterClauseOnly = previous;
+        }
+    }
+
+    /**
+     * UNKNOWN_TYPE preserves metadata for inspection but cannot be executed as a column type.
+     */
+    private boolean containsUnknownType(BaseDataType dataType) {
+        if (dataType == null) {
+            return false;
+        }
+        if ("UNKNOWN_TYPE".equalsIgnoreCase(dataType.getTypeName().getValue())) {
+            return true;
+        }
+        if (dataType instanceof GenericDataType) {
+            GenericDataType generic = (GenericDataType)dataType;
+            return CollectionUtils.isNotEmpty(generic.getArguments()) && generic.getArguments().stream()
+                .filter(TypeParameter.class::isInstance).map(TypeParameter.class::cast)
+                .anyMatch(parameter -> containsUnknownType(parameter.getType()));
+        }
+        if (dataType instanceof RowDataType) {
+            RowDataType row = (RowDataType)dataType;
+            return CollectionUtils.isNotEmpty(row.getFields()) && row.getFields().stream()
+                .anyMatch(field -> containsUnknownType(field.getDataType()));
+        }
+        return false;
+    }
+
+    private void appendAlterTable(QualifiedName table) {
+        if (!alterClauseOnly) {
+            builder.append("ALTER TABLE ").append(getCode(table));
+        }
     }
 
     @Override
     public Boolean visitCreateTable(CreateTable node, Integer indent) {
-        boolean columnEmpty = node.isColumnEmpty();
+        // StarRocks 要求分区列必须出现在列定义中,补回仅声明在 PARTITION BY 里的分区列
+        List<ColumnDefinition> columnDefines = mergePartitionColumnsIntoColumns(node);
+        boolean columnEmpty = CollectionUtils.isEmpty(columnDefines);
         //maxcompute不支持没有列的表
-        boolean executable = !columnEmpty;
+        boolean executable = !columnEmpty && columnDefines.stream()
+            .noneMatch(column -> containsUnknownType(column.getDataType()));
         builder.append("CREATE TABLE ");
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
@@ -108,7 +214,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         if (!columnEmpty) {
             builder.append("\n(\n");
             String elementIndent = indentString(indent + 1);
-            String columnList = formatColumnList(node.getColumnDefines(), elementIndent);
+            String columnList = formatColumnList(columnDefines, elementIndent);
             builder.append(columnList);
 
             if (!node.isIndexEmpty()) {
@@ -170,6 +276,38 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         return executable;
     }
 
+    /**
+     * StarRocks 要求分区列必须出现在列定义中(列类型取自列定义)。当上游 AST 把分区列只放进
+     * PARTITION BY(ODPS/MaxCompute 语义)而未并入普通列时,这里按列名去重补回,保证生成的
+     * 建表 DDL 合法;仅引用列名(无数据类型)的分区列说明本应已在普通列中,不臆造无类型列。
+     *
+     * @param node 建表语法树
+     * @return 合并分区列后的列定义列表
+     */
+    private List<ColumnDefinition> mergePartitionColumnsIntoColumns(CreateTable node) {
+        List<ColumnDefinition> columns = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(node.getColumnDefines())) {
+            columns.addAll(node.getColumnDefines());
+        }
+        PartitionedBy partitionedBy = node.getPartitionedBy();
+        if (partitionedBy == null || CollectionUtils.isEmpty(partitionedBy.getColumnDefinitions())) {
+            return columns;
+        }
+        List<ColumnDefinition> partitionColumns = partitionedBy.getColumnDefinitions();
+        Set<String> existing = columns.stream()
+            .map(column -> formatExpression(column.getColName()))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+        for (ColumnDefinition partitionColumn : partitionColumns) {
+            if (partitionColumn.getDataType() == null) {
+                continue;
+            }
+            if (existing.add(formatExpression(partitionColumn.getColName()))) {
+                columns.add(partitionColumn);
+            }
+        }
+        return columns;
+    }
+
     @Override
     protected String formatProperty(List<Property> properties) {
         List<Property> collect = properties.stream().filter(
@@ -197,7 +335,7 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         }
         //key
         String key = PropertyUtil.getPropertyValue(columnProperties, COLUMN_KEY.getValue());
-        if (StringUtils.isNotBlank(key)) {
+        if (StringUtils.isNotBlank(key) || keyColumns.contains(column.getColName())) {
             sb.append(" ").append("KEY");
         }
         //aggDesc
@@ -333,15 +471,39 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
         if (!Objects.equal(oldColName, targetColName)) {
             return false;
         }
-        builder.append("ALTER TABLE ").append(getCode(renameCol.getQualifiedName()));
+        if (alterTarget != null) {
+            columnDefinition = alterTarget.getColumnDefines().stream()
+                .filter(column -> Objects.equal(column.getColName(), targetColName))
+                .findFirst().orElse(columnDefinition);
+        }
+        appendAlterTable(renameCol.getQualifiedName());
         builder.append(" MODIFY COLUMN");
         builder.append(" ").append(formatColumnDefinition(columnDefinition, 0));
-        return true;
+        return !containsUnknownType(columnDefinition.getDataType());
+    }
+
+    @Override
+    public Boolean visitSetColumnOrder(SetColumnOrder setColumnOrder, Integer context) {
+        if (!Objects.equal(setColumnOrder.getOldColName(), setColumnOrder.getNewColName())
+            || (setColumnOrder.getBeforeColName() == null && !BooleanUtils.isTrue(setColumnOrder.getFirst()))) {
+            return super.visitSetColumnOrder(setColumnOrder, context);
+        }
+        // StarRocks 调序使用 MODIFY COLUMN，必须保留列定义，避免同时改变可空性、默认值等属性。
+        appendAlterTable(setColumnOrder.getQualifiedName());
+        builder.append(" MODIFY COLUMN ").append(formatColumnDefinition(setColumnOrder.getColumnDefinition(), 0));
+        if (setColumnOrder.getBeforeColName() != null) {
+            builder.append(" AFTER ").append(formatExpression(setColumnOrder.getBeforeColName()));
+        } else {
+            builder.append(" FIRST");
+        }
+        return !containsUnknownType(setColumnOrder.getColumnDefinition().getDataType());
     }
 
     @Override
     public Boolean visitDropCol(DropCol dropCol, Integer context) {
-        return super.visitDropCol(dropCol, context);
+        appendAlterTable(dropCol.getQualifiedName());
+        builder.append(" DROP COLUMN ").append(formatExpression(dropCol.getColumnName()));
+        return true;
     }
 
     @Override
@@ -390,13 +552,14 @@ public class StarRocksOutVisitor extends FastModelVisitor implements StarRocksAs
 
     @Override
     public Boolean visitAddCols(AddCols addCols, Integer context) {
-        builder.append("ALTER TABLE ").append(getCode(addCols.getQualifiedName()));
+        appendAlterTable(addCols.getQualifiedName());
         builder.append(" ADD COLUMN\n").append('(').append("\n");
         String columnList = formatColumnList(addCols.getColumnDefineList(), indentString(context + 1));
         builder.append(columnList);
         builder.append("\n");
         builder.append(')');
-        return true;
+        return addCols.getColumnDefineList().stream()
+            .noneMatch(column -> containsUnknownType(column.getDataType()));
     }
 
     @Override

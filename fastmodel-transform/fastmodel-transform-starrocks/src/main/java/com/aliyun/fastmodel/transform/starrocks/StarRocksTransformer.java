@@ -1,7 +1,18 @@
 package com.aliyun.fastmodel.transform.starrocks;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.aliyun.fastmodel.core.tree.BaseStatement;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.statement.BaseOperatorStatement;
+import com.aliyun.fastmodel.core.tree.statement.CompositeStatement;
+import com.aliyun.fastmodel.core.tree.statement.table.ChangeCol;
+import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
+import com.aliyun.fastmodel.core.tree.statement.table.SetColumnOrder;
 import com.aliyun.fastmodel.transform.api.Transformer;
 import com.aliyun.fastmodel.transform.api.builder.BuilderFactory;
 import com.aliyun.fastmodel.transform.api.builder.StatementBuilder;
@@ -18,6 +29,7 @@ import com.aliyun.fastmodel.transform.api.dialect.DialectNode;
 import com.aliyun.fastmodel.transform.api.dialect.IVersion;
 import com.aliyun.fastmodel.transform.starrocks.client.converter.StarRocksClientConverter;
 import com.aliyun.fastmodel.transform.starrocks.context.StarRocksContext;
+import com.aliyun.fastmodel.transform.starrocks.format.StarRocksOutVisitor;
 import com.aliyun.fastmodel.transform.starrocks.parser.StarRocksLanguageParser;
 import com.google.auto.service.AutoService;
 
@@ -34,6 +46,41 @@ public class StarRocksTransformer implements Transformer<BaseStatement> {
     private final StarRocksLanguageParser starRocksLanguageParser = new StarRocksLanguageParser();
 
     private final StarRocksClientConverter starRocksClientConverter = new StarRocksClientConverter();
+
+    @Override
+    public List<DialectNode> transformStatements(List<? extends BaseStatement> statements, Node target,
+        TransformContext context) {
+        List<DialectNode> result = new ArrayList<>();
+        for (int i = 0; i < statements.size();) {
+            BaseStatement statement = statements.get(i);
+            if (statement instanceof CompositeStatement) {
+                result.addAll(transformStatements(((CompositeStatement)statement).getStatements(), target, context));
+                i++;
+                continue;
+            }
+            if (!(target instanceof CreateTable) || !StarRocksOutVisitor.isSchemaChange(statement)) {
+                result.add(transform(statement, new TransformContext(context)));
+                i++;
+                continue;
+            }
+            List<BaseStatement> changes = new ArrayList<>();
+            BaseOperatorStatement first = (BaseOperatorStatement)statement;
+            while (i < statements.size() && StarRocksOutVisitor.isSchemaChange(statements.get(i))
+                && first.getQualifiedName().equals(((BaseOperatorStatement)statements.get(i)).getQualifiedName())) {
+                changes.add(statements.get(i++));
+            }
+            // A positioned MODIFY already includes the complete new definition of the column.
+            Set<Identifier> movedColumns = changes.stream().filter(SetColumnOrder.class::isInstance)
+                .map(SetColumnOrder.class::cast).map(SetColumnOrder::getNewColName).collect(Collectors.toSet());
+            changes.removeIf(change -> change instanceof ChangeCol
+                && movedColumns.contains(((ChangeCol)change).getOldColName()));
+            StarRocksOutVisitor visitor = new StarRocksOutVisitor(new StarRocksContext(context), (CreateTable)target);
+            BaseStatement grouped = changes.size() == 1 ? changes.get(0) : new CompositeStatement(changes);
+            Boolean executable = visitor.process(grouped, 0);
+            result.add(new DialectNode(visitor.getBuilder().toString(), executable));
+        }
+        return result;
+    }
 
     @Override
     public DialectNode transform(BaseStatement source, TransformContext context) {

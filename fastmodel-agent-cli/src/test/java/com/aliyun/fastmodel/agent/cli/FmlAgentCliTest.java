@@ -74,6 +74,9 @@ public class FmlAgentCliTest {
         assertTrue(dialects.containsKey("hologres"));
         assertTrue(dialects.containsKey("hologres@2.0"));
         assertTrue(dialects.containsKey("hologres@3.0"));
+        assertTrue(dialects.containsKey("max-compute"));
+        assertTrue(dialects.containsKey("max-compute@1.0"));
+        assertTrue(dialects.containsKey("max-compute@2.0"));
         assertTrue(dialects.containsKey("mysql"));
         assertTrue(dialects.containsKey("ob-mysql"));
         assertTrue(dialects.containsKey("oracle"));
@@ -93,6 +96,32 @@ public class FmlAgentCliTest {
         assertEquals(0, result.exitCode);
         assertTrue(result.output.contains("\"dialect\":\"mysql\""));
         assertTrue(result.output.contains("\"ok\":true"));
+    }
+
+    @Test
+    public void advertisesAndExecutesEveryMaxComputeVersion() throws Exception {
+        Result capabilities = execute("capabilities");
+        assertEquals(capabilities.output, 0, capabilities.exitCode);
+
+        for (String dialect : new String[] {"max-compute", "max-compute@1.0", "max-compute@2.0"}) {
+            assertTrue(capabilities.output, capabilities.output.contains(
+                "{\"name\":\"" + dialect + "\",\"transform\":true,\"validate\":true}"));
+
+            Result transform = execute("transform", "--dialect", dialect, "--text",
+                "create dim table sample_product (product_id bigint);");
+            assertEquals(transform.output, 0, transform.exitCode);
+            assertTrue(transform.output, transform.output.contains("\"ok\":true"));
+            assertTrue(transform.output, transform.output.contains("\"dialect\":\"" + dialect + "\""));
+            assertTrue(transform.output, transform.output.contains("CREATE TABLE sample_product"));
+            assertTrue(transform.output, transform.output.contains("product_id BIGINT"));
+
+            Result validate = execute("validate", "--dialect", dialect, "--text",
+                "CREATE TABLE sample_product (product_id BIGINT);");
+            assertEquals(validate.output, 0, validate.exitCode);
+            assertTrue(validate.output, validate.output.contains("\"ok\":true"));
+            assertTrue(validate.output, validate.output.contains("\"dialect\":\"" + dialect + "\""));
+            assertTrue(validate.output, validate.output.contains("\"statementCount\":1"));
+        }
     }
 
     @Test
@@ -190,6 +219,7 @@ public class FmlAgentCliTest {
         samples.put("flink", genericCreateTable);
         samples.put("hive", genericCreateTable);
         samples.put("hologres", genericCreateTable);
+        samples.put("max-compute", genericCreateTable);
         samples.put("mysql", genericCreateTable);
         samples.put("ob-mysql", genericCreateTable);
         samples.put("oracle", "CREATE TABLE dim_shop (shop_id NUMBER(19));");

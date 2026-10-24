@@ -64,6 +64,8 @@ import com.aliyun.fastmodel.transform.api.datatype.DataTypeConverter;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.api.util.StringJoinUtil;
 import com.aliyun.fastmodel.transform.mysql.context.MysqlTransformContext;
+import com.aliyun.fastmodel.transform.mysql.parser.tree.MysqlGenericDataType;
+import com.aliyun.fastmodel.transform.mysql.parser.tree.MysqlDataTypeName;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
@@ -393,7 +395,7 @@ public class MysqlVisitor extends FastModelVisitor {
         }
         boolean isPrimary = column.getPrimary() != null && column.getPrimary();
         if (isPrimary) {
-            if (mysqlTransformContext.isAutoIncrement() && DataTypeEnums.isIntDataType(dataType.getTypeName())) {
+            if (mysqlTransformContext.isAutoIncrement() && isAutoIncrementDataType(dataType)) {
                 sb.append(" AUTO_INCREMENT ");
             }
             List<Property> columnProperties = column.getColumnProperties();
@@ -401,6 +403,16 @@ public class MysqlVisitor extends FastModelVisitor {
         }
         sb.append(formatComment(column.getComment()));
         return sb.toString();
+    }
+
+    private boolean isAutoIncrementDataType(BaseDataType dataType) {
+        if (dataType instanceof MysqlGenericDataType) {
+            MysqlDataTypeName baseType = MysqlDataTypeName.getBaseDataTypeName(((MysqlGenericDataType)dataType).getName());
+            return baseType == MysqlDataTypeName.TINYINT || baseType == MysqlDataTypeName.SMALLINT
+                || baseType == MysqlDataTypeName.MEDIUMINT || baseType == MysqlDataTypeName.INT
+                || baseType == MysqlDataTypeName.INTEGER || baseType == MysqlDataTypeName.BIGINT;
+        }
+        return DataTypeEnums.isIntDataType(dataType.getTypeName());
     }
 
     @Override
@@ -718,6 +730,9 @@ public class MysqlVisitor extends FastModelVisitor {
 
     @Override
     protected String formatExpression(BaseExpression baseExpression) {
+        if (baseExpression instanceof MysqlGenericDataType) {
+            return ((MysqlGenericDataType)baseExpression).format();
+        }
         return new DefaultExpressionVisitor().process(baseExpression);
     }
 }

@@ -26,10 +26,12 @@ import com.aliyun.fastmodel.core.tree.datatype.DataTypeParameter;
 import com.aliyun.fastmodel.core.tree.datatype.GenericDataType;
 import com.aliyun.fastmodel.core.tree.datatype.IDataTypeName;
 import com.aliyun.fastmodel.core.tree.datatype.NumericParameter;
+import com.aliyun.fastmodel.core.tree.datatype.TypeParameter;
 import com.aliyun.fastmodel.parser.NodeParser;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author panguanjing
@@ -106,5 +108,39 @@ public class DataTypeTest {
     public void testArray() {
         BaseDataType baseDataType = nodeParser.parseDataType(new DomainLanguage("array<string>"));
         assertEquals(baseDataType.toString(), "ARRAY<STRING>");
+    }
+
+    @Test
+    public void testVector() {
+        String expr = "VECTOR(FLOAT, 768)";
+        BaseDataType baseDataType = nodeParser.parseDataType(new DomainLanguage(expr));
+        GenericDataType genericDataType = (GenericDataType)baseDataType;
+        assertEquals(genericDataType.getTypeName(), DataTypeEnums.VECTOR);
+        List<DataTypeParameter> arguments = genericDataType.getArguments();
+        TypeParameter elementType = (TypeParameter)arguments.get(0);
+        assertEquals(elementType.getType().getTypeName(), DataTypeEnums.FLOAT);
+        NumericParameter dimension = (NumericParameter)arguments.get(1);
+        assertEquals(dimension.getValue(), "768");
+        assertEquals(baseDataType.toString(), "VECTOR(FLOAT,768)");
+    }
+
+    @Test
+    public void testVectorDimensionBoundariesAndFormatting() {
+        assertEquals("VECTOR(FLOAT,1)", nodeParser.parseDataType(new DomainLanguage(" vector ( float , 1 ) ")).toString());
+        assertEquals("VECTOR(FLOAT,4096)", nodeParser.parseDataType(new DomainLanguage("VECTOR(FLOAT,4096)")).toString());
+    }
+
+    @Test
+    public void testVectorRejectsUnsupportedTypesAndDimensions() {
+        String[] invalid = {"VECTOR(STRING,1)", "VECTOR(FLOAT,0)", "VECTOR(FLOAT,-1)",
+            "VECTOR(FLOAT,1.5)", "VECTOR(FLOAT,4097)", "VECTOR(FLOAT)", "VECTOR(FLOAT,1,2)"};
+        for (String expression : invalid) {
+            try {
+                nodeParser.parseDataType(new DomainLanguage(expression));
+                fail("Expected VECTOR validation failure for " + expression);
+            } catch (RuntimeException expected) {
+                // expected
+            }
+        }
     }
 }

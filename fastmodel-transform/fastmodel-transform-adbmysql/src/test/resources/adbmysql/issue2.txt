@@ -12,4 +12,4 @@ Create Table `ADB_EXTERNAL_TPCH_10GB`.`External_customer`
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS `TEXTFILE`
-LOCATION 'oss://dataset-cn-shanghai-external/customer/' ;
+LOCATION 'oss://example-bucket/customer/' ;

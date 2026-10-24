@@ -158,4 +158,35 @@ public class DialectTransformTest {
             + "   a LONGTEXT\n"
             + ")", transform.getNode());
     }
+
+    @Test
+    public void testTransform() {
+        DialectTransformParam param = DialectTransformParam.builder()
+            .sourceMeta(DialectMeta.getMaxCompute())
+            .sourceNode(new DialectNode("CREATE TABLE a (b BIGINT COMMENT 'comment');"))
+            .targetMeta(DialectMeta.getByName(DialectName.ORACLE))
+            .build();
+        DialectNode transform = DialectTransform.transform(param);
+        String node = transform.getNode();
+        assertEquals(node, "CREATE TABLE a (\n"
+            + "   b BIGINT\n"
+            + ");\n"
+            + "COMMENT ON COLUMN a.b IS 'comment';");
+    }
+
+    @Test
+    public void testTransformOracelToMaxcomputeMerge() {
+        DialectTransformParam param = DialectTransformParam.builder()
+            .sourceMeta(DialectMeta.getByName(DialectName.ORACLE))
+            .sourceNode(new DialectNode("CREATE TABLE a (b BIGINT); COMMENT ON TABLE a IS  'comment';"))
+            .targetMeta(DialectMeta.DEFAULT_MAX_COMPUTE)
+            .build();
+        DialectNode transform = DialectTransform.transform(param);
+        assertEquals(transform.getNode(), "CREATE TABLE a\n"
+            + "(\n"
+            + "   b BIGINT\n"
+            + ")\n"
+            + "COMMENT 'comment'"
+        );
+    }
 }

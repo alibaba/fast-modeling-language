@@ -125,7 +125,7 @@ const ToolBar: React.FC<IToolbarProps> = (props: IToolbarProps) => {
     };
 
     const showHelp = () => {
-        let newWindow = window.open("https://fml.alibaba-inc.com/docs/#/zh-cn/", '_blank', 'noopener,noreferrer');
+        let newWindow = window.open("https://alibaba.github.io/fast-modeling-language/", '_blank', 'noopener,noreferrer');
         if (newWindow) {
             newWindow.opener = null;
         }

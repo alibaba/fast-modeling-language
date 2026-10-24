@@ -357,7 +357,9 @@ public class ExpressionVisitor extends AstVisitor<String, Void> {
     public String visitIdentifier(Identifier node, Void context) {
         String value = node.getValue();
         boolean containsSpecialChars = value.contains(":");
-        if (!node.isDelimited() && !containsSpecialChars) {
+        // Identifiers beginning with a digit must be quoted for SQL parsers.
+        boolean startsWithDigit = !value.isEmpty() && Character.isDigit(value.charAt(0));
+        if (!node.isDelimited() && !containsSpecialChars && !startsWithDigit) {
             return value;
         } else {
             //if value is start `, then

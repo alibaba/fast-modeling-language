@@ -145,9 +145,9 @@ public class AdbMysqlTransformerTest {
             + ")\n"
             + "ENGINE='ODPS'\n"
             + "TABLE_PROPERTIES='{\n"
-            + "\t\"accessid\":\"LTAILd4****\",\n"
+            + "\t\"accessid\":\"<access-key-id>\",\n"
             + "\t\"endpoint\":\"http://service.cn-hangzhou.maxcompute.aliyun.com/api\",\n"
-            + "\t\"accesskey\":\"4A5Q7ZVzcYnWMQPysX****\",\n"
+            + "\t\"accesskey\":\"<access-key-secret>\",\n"
             + "\t\"partition_column\":\"dt\",\n"
             + "\t\"project_name\":\"test_adb\",\n"
             + "\t\"table_name\":\"person\"\n"
@@ -226,10 +226,10 @@ public class AdbMysqlTransformerTest {
             + ")\n"
             + "ENGINE='MYSQL'\n"
             + "TABLE_PROPERTIES='{\n"
-            + "   \"url\":\"jdbc:mysql://rm-bp1gx6h1tyd04****.mysql.rds.aliyuncs.com:3306/test_adb\",\n"
+            + "   \"url\":\"jdbc:mysql://db.example.invalid:3306/example\",\n"
             + "   \"tablename\":\"person\",\n"
-            + "   \"username\":\"testUserName\",\n"
-            + "   \"password\":\"testUserPassword\",\n"
+            + "   \"username\":\"<username>\",\n"
+            + "   \"password\":\"<password>\",\n"
             + "   \"charset\":\"utf8\"\n"
             + "}'", result);
     }
@@ -360,7 +360,7 @@ public class AdbMysqlTransformerTest {
             + ")\n"
             + "ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'\n"
             + "STORED AS TEXTFILE\n"
-            + "LOCATION 'oss://dataset-cn-shanghai-external/customer/'", result);
+            + "LOCATION 'oss://example-bucket/customer/'", result);
     }
 
     @Test

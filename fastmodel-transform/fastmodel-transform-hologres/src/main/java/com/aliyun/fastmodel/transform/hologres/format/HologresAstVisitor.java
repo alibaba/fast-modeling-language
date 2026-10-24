@@ -11,6 +11,7 @@ package com.aliyun.fastmodel.transform.hologres.format;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,6 +60,7 @@ import com.aliyun.fastmodel.transform.hologres.parser.util.BuilderUtil;
 import com.aliyun.fastmodel.transform.hologres.parser.util.HologresPropertyUtil;
 import com.aliyun.fastmodel.transform.hologres.parser.visitor.HologresVisitor;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -224,7 +226,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         builder.append(";\n");
         List<Property> properties = node.getProperties();
         if (CollectionUtils.isNotEmpty(properties)) {
-            String propertiesValue = buildSetProperties(node.getQualifiedName(), properties);
+            String propertiesValue = buildSetProperties(node.getQualifiedName(), properties, columnDefines);
             builder.append(propertiesValue);
         }
         if (node.getComment() != null && node.getComment().getComment() != null) {
@@ -327,13 +329,14 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         return true;
     }
 
-    private String callSetProperty(QualifiedName code, String key, String value) {
+    private String callSetProperty(QualifiedName code, String key, String value,
+                                   List<ColumnDefinition> columnDefinitions) {
         // 增加校验，判断是否支持print，只有明确定义了不支持print
         HologresPropertyKey propertyKey = HologresPropertyKey.getByValue(key);
         if (propertyKey != null && !propertyKey.isSupportPrint()) {
             return null;
         }
-        String result = HologresPropertyUtil.getPropertyValue(hologresVersion, key, value);
+        String result = formatPropertyValue(key, value, columnDefinitions);
         // 因为hologres没有三段氏，所以这里不再删除schema的双引号
         List<Identifier> originalParts = code.getOriginalParts();
         String schema = null;
@@ -509,7 +512,7 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
         String value = propertyList.stream().filter(p -> {
             return !StringUtils.equalsIgnoreCase(p.getName(), HologresPropertyKey.TASK_DEFINITION.getValue());
         }).map(p -> {
-            String result = HologresPropertyUtil.getPropertyValue(hologresVersion, p.getName(), p.getValue());
+            String result = formatPropertyValue(p.getName(), p.getValue(), null);
             // 将code中的双引号去除
             return p.getName() + "=" + StripUtils.addStrip(result);
         }).collect(joining(",", "(", ")"));
@@ -518,15 +521,20 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
     }
 
     private String buildSetProperties(QualifiedName qualifiedName, List<Property> properties) {
+        return buildSetProperties(qualifiedName, properties, null);
+    }
+
+    private String buildSetProperties(QualifiedName qualifiedName, List<Property> properties,
+                                      List<ColumnDefinition> columnDefinitions) {
         StringBuilder stringBuilder = new StringBuilder();
         Iterator<Property> iterator = properties.iterator();
         if (iterator.hasNext()) {
             Property p = iterator.next();
-            String value = callSetProperty(qualifiedName, p.getName(), p.getValue());
+            String value = callSetProperty(qualifiedName, p.getName(), p.getValue(), columnDefinitions);
             stringBuilder.append(value);
             while (iterator.hasNext()) {
                 p = iterator.next();
-                String str = callSetProperty(qualifiedName, p.getName(), p.getValue());
+                String str = callSetProperty(qualifiedName, p.getName(), p.getValue(), columnDefinitions);
                 if (StringUtils.isBlank(str)) {
                     continue;
                 }
@@ -535,6 +543,45 @@ public class HologresAstVisitor extends FastModelVisitor implements HologresVisi
             }
         }
         return stringBuilder.toString();
+    }
+
+    private String formatPropertyValue(String key, String value, List<ColumnDefinition> columnDefinitions) {
+        if (context.isCaseSensitive()) {
+            return HologresPropertyUtil.getPropertyValue(hologresVersion, key, value);
+        }
+        Iterator<String> sourceColumns = Splitter.on(",").split(StringUtils.defaultString(value)).iterator();
+        return HologresPropertyUtil.getPropertyValue(hologresVersion, key, value,
+            column -> {
+                // Order/status parsers remove quotes, so retain explicit quoting from the source value.
+                String sourceColumn = sourceColumns.hasNext()
+                    ? StringUtils.substringBefore(sourceColumns.next(), ":").trim() : column;
+                if (!sourceColumn.startsWith(StripUtils.DOUBLE_QUOTE)
+                    || !sourceColumn.endsWith(StripUtils.DOUBLE_QUOTE)) {
+                    sourceColumn = column;
+                }
+                return normalizePropertyColumn(sourceColumn, columnDefinitions);
+            });
+    }
+
+    private String normalizePropertyColumn(String column, List<ColumnDefinition> columnDefinitions) {
+        String trimmedColumn = StringUtils.trim(column);
+        String normalizedColumn = StripUtils.strip(trimmedColumn);
+        if (CollectionUtils.isNotEmpty(columnDefinitions)) {
+            Optional<ColumnDefinition> matchingColumn = columnDefinitions.stream()
+                .filter(definition -> StringUtils.equalsIgnoreCase(
+                    StripUtils.strip(definition.getColName().getValue()), normalizedColumn))
+                .findFirst();
+            if (matchingColumn.isPresent()) {
+                String formattedColumn = formatExpression(matchingColumn.get().getColName());
+                return formattedColumn.startsWith(StripUtils.DOUBLE_QUOTE)
+                    ? formattedColumn : formattedColumn.toLowerCase(Locale.ROOT);
+            }
+        }
+        if (trimmedColumn.startsWith(StripUtils.DOUBLE_QUOTE)
+            && trimmedColumn.endsWith(StripUtils.DOUBLE_QUOTE)) {
+            return trimmedColumn;
+        }
+        return normalizedColumn.toLowerCase(Locale.ROOT);
     }
 
     @Override

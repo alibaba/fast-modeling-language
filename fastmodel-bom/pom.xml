@@ -176,17 +176,13 @@
 
             <dependency>
                 <groupId>com.aliyun.fastmodel</groupId>
+                <artifactId>fastmodel-transform-maxcompute</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliyun.fastmodel</groupId>
                 <artifactId>fastmodel-transform-hologres</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-fml</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun.fastmodel</groupId>
-                <artifactId>fastmodel-transform-plantuml</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

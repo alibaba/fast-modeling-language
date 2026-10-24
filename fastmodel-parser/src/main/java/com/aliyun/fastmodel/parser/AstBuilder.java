@@ -674,7 +674,32 @@ public class AstBuilder extends FastModelGrammarParserBaseVisitor<Node> {
             .map(DataTypeParameter.class::cast)
             .collect(toList());
 
+        validateVectorType(ctx.name.getText(), parameters);
+
         return new GenericDataType(getLocation(ctx), getOrigin(ctx), ctx.name.getText(), parameters);
+    }
+
+    private void validateVectorType(String typeName, List<DataTypeParameter> parameters) {
+        if (!"VECTOR".equalsIgnoreCase(typeName)) {
+            return;
+        }
+        if (parameters.size() != 2 || !(parameters.get(0) instanceof TypeParameter)
+            || !(parameters.get(1) instanceof NumericParameter)) {
+            throw new IllegalArgumentException("VECTOR requires FLOAT element type and integer dimension");
+        }
+        TypeParameter elementType = (TypeParameter)parameters.get(0);
+        if (!"FLOAT".equalsIgnoreCase(elementType.getType().getTypeName().getValue())) {
+            throw new IllegalArgumentException("VECTOR only supports FLOAT element type");
+        }
+        String dimension = ((NumericParameter)parameters.get(1)).getValue();
+        try {
+            int value = Integer.parseInt(dimension);
+            if (value < 1 || value > 4096) {
+                throw new IllegalArgumentException("VECTOR dimension must be in range [1,4096]");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("VECTOR dimension must be a positive integer", e);
+        }
     }
 
     @Override

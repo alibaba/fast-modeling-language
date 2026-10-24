@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
 import com.aliyun.fastmodel.core.tree.statement.BaseOperatorStatement;
 import com.aliyun.fastmodel.core.tree.statement.constants.StatementType;
+import com.google.common.base.Preconditions;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -51,6 +52,11 @@ public class SetColumnOrder extends BaseOperatorStatement {
     private final BaseDataType dataType;
 
     /**
+     * 目标列的完整定义，供需要在调序时重述列属性的物理引擎使用
+     */
+    private final ColumnDefinition columnDefinition;
+
+    /**
      * 放在前面的列名
      */
     private final Identifier beforeColName;
@@ -62,10 +68,18 @@ public class SetColumnOrder extends BaseOperatorStatement {
 
     public SetColumnOrder(QualifiedName qualifiedName, Identifier oldColName, Identifier newColName, BaseDataType dataType,
                           Identifier beforeColName, Boolean first) {
+        this(qualifiedName, oldColName, ColumnDefinition.builder().colName(newColName).dataType(dataType).build(),
+            beforeColName, first);
+    }
+
+    public SetColumnOrder(QualifiedName qualifiedName, Identifier oldColName, ColumnDefinition columnDefinition,
+                          Identifier beforeColName, Boolean first) {
         super(qualifiedName);
+        Preconditions.checkNotNull(columnDefinition, "column definition can't be null");
         this.oldColName = oldColName;
-        this.newColName = newColName;
-        this.dataType = dataType;
+        this.columnDefinition = columnDefinition;
+        this.newColName = columnDefinition.getColName();
+        this.dataType = columnDefinition.getDataType();
         this.beforeColName = beforeColName;
         this.first = first;
         this.setStatementType(StatementType.TABLE);

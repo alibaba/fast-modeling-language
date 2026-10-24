@@ -587,9 +587,10 @@ public class TableTest extends BaseTest {
     @Test
     public void testParse() {
         CreateDimTable createDimTable = CreateDimTable.builder().tableName(
-            QualifiedName.of("1_14255.abc")
+            QualifiedName.of("1_schema.abc")
         ).build();
-        assertEquals(createDimTable.toString(), "CREATE DIM TABLE 1_14255.abc");
+        // Digit-leading identifiers must be quoted for downstream SQL parsers.
+        assertEquals(createDimTable.toString(), "CREATE DIM TABLE `1_schema`.abc");
     }
 
     @Test
@@ -864,5 +865,17 @@ public class TableTest extends BaseTest {
             + "   a BIGINT COMMENT 'comment'\n"
             + ")\n"
             + "COMMENT 'comment'");
+    }
+
+    @Test
+    public void testCreateDimTableWithVectorType() {
+        String fml = "create dim table a (embedding vector(float, 768) comment 'embedding')";
+        CreateDimTable createDimTable = fastModelAntlrParser.parseStatement(fml);
+        List<ColumnDefinition> columnDefines = createDimTable.getColumnDefines();
+        assertEquals(1, columnDefines.size());
+        ColumnDefinition columnDefinition = columnDefines.get(0);
+        assertEquals(new Identifier("embedding"), columnDefinition.getColName());
+        assertEquals(DataTypeEnums.VECTOR, columnDefinition.getDataType().getTypeName());
+        assertEquals("VECTOR(FLOAT,768)", columnDefinition.getDataType().toString());
     }
 }

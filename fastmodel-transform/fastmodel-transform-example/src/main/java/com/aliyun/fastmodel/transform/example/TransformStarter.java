@@ -22,6 +22,7 @@ import com.aliyun.fastmodel.transform.api.context.TransformContext;
 import com.aliyun.fastmodel.transform.api.dialect.DialectMeta;
 import com.aliyun.fastmodel.transform.hive.context.HiveTransformContext;
 import com.aliyun.fastmodel.transform.hologres.context.HologresTransformContext;
+import com.aliyun.fastmodel.transform.mc.context.MaxComputeContext;
 
 /**
  * MaxComputer Transform Example
@@ -99,6 +100,21 @@ public class TransformStarter {
         BaseStatement baseStatement = FastModelParserFactory.getInstance().get().parseStatement(before);
         BaseStatement afterStatement = FastModelParserFactory.getInstance().get().parseStatement(after);
         return CompareNodeExecute.getInstance().compare(baseStatement, afterStatement, CompareStrategy.INCREMENTAL);
+    }
+
+    /**
+     * Transform one statement to MaxCompute SQL.
+     */
+    public String transformMaxCompute(BaseStatement statement) {
+        return transform(DialectMeta.getMaxCompute(), statement, MaxComputeContext.builder()
+            .appendSemicolon(true).build());
+    }
+
+    /**
+     * Transform statements to MaxCompute SQL and join them with the supplied separator.
+     */
+    public String transformMaxCompute(List<BaseStatement> list, String separator) {
+        return list.stream().map(this::transformMaxCompute).collect(Collectors.joining(separator));
     }
 
 }

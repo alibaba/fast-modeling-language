@@ -1,4 +1,4 @@
-// Generated from /Users/panguanjing/TeamFile/idea/fast-modeling-language/fastmodel-transform/fastmodel-transform-mysql/src/main/antlr4/com/aliyun/fastmodel/transform/mysql/parser/MySqlLexer.g4 by ANTLR 4.13.1
+// Generated from MySqlLexer.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

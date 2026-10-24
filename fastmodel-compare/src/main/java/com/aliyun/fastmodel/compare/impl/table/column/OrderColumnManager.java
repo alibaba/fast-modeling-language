@@ -150,8 +150,7 @@ public class OrderColumnManager {
                 return null;
             }
             return new SetColumnOrder(tableName, changeColumn,
-                afterOrderColumn.getColumnDefinition().getColName(),
-                afterOrderColumn.getColumnDefinition().getDataType(),
+                afterOrderColumn.getColumnDefinition(),
                 null, true
             );
         } else {
@@ -164,8 +163,7 @@ public class OrderColumnManager {
             //如果前面是空的, 那么移动到
             if (beforeColumn == null) {
                 return new SetColumnOrder(tableName, changeColumn,
-                    afterOrderColumn.getColumnDefinition().getColName(),
-                    afterOrderColumn.getColumnDefinition().getDataType(),
+                    afterOrderColumn.getColumnDefinition(),
                     orderColumn.getColumnDefinition().getColName(), false);
             } else {
                 Identifier colName = beforeColumn.getColumnDefinition().getColName();
@@ -174,8 +172,7 @@ public class OrderColumnManager {
                     return null;
                 } else {
                     return new SetColumnOrder(tableName, changeColumn,
-                        afterOrderColumn.getColumnDefinition().getColName(),
-                        afterOrderColumn.getColumnDefinition().getDataType(),
+                        afterOrderColumn.getColumnDefinition(),
                         orderColumn.getColumnDefinition().getColName(), false);
                 }
             }

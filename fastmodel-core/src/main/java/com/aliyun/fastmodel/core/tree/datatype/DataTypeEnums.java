@@ -113,6 +113,11 @@ public enum DataTypeEnums implements IDataTypeName {
     JSON(Dimension.MULTIPLE),
 
     /**
+     * vector
+     */
+    VECTOR(Dimension.TWO),
+
+    /**
      * 自定义
      */
     CUSTOM(Dimension.ZERO);

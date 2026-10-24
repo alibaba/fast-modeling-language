@@ -23,8 +23,10 @@ import java.util.stream.Collectors;
 import com.aliyun.fastmodel.compare.impl.table.column.OrderColumn;
 import com.aliyun.fastmodel.compare.impl.table.column.OrderColumnManager;
 import com.aliyun.fastmodel.core.tree.QualifiedName;
+import com.aliyun.fastmodel.core.tree.Comment;
 import com.aliyun.fastmodel.core.tree.datatype.DataTypeEnums;
 import com.aliyun.fastmodel.core.tree.expr.Identifier;
+import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.SetColumnOrder;
 import com.aliyun.fastmodel.core.tree.util.DataTypeUtil;
@@ -35,6 +37,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * 对排序列的管理对象
@@ -132,6 +135,31 @@ public class OrderColumnManagerTest {
             return x.getColName().getValue();
         }).collect(Collectors.joining(","));
         assertEquals(collect, "c,a,b");
+    }
+
+    @Test
+    public void testComparePreservesTargetColumnDefinitionForEveryMove() {
+        ColumnDefinition target = ColumnDefinition.builder().colName(new Identifier("c"))
+            .dataType(DataTypeUtil.simpleType(DataTypeEnums.BIGINT)).notNull(true)
+            .defaultValue(new StringLiteral("1")).comment(new Comment("metric")).build();
+        List<ColumnDefinition> after = initList("a", "b");
+        after.add(0, target);
+        OrderColumnManager afterManager = new OrderColumnManager(QualifiedName.of("dim_shop"), after);
+        SetColumnOrder first = orderColumnManager.compare(new Identifier("c"), afterManager);
+        assertSame(target, first.getColumnDefinition());
+        assertEquals("ALTER TABLE dim_shop CHANGE COLUMN c c BIGINT FIRST", first.toString());
+
+        after = initList("a", "b");
+        after.add(1, target);
+        afterManager = new OrderColumnManager(QualifiedName.of("dim_shop"), after);
+        SetColumnOrder afterAnchor = orderColumnManager.compare(new Identifier("c"), afterManager);
+        assertSame(target, afterAnchor.getColumnDefinition());
+
+        OrderColumnManager beforeManager = new OrderColumnManager(QualifiedName.of("dim_shop"),
+            Lists.newArrayList(target, after.get(0), after.get(2)));
+        SetColumnOrder fromFirst = beforeManager.compare(new Identifier("c"), afterManager);
+        assertSame(target, fromFirst.getColumnDefinition());
+        assertEquals("ALTER TABLE dim_shop CHANGE COLUMN c c BIGINT AFTER a", fromFirst.toString());
     }
 
     private List<ColumnDefinition> initAfterList() {

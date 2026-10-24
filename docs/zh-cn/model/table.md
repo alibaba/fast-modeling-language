@@ -98,7 +98,7 @@ references
         - 列的定义，可选。注： FML支持先设计后物化的处理过程， 所以新建的表可以没有列信息。
         - col_name : 列名，可选， 列名格式支持英文、数字、下划线，如果是FML中的关键字，需要使用``来进行表示下。
         - dataType, 目前FML是和MaxCompute2.0的数据类型对齐，包含了BIGINT，SRRING，VARCHAR， CHAR，DECIMAL，DATETIME等，
-          详细的数据类型列表，可以参考：[FML字段的数据类型。 ](https://yuque.antfin-inc.com/gzwan7/hddy77/izptgd/edit)
+          详细的数据类型列表，可以参考：[FML 数据类型语法](https://github.com/alibaba/fast-modeling-language/blob/main/fastmodel-parser/src/main/antlr4/com/aliyun/fastmodel/parser/generate/FastModelGrammarParser.g4)
         - category: 可选，可以对列进行分类，在维度建模中，列具有业务属性， 默认是ATTRIBUTE， 其他的类型有： MEASUREMENT（度量）， CORRELATION（关联字段）。
     - constraint, 可选，定义表结构的约束情况。 FML通过constraint扩展了DDL的语义，可以丰富的表达维度建模中的业务涵义。
         - 主键约束（PrimaryConstraint）： PRIMARY KEY(col1, col2) 可选， 里面的字段列表必须是先定义的列表。

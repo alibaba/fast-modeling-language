@@ -16,6 +16,9 @@
 
 package com.aliyun.fastmodel.transform.api;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.aliyun.fastmodel.core.tree.Node;
 import com.aliyun.fastmodel.transform.api.client.dto.property.BaseClientProperty;
 import com.aliyun.fastmodel.transform.api.client.PropertyConverter;
@@ -43,6 +46,19 @@ import com.google.common.base.Preconditions;
  * @date 2020/10/16
  */
 public interface Transformer<T extends Node> extends PropertyConverter {
+
+    /**
+     * Render an ordered change plan, allowing dialects to combine asynchronous schema changes.
+     *
+     * @param statements ordered statements
+     * @param target complete target model
+     * @param context rendering context
+     * @return rendered statements in execution order
+     */
+    default List<DialectNode> transformStatements(List<? extends T> statements, Node target, TransformContext context) {
+        return statements.stream().map(statement -> transform(statement, new TransformContext(context)))
+            .collect(Collectors.toList());
+    }
 
     /**
      * 转换器, 核心的内容处理，默认不存在

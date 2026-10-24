@@ -240,9 +240,25 @@ public class ColumnCompareTest {
 
         List<BaseStatement> baseStatementList = columnCompare.compareTableElement(before, after);
         String join = Joiner.on("\n").join(baseStatementList);
-        assertEquals(join, "ALTER TABLE dim_shop DROP COLUMN c1\n"
-            + "ALTER TABLE dim_shop CHANGE COLUMN c2 c2 BIGINT FIRST");
+        assertEquals(join, "ALTER TABLE dim_shop DROP COLUMN c1");
 
+    }
+
+    @Test
+    public void testCompareDropColumnAndReorderRemainingColumns() {
+        ColumnDefinition c1 = getColumn("c1");
+        ColumnDefinition c2 = getColumn("c2");
+        ColumnDefinition c3 = getColumn("c3");
+        CreateTable before = CreateTable.builder().tableName(QualifiedName.of("dim_shop"))
+            .columns(ImmutableList.of(c1, c2, c3)).build();
+        CreateTable after = CreateTable.builder().tableName(QualifiedName.of("dim_shop"))
+            .columns(ImmutableList.of(c3, c2)).build();
+
+        List<BaseStatement> statements = columnCompare.compareTableElement(before, after);
+
+        assertEquals("ALTER TABLE dim_shop DROP COLUMN c1\n"
+            + "ALTER TABLE dim_shop CHANGE COLUMN c3 c3 BIGINT FIRST", Joiner.on("\n").join(statements));
+        assertEquals(3, before.getColumnDefines().size());
     }
 
     @Test
