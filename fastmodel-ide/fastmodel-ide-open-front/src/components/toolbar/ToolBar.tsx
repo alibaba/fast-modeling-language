@@ -97,9 +97,6 @@ const ToolBar: React.FC<IToolbarProps> = (props: IToolbarProps) => {
     const uploadProps = {
         name: "file",
         action: Server.UPLOAD_FILE,
-        headers: {
-            authorization: "authorization-text",
-        },
         showUploadList: false,
         data: {dialectName: selectValue},
         beforeUpload: (file) => {
