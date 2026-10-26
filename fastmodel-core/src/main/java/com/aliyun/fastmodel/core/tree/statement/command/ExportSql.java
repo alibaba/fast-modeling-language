@@ -43,19 +43,16 @@ public class ExportSql extends BaseCommandStatement {
 
     private final Optional<String> fml;
 
-    private final Optional<String> uri;
-
     public ExportSql(NodeLocation location, String origin, Identifier dialect,
-                     Optional<String> uri, Optional<String> fml,
+                     Optional<String> fml,
                      List<Property> properties) {
         super(location, origin, properties);
         this.dialect = dialect;
         this.fml = fml;
-        this.uri = uri;
     }
 
-    public ExportSql(Identifier dialect, Optional<String> uri, Optional<String> fml, List<Property> properties) {
-        this(null, null, dialect, uri, fml, properties);
+    public ExportSql(Identifier dialect, Optional<String> fml, List<Property> properties) {
+        this(null, null, dialect, fml, properties);
     }
 
     @Override

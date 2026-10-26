@@ -155,14 +155,13 @@ CommandController -> User : InvokeResult
 #### 语法结构内容
 
 ```text
-IMPORT_SQL -m <dialect> [-t <text> | -u <uri>] [WITH <properties>]
+IMPORT_SQL -m <dialect> -t <text> [WITH <properties>]
 ```
 
 #### 参数说明
 
 - dialect ： 方言名称，支持方言请看方言支持。
 - text： 导入的方言的SQL内容
-- uri： 除了支持文本的导入，还支持从uri导入方言的sql文本，可以是oss，远程文件等
 - properties： 属性内容
 
 ### ExportSQL
@@ -170,20 +169,13 @@ IMPORT_SQL -m <dialect> [-t <text> | -u <uri>] [WITH <properties>]
 #### 语法结构内容
 
 ```text
-EXPORT_SQL -m <dialect> [-t <text> | -u <uri>] [WITH <properties>]
+EXPORT_SQL -m <dialect> -t <text> [WITH <properties>]
 ```
 
 #### 参数说明
 
 - dialect ： 方言名称，支持方言请看方言支持。
 - text： 导出的方言的SQL内容
-- uri： 除了支持文本的导入，还支持从uri导出fml文本内容，可以是oss，远程文件等
 - properties： 属性内容
 
 ## 标准协议
-
-## 引用资料
-
-- https://www.bezkoder.com/spring-boot-file-upload/
-- https://dev.to/faddalibrahim/how-to-create-a-custom-file-upload-button-using-html-css-and-javascript-1c03
-- https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications

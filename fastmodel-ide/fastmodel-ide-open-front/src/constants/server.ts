@@ -23,7 +23,6 @@ export const Server = {
     RENDER_URL: HOST + "command/x6",
     IMPORT_URL: HOST + "command/import_sql",
     EXPORT_URL: HOST + "command/export_sql",
-    UPLOAD_FILE: HOST + "command/upload_sql",
     EXECUTE_FML_URL : HOST + "command/execute"
 }
 

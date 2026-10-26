@@ -75,17 +75,9 @@ public class CommandVisitor extends AstBuilder {
         } else {
             throw new ParseException("please setting the dialect name");
         }
-        Optional<String> uri = Optional.empty();
-        Optional<String> text = Optional.empty();
         CommandOptionsContext commandOptionsContext = ctx.commandOptions();
-        if (commandOptionsContext.TEXT_OPTION() != null) {
-            StringLiteral stringLiteral = (StringLiteral)visit(commandOptionsContext.string());
-            text = Optional.of(stringLiteral.getValue());
-        }
-        if (commandOptionsContext.URI_OPTION() != null) {
-            StringLiteral stringLiteral = (StringLiteral)visit(commandOptionsContext.string());
-            uri = Optional.of(stringLiteral.getValue());
-        }
+        StringLiteral stringLiteral = (StringLiteral)visit(commandOptionsContext.string());
+        Optional<String> text = Optional.of(stringLiteral.getValue());
         List<Property> list = getProperties(ctx.setProperties());
 
         Token type = ctx.commands().type;
@@ -95,11 +87,11 @@ public class CommandVisitor extends AstBuilder {
         switch (type.getType()) {
             case FastModelLexer.KW_IMPORT_SQL:
                 baseCommandStatement = new ImportSql(location, origin,
-                    identifier, uri, text, list);
+                    identifier, text, list);
                 break;
             case FastModelLexer.KW_EXPORT_SQL:
                 baseCommandStatement = new ExportSql(location, origin,
-                    identifier, uri, text, list);
+                    identifier, text, list);
                 break;
             case FastModelLexer.KW_FORMAT:
                 baseCommandStatement = new FormatFml(location, list, text);

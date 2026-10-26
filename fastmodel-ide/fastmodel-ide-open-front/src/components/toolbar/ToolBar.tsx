@@ -16,11 +16,9 @@
 
 import * as React from 'react';
 import {useState} from 'react';
-import {Button, Col, Divider, Menu, message, Modal, Row, Select, Upload} from "antd";
+import {Button, Col, Divider, Menu, message, Modal, Row, Select} from "antd";
 import TextArea from "antd/lib/input/TextArea";
-import {exportSql, importSql, Server} from "../../constants/server";
-import {IInvokeResult} from "../../constants/models";
-import {UploadOutlined} from '@ant-design/icons';
+import {exportSql, importSql} from "../../constants/server";
 
 
 const {Option} = Select;
@@ -94,36 +92,6 @@ const ToolBar: React.FC<IToolbarProps> = (props: IToolbarProps) => {
         setCopied(true);
     };
 
-    const uploadProps = {
-        name: "file",
-        action: Server.UPLOAD_FILE,
-        headers: {
-            authorization: "authorization-text",
-        },
-        showUploadList: false,
-        data: {dialectName: selectValue},
-        beforeUpload: (file) => {
-            const isNotTextPlain = file.type && file.type !== "text/plain";
-            if (isNotTextPlain) {
-                message.error(`${file.name} is not a sql file`);
-            }
-            return !isNotTextPlain ? true : Upload.LIST_IGNORE;
-        },
-        onChange(info) {
-            if (info.file.status !== "uploading") {
-                console.log(info.file, info.fileList);
-            }
-            if (info.file.status === "done") {
-                let result: IInvokeResult = info.file.response;
-                message.success(`${info.file.name} file uploaded successfully`);
-                setInputValue(result.data);
-            } else if (info.file.status === "error") {
-                let result: IInvokeResult = info.file.response;
-                message.error(`${info.file.name} file upload failed.message:${result.message}`);
-            }
-        },
-    };
-
     const showHelp = () => {
         let newWindow = window.open("https://alibaba.github.io/fast-modeling-language/", '_blank', 'noopener,noreferrer');
         if (newWindow) {
@@ -140,18 +108,13 @@ const ToolBar: React.FC<IToolbarProps> = (props: IToolbarProps) => {
         </Menu>
         <Modal title="Import" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} width={800}>
             <Row>
-                <Col span={18}>
+                <Col span={24}>
                     <Select onChange={handleImportSelect} style={{width: 240}} placeholder={"select dialect"}>
                         <Option value="MaxCompute">MaxCompute</Option>
                         <Option value="Hive">Hive</Option>
                         <Option value="Mysql">Mysql</Option>
                         <Option value="Hologres">Hologres</Option>
                     </Select>
-                </Col>
-                <Col span={6}>
-                    <Upload {...uploadProps}>
-                        <Button icon={<UploadOutlined/>} type={"primary"}>Upload .sql</Button>
-                    </Upload>
                 </Col>
             </Row>
             <Divider orientation="left">SQL</Divider>

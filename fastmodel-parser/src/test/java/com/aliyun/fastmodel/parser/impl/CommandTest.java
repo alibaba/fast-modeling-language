@@ -16,6 +16,7 @@
 
 package com.aliyun.fastmodel.parser.impl;
 
+import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.tree.statement.command.ExportSql;
 import com.aliyun.fastmodel.core.tree.statement.command.FormatFml;
 import com.aliyun.fastmodel.core.tree.statement.command.ImportSql;
@@ -23,6 +24,7 @@ import com.aliyun.fastmodel.parser.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * 针对command命令的测试
@@ -41,14 +43,6 @@ public class CommandTest extends BaseTest {
     }
 
     @Test
-    public void testImport_uri() {
-        String fml = "IMP_SQL -m mysql -u 'file://home/admin/a.txt';";
-        ImportSql parse = parse(fml, ImportSql.class);
-        assertEquals(parse.getDialect().getValue(), "mysql");
-        assertEquals(parse.getUri().get(), "file://home/admin/a.txt");
-    }
-
-    @Test
     public void testExport() {
         String fml = "EXP_SQL -m mysql -t 'create dim table a'";
         ExportSql sqlCommand = parse(fml, ExportSql.class);
@@ -57,10 +51,21 @@ public class CommandTest extends BaseTest {
     }
 
     @Test
-    public void testExport_uri() {
-        String fml = "exp_sql -m mysql -u 'file://home/admin/a.txt'";
-        ExportSql sqlCommand = parse(fml, ExportSql.class);
-        assertEquals(sqlCommand.getUri().get(), "file://home/admin/a.txt");
+    public void rejectsUriOptionsForImportAndExport() {
+        String[] commands = {"IMP_SQL", "IMPORT_SQL", "EXP_SQL", "EXPORT_SQL"};
+        String[] locations = {"file:///tmp/example.sql", "http://example.invalid/example.sql",
+            "https://example.invalid/example.sql", ""};
+        for (String command : commands) {
+            for (String location : locations) {
+                String fml = command + " -m mysql -u '" + location + "'";
+                try {
+                    parse(fml, Object.class);
+                    fail("URI options must be rejected: " + fml);
+                } catch (ParseException expected) {
+                    // URI commands must be rejected during parsing, before any I/O is possible.
+                }
+            }
+        }
     }
 
     @Test

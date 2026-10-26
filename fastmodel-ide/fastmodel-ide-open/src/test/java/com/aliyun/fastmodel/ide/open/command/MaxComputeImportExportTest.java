@@ -18,10 +18,10 @@ package com.aliyun.fastmodel.ide.open.command;
 import java.util.Collections;
 
 import com.aliyun.fastmodel.ide.open.extension.OpenIdeCommandProvider;
-import com.aliyun.fastmodel.ide.open.service.StorageService;
 import com.aliyun.fastmodel.ide.open.start.controller.CommandController;
+import com.aliyun.fastmodel.ide.open.start.error.WebExceptionHandler;
 import com.aliyun.fastmodel.ide.spi.command.IdeCommand;
-import com.aliyun.fastmodel.ide.spi.invoker.IdeInvoker;
+import com.aliyun.fastmodel.ide.spi.invoker.DefaultIdeInvoker;
 import com.aliyun.fastmodel.ide.spi.receiver.IdePlatform;
 import com.aliyun.fastmodel.ide.spi.receiver.impl.DefaultToolServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,14 +30,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,9 +63,8 @@ public class MaxComputeImportExportTest {
         when(applicationContext.getBeansOfType(IdeCommand.class)).thenReturn(Collections.emptyMap());
         provider.setApplicationContext(applicationContext);
         provider.init();
-        CommandController controller = new CommandController(provider, mock(IdeInvoker.class),
-            mock(StorageService.class));
-        mvc = MockMvcBuilders.standaloneSetup(controller).build();
+        CommandController controller = new CommandController(provider, new DefaultIdeInvoker(provider));
+        mvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new WebExceptionHandler()).build();
     }
 
     @Test
@@ -92,6 +95,48 @@ public class MaxComputeImportExportTest {
         String fml = importSql("ODPS", sql);
         assertEquals(importSql("MaxCompute", sql), fml);
         assertEquals(exportSql("MaxCompute", fml), exportSql("ODPS", fml));
+    }
+
+    @Test
+    public void sqlFileUploadRouteIsRemoved() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "example.sql", "text/plain",
+            "CREATE TABLE sample_item (item_id BIGINT);".getBytes(UTF_8));
+        mvc.perform(multipart("/engine/upload_sql").file(file).param("dialectName", "mysql"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void executeRejectsUriImportAsInvalidSyntax() throws Exception {
+        MvcResult result = mvc.perform(post("/engine/execute")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("fml", "IMP_SQL -m mysql -u 'file:///tmp/example.sql'"))
+            .andExpect(status().isOk()).andReturn();
+        JsonNode response = objectMapper.readTree(result.getResponse().getContentAsByteArray());
+        assertFalse(response.toString(), response.path("success").asBoolean());
+        assertEquals(response.toString(), "FML_IS_NOT_VALID", response.path("errorCode").asText());
+    }
+
+    @Test
+    public void executeStillImportsSqlText() throws Exception {
+        MvcResult result = mvc.perform(post("/engine/execute")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("fml", "IMP_SQL -m MaxCompute -t 'CREATE TABLE sample_item (item_id BIGINT);'"))
+            .andExpect(status().isOk()).andReturn();
+        assertTrue(successfulData(result).contains("sample_item"));
+    }
+
+    @Test
+    public void stillExportsGraphThroughController() throws Exception {
+        MvcResult result = mvc.perform(post("/engine/x6")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("fml", "CREATE DIM TABLE sample_item (item_id BIGINT);"))
+            .andExpect(status().isOk()).andReturn();
+        JsonNode graph = objectMapper.readTree(successfulData(result));
+        assertTrue(graph.toString(), graph.path("nodes").isArray());
+        assertEquals(graph.toString(), 1, graph.path("nodes").size());
+        assertEquals(graph.toString(), "sample_item", graph.path("nodes").get(0).path("id").asText());
+        assertEquals(graph.toString(), "item_id",
+            graph.path("nodes").get(0).path("attribute").path("columns").get(0).path("colName").asText());
     }
 
     private String normalizeWhitespace(String sql) {

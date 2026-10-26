@@ -40,8 +40,6 @@ public class ImportSqlIdeCommand extends BaseIdeCommand<String, ImportSql> {
         String result = null;
         if (importSqlCommand.getSql().isPresent()) {
             result = getIdePlatform().getToolService().importSql(importSqlCommand.getSql().get(), dialectMeta);
-        } else if (importSqlCommand.getUri().isPresent()) {
-            result = getIdePlatform().getToolService().importByUri(importSqlCommand.getUri().get(), dialectMeta);
         }
         return InvokeResult.success(result);
     }

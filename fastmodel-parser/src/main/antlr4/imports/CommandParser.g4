@@ -20,7 +20,6 @@ dialectOptions:
     ;
 commandOptions
     : TEXT_OPTION string
-    | URI_OPTION string
     ;
 
 commands :
