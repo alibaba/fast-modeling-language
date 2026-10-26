@@ -46,28 +46,22 @@ public class ImportSql extends BaseCommandStatement {
     private final Identifier dialect;
 
     /**
-     * 文件名
-     */
-    private final Optional<String> uri;
-
-    /**
      * sql文本
      */
     private final Optional<String> sql;
 
     private final List<Property> properties;
 
-    public ImportSql(Identifier dialect, Optional<String> uri, Optional<String> sql,
+    public ImportSql(Identifier dialect, Optional<String> sql,
                      List<Property> properties) {
-        this(null, null, dialect, uri, sql, properties);
+        this(null, null, dialect, sql, properties);
     }
 
     public ImportSql(NodeLocation location, String origin, Identifier dialect,
-                     Optional<String> uri, Optional<String> sql,
+                     Optional<String> sql,
                      List<Property> properties) {
         super(location, origin, properties);
         this.dialect = dialect;
-        this.uri = uri;
         this.sql = sql;
         this.properties = properties;
         setStatementType(StatementType.COMMAND);

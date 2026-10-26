@@ -47,12 +47,4 @@ public interface ToolService {
      */
     public String exportSql(String text, DialectMeta dialectMeta);
 
-    /**
-     * uri的信息内容
-     *
-     * @param uri
-     * @param dialectMeta
-     * @return
-     */
-    String importByUri(String uri, DialectMeta dialectMeta);
 }

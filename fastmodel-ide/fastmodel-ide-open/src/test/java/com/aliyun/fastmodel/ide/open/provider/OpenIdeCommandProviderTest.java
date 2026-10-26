@@ -67,7 +67,7 @@ public class OpenIdeCommandProviderTest {
 
     @Test
     public void testGetCommand() {
-        ImportSql importSql = new ImportSql(new Identifier("mysql"), null,
+        ImportSql importSql = new ImportSql(new Identifier("mysql"),
             Optional.of("create table a (b bigint comment 'comment')"), null);
         IdeCommand ideCommand = openIdeCommandProvider.getIdeCommand(importSql);
         assertEquals(ideCommand.getClass().getName(), ImportSqlIdeCommand.class.getName());
@@ -75,7 +75,7 @@ public class OpenIdeCommandProviderTest {
 
     @Test
     public void testGetCommandExportSql() {
-        ExportSql importSql = new ExportSql(new Identifier("mysql"), null,
+        ExportSql importSql = new ExportSql(new Identifier("mysql"),
             Optional.of("create table a (b bigint comment 'comment')"), null);
         IdeCommand ideCommand = openIdeCommandProvider.getIdeCommand(importSql);
         assertEquals(ideCommand.getClass().getName(), ExportSqlIdeCommand.class.getName());
@@ -83,7 +83,7 @@ public class OpenIdeCommandProviderTest {
 
     @Test
     public void testGetCommandRenderFmlPlantUml() {
-        ExportSql importSql = new ExportSql(new Identifier("plantuml"), null,
+        ExportSql importSql = new ExportSql(new Identifier("plantuml"),
             Optional.of("create table a (b bigint comment 'comment')"), null);
         IdeCommand ideCommand = openIdeCommandProvider.getIdeCommand(importSql);
         assertEquals(ideCommand.getClass().getName(), RenderPlantUmlIdeCommand.class.getName());
