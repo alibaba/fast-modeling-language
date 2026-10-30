@@ -15,6 +15,7 @@ import com.aliyun.fastmodel.common.parser.lexer.CaseChangingCharStream;
 import com.aliyun.fastmodel.core.exception.ParseException;
 import com.aliyun.fastmodel.core.parser.LanguageParser;
 import com.aliyun.fastmodel.core.tree.Node;
+import com.aliyun.fastmodel.core.tree.datatype.BaseDataType;
 import com.aliyun.fastmodel.transform.api.context.ReverseContext;
 import com.aliyun.fastmodel.transform.clickhouse.parser.visitor.ClickHouseAstBuilder;
 import com.google.auto.service.AutoService;
@@ -38,6 +39,11 @@ public class ClickHouseLanguageParser implements LanguageParser<Node, ReverseCon
     @Override
     public Node parseNode(String text, ReverseContext context) throws ParseException {
         return getNode(text, context, ClickHouseParser::queryStmt);
+    }
+
+    @Override
+    public BaseDataType parseDataType(String code, ReverseContext context) throws ParseException {
+        return (BaseDataType)getNode(code, context, ClickHouseParser::columnTypeExpr);
     }
 
     private Node getNode(String code, ReverseContext context, Function<ClickHouseParser, ParserRuleContext> function) {
