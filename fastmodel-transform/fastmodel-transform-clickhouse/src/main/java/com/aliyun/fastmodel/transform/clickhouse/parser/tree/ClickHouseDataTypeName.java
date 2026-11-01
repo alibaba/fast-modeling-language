@@ -266,7 +266,8 @@ public enum ClickHouseDataTypeName implements ISimpleDataTypeName {
                 }
             }
         }
-        throw new IllegalArgumentException("unsupported the dataType with value:" + value);
+        throw new IllegalArgumentException("Unsupported ClickHouse data type: " + value
+            + ". Register it in ClickHouseDataTypeName or handle it explicitly in the parser.");
     }
 
     /**

@@ -32,9 +32,7 @@ import com.aliyun.fastmodel.core.tree.expr.literal.HexLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.LongLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.NullLiteral;
 import com.aliyun.fastmodel.core.tree.expr.literal.StringLiteral;
-import com.aliyun.fastmodel.core.tree.statement.element.CreateElement;
 import com.aliyun.fastmodel.core.tree.statement.select.item.AllColumns;
-import com.aliyun.fastmodel.core.tree.statement.table.CloneTable;
 import com.aliyun.fastmodel.core.tree.statement.table.ColumnDefinition;
 import com.aliyun.fastmodel.core.tree.statement.table.CreateTable;
 import com.aliyun.fastmodel.core.tree.statement.table.TableElement;
@@ -233,16 +231,21 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
         boolean ifNotExists = ctx.IF() != null && ctx.NOT() != null && ctx.EXISTS() != null;
         QualifiedName tableName = (QualifiedName)visit(ctx.tableIdentifier());
         ClickHouseTableType clickHouseTableType = ctx.TEMPORARY() != null ? ClickHouseTableType.TEMPORARY : ClickHouseTableType.NORMAL;
+        if (ctx.subqueryClause() != null) {
+            throw new UnsupportedOperationException(
+                "ClickHouse CREATE TABLE ... AS SELECT is not supported by the FastModel AST");
+        }
         List<ColumnDefinition> columnDefinitions = null;
         if (ctx.tableSchemaClause() != null) {
             TableSchemaClauseContext tableSchemaClauseContext = ctx.tableSchemaClause();
             Node node = visit(tableSchemaClauseContext);
-            if (node instanceof QualifiedName) {
-                return new CloneTable(CreateElement.builder().createOrReplace(createOrReplace).notExists(ifNotExists).qualifiedName(tableName)
-                    .build(), clickHouseTableType, (QualifiedName)node);
-            } else if (node instanceof ListNode) {
+            if (node instanceof ListNode) {
                 ListNode listNode = (ListNode)node;
                 columnDefinitions = toColumns(listNode);
+            } else {
+                throw new UnsupportedOperationException(
+                    "ClickHouse CREATE TABLE ... AS <table or table function> is not supported by the FastModel AST: "
+                        + ParserHelper.getOrigin(tableSchemaClauseContext));
             }
         }
         List<Property> properties = toProperties(ctx);
@@ -491,12 +494,21 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
     @Override
     public Node visitColumnTypeExprSimple(ColumnTypeExprSimpleContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
+        validateDataTypeName(identifier);
         return new ClickHouseGenericDataType(identifier);
+    }
+
+    /**
+     * 未登记的类型必须在解析阶段失败，不能作为自定义类型继续传递后在生成 DDL 时才报错
+     */
+    private void validateDataTypeName(Identifier identifier) {
+        ClickHouseDataTypeName.getByValue(identifier.getValue());
     }
 
     @Override
     public Node visitColumnTypeExprNested(ColumnTypeExprNestedContext ctx) {
         List<Identifier> identifiers = ParserHelper.visit(this, ctx.identifier(), Identifier.class);
+        validateDataTypeName(identifiers.get(0));
         List<DataTypeParameter> parameters = Lists.newArrayList();
         for (int i = 0; i < ctx.columnTypeExpr().size(); i++) {
             BaseDataType baseDataType = (BaseDataType)visit(ctx.columnTypeExpr().get(i));
@@ -509,6 +521,7 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
     @Override
     public Node visitColumnTypeExprEnum(ColumnTypeExprEnumContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
+        validateDataTypeName(identifier);
         List<DataTypeParameter> parameters = ctx.enumValue().stream().map(c -> (DataTypeParameter)visit(c)).collect(Collectors.toList());
         return new ClickHouseGenericDataType(identifier, parameters);
     }
@@ -524,6 +537,15 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
     @Override
     public Node visitColumnTypeExprComplex(ColumnTypeExprComplexContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
+        String typeName = identifier.getValue();
+        validateDataTypeName(identifier);
+        if (StringUtils.equalsIgnoreCase(typeName, ClickHouseDataTypeName.AggregateFunction.getValue())
+            || StringUtils.equalsIgnoreCase(typeName, ClickHouseDataTypeName.SimpleAggregateFunction.getValue())) {
+            String firstArgument = ctx.columnTypeExpr().isEmpty() ? "" : ParserHelper.getOrigin(ctx.columnTypeExpr().get(0));
+            throw new UnsupportedOperationException("ClickHouse " + typeName
+                + " is not supported by the FastModel AST: first argument '" + firstArgument
+                + "' is a function name, not a data type");
+        }
         List<DataTypeParameter> list = ctx.columnTypeExpr().stream().map(t -> {
             BaseDataType baseDataType = (BaseDataType)visit(t);
             return (DataTypeParameter)new TypeParameter(baseDataType);
@@ -534,6 +556,7 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
     @Override
     public Node visitColumnTypeExprParam(ColumnTypeExprParamContext ctx) {
         Identifier identifier = (Identifier)visit(ctx.identifier());
+        validateDataTypeName(identifier);
         ColumnExprListContext columnExprListContext = ctx.columnExprList();
         List<DataTypeParameter> list = Lists.newArrayList();
         if (columnExprListContext != null) {

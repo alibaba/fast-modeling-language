@@ -36,6 +36,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * ClickHouse 建表语句特性的解析与再生成测试
@@ -417,5 +418,64 @@ public class ClickHouseFeatureTest {
         // 旧的 Nullable(LowCardinality(T)) 写法不是合法 ClickHouse 类型，生成时归一化
         assertEquals(expected, regenerate("CREATE TABLE db.t23 (lc Nullable(LowCardinality(String))) "
             + "ENGINE = MergeTree ORDER BY tuple()"));
+    }
+
+    @Test
+    public void testUnsupportedColumnFeaturesThrow() {
+        String[] ddls = new String[] {
+            "CREATE TABLE db.t24 (id Int64 CODEC(ZSTD(1))) ENGINE = MergeTree ORDER BY id",
+            "CREATE TABLE db.t25 (id Int64, ts DateTime TTL ts + INTERVAL 1 DAY) ENGINE = MergeTree ORDER BY id",
+            "CREATE TABLE db.t26 (id Int64, v Int64 ALIAS id + 1) ENGINE = MergeTree ORDER BY id",
+        };
+        for (String ddl : ddls) {
+            try {
+                regenerate(ddl);
+                fail("expected UnsupportedOperationException for " + ddl);
+            } catch (UnsupportedOperationException expected) {
+                // expected
+            }
+        }
+    }
+
+    @Test
+    public void testAggregateFunctionUnsupportedMessage() {
+        String[] ddls = new String[] {
+            "CREATE TABLE db.t27 (a AggregateFunction(sum, UInt64)) ENGINE = MergeTree ORDER BY tuple()",
+            "CREATE TABLE db.t28 (a SimpleAggregateFunction(sum, UInt64)) ENGINE = MergeTree ORDER BY tuple()",
+        };
+        for (String ddl : ddls) {
+            try {
+                regenerate(ddl);
+                fail("expected UnsupportedOperationException for " + ddl);
+            } catch (UnsupportedOperationException expected) {
+                assertTrue(expected.getMessage().contains("function name"));
+                assertTrue(expected.getMessage().contains("sum"));
+            }
+        }
+    }
+
+    @Test
+    public void testUnregisteredNativeTypesMessage() {
+        for (String type : new String[] {"IPv4", "IPv6"}) {
+            try {
+                transformer.reverse(new DialectNode(
+                    "CREATE TABLE db.t29 (ip " + type + ") ENGINE = MergeTree ORDER BY tuple()"));
+                fail("expected IllegalArgumentException for " + type);
+            } catch (IllegalArgumentException expected) {
+                String message = expected.getMessage().toLowerCase();
+                assertTrue(message.contains(type.toLowerCase()));
+                assertTrue(message.contains("unsupported"));
+            }
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCreateTableAsSelectFails() {
+        regenerate("CREATE TABLE db.t30 ENGINE = MergeTree ORDER BY id AS SELECT 1 AS id");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCreateTableAsTableFails() {
+        regenerate("CREATE TABLE db.t31 AS db.src");
     }
 }
