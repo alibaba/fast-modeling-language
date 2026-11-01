@@ -1,6 +1,7 @@
 parser grammar ClickHouseParser;
 
 @header {
+import java.util.HashSet;
 import java.util.Set;
 }
 
@@ -110,13 +111,14 @@ createStmt
     | (ATTACH | CREATE (OR REPLACE)? | REPLACE) DICTIONARY (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? dictionarySchemaClause dictionaryEngineClause                                          # CreateDictionaryStmt
     | (ATTACH | CREATE) LIVE VIEW (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? (WITH TIMEOUT DECIMAL_LITERAL?)? destinationClause? tableSchemaClause? subqueryClause   # CreateLiveViewStmt
     | (ATTACH | CREATE) MATERIALIZED VIEW (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? (destinationClause | engineClause POPULATE?) subqueryClause  # CreateMaterializedViewStmt
-    | (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? engineClause? subqueryClause?                                 # CreateTableStmt
+    | (ATTACH | CREATE (OR REPLACE)? | REPLACE) TEMPORARY? TABLE (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? engineClause? tableCommentClause? subqueryClause?                                 # CreateTableStmt
     | (ATTACH | CREATE) (OR REPLACE)? VIEW (IF NOT EXISTS)? tableIdentifier uuidClause? clusterClause? tableSchemaClause? subqueryClause                                              # CreateViewStmt
     ;
 
 dictionarySchemaClause: LPAREN dictionaryAttrDfnt (COMMA dictionaryAttrDfnt)* RPAREN;
 dictionaryAttrDfnt
-locals [Set<String> attrs]:
+locals [Set<String> attrs]
+@init { $attrs = new HashSet<String>(); }:
     identifier columnTypeExpr
     ( {!$attrs.contains("default")}?      DEFAULT literal       {$attrs.add("default");}
     | {!$attrs.contains("expression")}?   EXPRESSION columnExpr {$attrs.add("expression");}
@@ -126,7 +128,8 @@ locals [Set<String> attrs]:
     )*
     ;
 dictionaryEngineClause
-locals [Set<String> clauses]:
+locals [Set<String> clauses]
+@init { $clauses = new HashSet<String>(); }:
     dictionaryPrimaryKeyClause?
     ( {!$clauses.contains("source")}? sourceClause {$clauses.add("source");}
     | {!$clauses.contains("lifetime")}? lifetimeClause {$clauses.add("lifetime");}
@@ -156,7 +159,8 @@ tableSchemaClause
     | AS tableFunctionExpr                                      # SchemaAsFunctionClause
     ;
 engineClause
-locals [Set<String> clauses]:
+locals [Set<String> clauses]
+@init { $clauses = new HashSet<String>(); }:
     engineExpr
     ( {!$clauses.contains("orderByClause")}?     orderByClause     {$clauses.add("orderByClause");}
     | {!$clauses.contains("partitionByClause")}? partitionByClause {$clauses.add("partitionByClause");}
@@ -172,6 +176,7 @@ sampleByClause: SAMPLE BY columnExpr;
 ttlClause: TTL ttlExpr (COMMA ttlExpr)*;
 
 engineExpr: ENGINE EQ_SINGLE? identifierOrNull (LPAREN columnExprList? RPAREN)?;
+tableCommentClause: COMMENT STRING_LITERAL;
 tableElementExpr
     : tableColumnDfnt                                                              # TableElementExprColumn
     | CONSTRAINT identifier CHECK columnExpr                                       # TableElementExprConstraint
