@@ -367,4 +367,55 @@ public class ClickHouseFeatureTest {
         assertEquals("Enum8('a' = 1,'b' = 2)",
             expressionVisitor.process(clickHouseLanguageParser.parseDataType("Enum8('a' = 1, 'b' = 2)", reverseContext)));
     }
+
+    @Test
+    public void testTemporaryTable() {
+        String ddl = "CREATE TEMPORARY TABLE t (id UInt64) ENGINE = Memory";
+        assertEquals("CREATE TEMPORARY TABLE t\n"
+            + "(\n"
+            + "   id UInt64\n"
+            + ")\n"
+            + "ENGINE = Memory;", regenerate(ddl));
+    }
+
+    @Test
+    public void testNestedType() {
+        String ddl = "CREATE TABLE db.t21 (n Nested(a String, b Int32)) ENGINE = MergeTree ORDER BY tuple()";
+        assertEquals("CREATE TABLE db.t21\n"
+            + "(\n"
+            + "   n Nested(a String,b Int32)\n"
+            + ")\n"
+            + "ENGINE = MergeTree\n"
+            + "ORDER BY tuple();", regenerate(ddl));
+        Table table = transformer.transformTable(parse(ddl), context);
+        assertEquals("Nested(a String,b Int32)", table.getColumns().get(0).getDataType());
+    }
+
+    @Test
+    public void testDateTime64WithTimezone() {
+        String ddl = "CREATE TABLE db.t22 (dt DateTime64(3, 'Asia/Shanghai')) ENGINE = MergeTree ORDER BY tuple()";
+        assertEquals("CREATE TABLE db.t22\n"
+            + "(\n"
+            + "   dt DateTime64(3,'Asia/Shanghai')\n"
+            + ")\n"
+            + "ENGINE = MergeTree\n"
+            + "ORDER BY tuple();", regenerate(ddl));
+        Table table = transformer.transformTable(parse(ddl), context);
+        assertEquals("DateTime64(3,'Asia/Shanghai')", table.getColumns().get(0).getDataType());
+    }
+
+    @Test
+    public void testLowCardinalityNullableOrder() {
+        String expected = "CREATE TABLE db.t23\n"
+            + "(\n"
+            + "   lc LowCardinality(Nullable(String))\n"
+            + ")\n"
+            + "ENGINE = MergeTree\n"
+            + "ORDER BY tuple();";
+        assertEquals(expected, regenerate("CREATE TABLE db.t23 (lc LowCardinality(Nullable(String))) "
+            + "ENGINE = MergeTree ORDER BY tuple()"));
+        // 旧的 Nullable(LowCardinality(T)) 写法不是合法 ClickHouse 类型，生成时归一化
+        assertEquals(expected, regenerate("CREATE TABLE db.t23 (lc Nullable(LowCardinality(String))) "
+            + "ENGINE = MergeTree ORDER BY tuple()"));
+    }
 }

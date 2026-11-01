@@ -92,6 +92,8 @@ import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseAlterTabl
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseDataTypeName;
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseEnumDataTypeParameter;
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseGenericDataType;
+import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseNestedDataTypeParameter;
+import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseStringDataTypeParameter;
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseTableType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -212,7 +214,9 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
                     .build();
             }
         }
-        return null;
+        // 不支持的子句不能静默丢弃，否则会生成 "ALTER TABLE t ;" 这类残缺 SQL
+        throw new UnsupportedOperationException(
+            "ClickHouse ALTER clause is not supported by the FastModel AST: " + ParserHelper.getOrigin(ctx));
     }
 
     private String toPartitionValue(AlterTableClauseContext ctx) {
@@ -247,6 +251,7 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
             .createOrReplace(createOrReplace)
             .ifNotExist(ifNotExists)
             .tableName(tableName)
+            .detailType(clickHouseTableType)
             .columns(columnDefinitions)
             .constraints(constraints)
             .properties(properties)
@@ -491,7 +496,14 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
 
     @Override
     public Node visitColumnTypeExprNested(ColumnTypeExprNestedContext ctx) {
-        return super.visitColumnTypeExprNested(ctx);
+        List<Identifier> identifiers = ParserHelper.visit(this, ctx.identifier(), Identifier.class);
+        List<DataTypeParameter> parameters = Lists.newArrayList();
+        for (int i = 0; i < ctx.columnTypeExpr().size(); i++) {
+            BaseDataType baseDataType = (BaseDataType)visit(ctx.columnTypeExpr().get(i));
+            // ctx.identifier() 的第一个元素是 Nested，后面依次是字段名
+            parameters.add(new ClickHouseNestedDataTypeParameter(identifiers.get(i + 1), baseDataType));
+        }
+        return new ClickHouseGenericDataType(identifiers.get(0), parameters);
     }
 
     @Override
@@ -551,6 +563,10 @@ public class ClickHouseAstBuilder extends ClickHouseParserBaseVisitor<Node> {
         }
         if (node instanceof DoubleLiteral) {
             return new NumericParameter(String.valueOf(((DoubleLiteral)node).getValue()));
+        }
+        if (node instanceof StringLiteral) {
+            // 时区等字符串参数不能当作数值参数，否则 Decimal 的精度/刻度解析会失败
+            return new ClickHouseStringDataTypeParameter((StringLiteral)node);
         }
         String origin = ParserHelper.getOrigin(columnsExprContext);
         if (StringUtils.isBlank(origin)) {

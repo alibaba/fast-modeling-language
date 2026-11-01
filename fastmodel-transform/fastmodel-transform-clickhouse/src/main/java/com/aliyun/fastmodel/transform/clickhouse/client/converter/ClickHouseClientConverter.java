@@ -171,6 +171,8 @@ public class ClickHouseClientConverter extends ExtensionClientConverter<ClickHou
             && genericDataType.getArguments().get(0) instanceof com.aliyun.fastmodel.core.tree.datatype.NumericParameter) {
             com.aliyun.fastmodel.core.tree.datatype.NumericParameter scale =
                 (com.aliyun.fastmodel.core.tree.datatype.NumericParameter)genericDataType.getArguments().get(0);
+            // Decimal32(4) 的参数是 scale，不是长度；避免返回同时带 length 和 scale 的 DTO
+            column.setLength(null);
             column.setScale(Integer.valueOf(scale.getValue()));
         }
         //ClickHouse的复合类型(Array、Map、Tuple、Enum等)需要保留完整的类型文本
@@ -341,6 +343,13 @@ public class ClickHouseClientConverter extends ExtensionClientConverter<ClickHou
                 return new DecimalLiteral(value);
             }
             if (simpleDataTypeName == SimpleDataTypeName.BOOLEAN) {
+                // Bool 的常见默认值是 1/0，直接交给 BooleanLiteral 会把 "1" 解析成 false
+                if (StringUtils.equalsIgnoreCase(value, "1") || StringUtils.equalsIgnoreCase(value, "true")) {
+                    return new BooleanLiteral("true");
+                }
+                if (StringUtils.equalsIgnoreCase(value, "0") || StringUtils.equalsIgnoreCase(value, "false")) {
+                    return new BooleanLiteral("false");
+                }
                 return new BooleanLiteral(value);
             }
         }

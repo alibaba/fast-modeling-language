@@ -125,6 +125,68 @@ public class ClickHouseClientConverterTest {
     }
 
     @Test
+    public void testNullableLowCardinalityColumn() {
+        List<Column> columns = Lists.newArrayList();
+        columns.add(Column.builder().name("id").dataType("BIGINT").nullable(false).build());
+        columns.add(Column.builder().name("lc").dataType("LowCardinality(String)").nullable(true).build());
+        Table table = tableBuilder("low_cardinality_table")
+            .columns(columns)
+            .properties(Lists.newArrayList(engine(), orderBy("id")))
+            .build();
+        String ddl = toDdl(table);
+        // ClickHouse 只接受 LowCardinality(Nullable(T))，不能包成 Nullable(LowCardinality(T))
+        assertTrue(ddl.contains("LowCardinality(Nullable(String))"));
+        assertFalse(ddl.contains("Nullable(LowCardinality"));
+    }
+
+    @Test
+    public void testDateTime64WithTimezoneAndNestedType() {
+        List<Column> columns = Lists.newArrayList();
+        columns.add(Column.builder().name("id").dataType("BIGINT").nullable(false).build());
+        columns.add(Column.builder().name("dt").dataType("DateTime64(3, 'UTC')").nullable(false).build());
+        columns.add(Column.builder().name("n").dataType("Nested(a String, b Int32)").nullable(false).build());
+        Table table = tableBuilder("timezone_table")
+            .columns(columns)
+            .properties(Lists.newArrayList(engine(), orderBy("id")))
+            .build();
+        String ddl = toDdl(table);
+        assertTrue(ddl.contains("DateTime64(3,'UTC')"));
+        assertTrue(ddl.contains("Nested(a String,b Int32)"));
+    }
+
+    @Test
+    public void testBooleanDefaultsFromNumericValues() {
+        List<Column> columns = Lists.newArrayList();
+        columns.add(Column.builder().name("id").dataType("BIGINT").nullable(false).build());
+        columns.add(Column.builder().name("enabled").dataType("Bool").nullable(false).defaultValue("1").build());
+        columns.add(Column.builder().name("deleted").dataType("Bool").nullable(false).defaultValue("0").build());
+        Table table = tableBuilder("bool_default_table")
+            .columns(columns)
+            .properties(Lists.newArrayList(engine(), orderBy("id")))
+            .build();
+        String ddl = toDdl(table);
+        assertTrue(ddl.contains("enabled Bool DEFAULT true"));
+        assertTrue(ddl.contains("deleted Bool DEFAULT false"));
+    }
+
+    @Test
+    public void testDecimalScaleOnlyColumnRoundTrip() {
+        List<Column> columns = Lists.newArrayList();
+        columns.add(Column.builder().name("id").dataType("BIGINT").nullable(false).build());
+        columns.add(Column.builder().name("amount").dataType("Decimal32").scale(4).nullable(false).build());
+        Table table = tableBuilder("decimal_scale_table")
+            .columns(columns)
+            .properties(Lists.newArrayList(engine(), orderBy("id")))
+            .build();
+        assertTrue(toDdl(table).contains("amount Decimal32(4)"));
+        Node node = transformer.reverseTable(table);
+        Table back = transformer.transformTable(node, context);
+        Column amount = back.getColumns().get(1);
+        assertNull(amount.getLength());
+        assertEquals(Integer.valueOf(4), amount.getScale());
+    }
+
+    @Test
     public void testColumnDefaultValues() {
         List<Column> columns = Lists.newArrayList();
         columns.add(Column.builder().name("id").dataType("BIGINT").nullable(false).build());

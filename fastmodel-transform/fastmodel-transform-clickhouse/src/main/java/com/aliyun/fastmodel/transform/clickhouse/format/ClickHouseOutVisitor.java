@@ -29,6 +29,7 @@ import com.aliyun.fastmodel.core.tree.util.PropertyUtil;
 import com.aliyun.fastmodel.transform.clickhouse.context.ClickHouseContext;
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseAlterTable;
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseAlterTableClause;
+import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseTableType;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -67,7 +68,14 @@ public class ClickHouseOutVisitor extends FastModelVisitor {
     @Override
     public Boolean visitCreateTable(CreateTable node, Integer indent) {
         boolean columnEmpty = node.isColumnEmpty();
-        builder.append(BooleanUtils.isTrue(node.getCreateOrReplace()) ? "CREATE OR REPLACE TABLE " : "CREATE TABLE ");
+        builder.append("CREATE ");
+        if (BooleanUtils.isTrue(node.getCreateOrReplace())) {
+            builder.append("OR REPLACE ");
+        }
+        if (ClickHouseTableType.TEMPORARY == node.getTableDetailType()) {
+            builder.append("TEMPORARY ");
+        }
+        builder.append("TABLE ");
         if (node.isNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
@@ -107,6 +115,9 @@ public class ClickHouseOutVisitor extends FastModelVisitor {
      * @return SQL
      */
     public String formatAlterTable(ClickHouseAlterTable statement) {
+        if (CollectionUtils.isEmpty(statement.getClauses())) {
+            throw new IllegalArgumentException("ClickHouse ALTER TABLE requires at least one supported clause");
+        }
         StringBuilder sql = new StringBuilder("ALTER TABLE ");
         String tableName = getCode(statement.getTableName());
         validateDdlFragment(tableName, "table name");
@@ -226,6 +237,11 @@ public class ClickHouseOutVisitor extends FastModelVisitor {
         if (BooleanUtils.isFalse(column.getNotNull()) && !isNullableType(type) && !isPrimaryKey(column)) {
             if (isNullableContainerType(type)) {
                 throw new IllegalArgumentException("ClickHouse container type cannot be wrapped in Nullable: " + type);
+            }
+            // ClickHouse 只允许 LowCardinality(Nullable(T))，不能写成 Nullable(LowCardinality(T))
+            if (StringUtils.startsWithIgnoreCase(type, LOW_CARDINALITY) && StringUtils.endsWith(type, ")")) {
+                String inner = type.substring(LOW_CARDINALITY.length(), type.length() - 1);
+                return LOW_CARDINALITY + NULLABLE + inner + "))";
             }
             return NULLABLE + type + ")";
         }

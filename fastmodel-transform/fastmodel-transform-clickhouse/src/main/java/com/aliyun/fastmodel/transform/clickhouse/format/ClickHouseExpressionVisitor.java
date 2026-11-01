@@ -28,6 +28,8 @@ import com.aliyun.fastmodel.core.tree.expr.literal.DoubleLiteral;
 import com.aliyun.fastmodel.transform.api.format.DefaultExpressionVisitor;
 import com.aliyun.fastmodel.transform.clickhouse.context.ClickHouseContext;
 import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseEnumDataTypeParameter;
+import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseNestedDataTypeParameter;
+import com.aliyun.fastmodel.transform.clickhouse.parser.tree.ClickHouseStringDataTypeParameter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -111,6 +113,13 @@ public class ClickHouseExpressionVisitor extends DefaultExpressionVisitor {
     }
 
     private String formatDataTypeParameter(DataTypeParameter dataTypeParameter) {
+        if (dataTypeParameter instanceof ClickHouseNestedDataTypeParameter) {
+            ClickHouseNestedDataTypeParameter nestedParameter = (ClickHouseNestedDataTypeParameter)dataTypeParameter;
+            return process(nestedParameter.getName()) + " " + process(nestedParameter.getType());
+        }
+        if (dataTypeParameter instanceof ClickHouseStringDataTypeParameter) {
+            return process(((ClickHouseStringDataTypeParameter)dataTypeParameter).getValue());
+        }
         if (!(dataTypeParameter instanceof ClickHouseEnumDataTypeParameter)) {
             return process(dataTypeParameter);
         }

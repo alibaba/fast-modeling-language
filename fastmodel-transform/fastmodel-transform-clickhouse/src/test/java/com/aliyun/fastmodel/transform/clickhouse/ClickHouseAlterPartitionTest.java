@@ -166,4 +166,15 @@ public class ClickHouseAlterPartitionTest {
             assertEquals(sample, regenerate(regenerate(sample)));
         }
     }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testUnsupportedAlterClauseFails() {
+        // 不支持 COLUMN/UPDATE/DELETE 等子句时不能静默生成 "ALTER TABLE t ;"
+        regenerate("ALTER TABLE db.t ADD COLUMN c Int32");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testMixedSupportedAndUnsupportedAlterClauseFails() {
+        regenerate("ALTER TABLE db.t DROP PARTITION '202401', ADD COLUMN c Int32");
+    }
 }
